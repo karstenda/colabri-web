@@ -1,0 +1,41 @@
+a {
+  color: black;
+  font-weight: 900;
+}
+
+h2 {
+  font-weight: 900;
+}
+
+.logo {
+  width: 2em;
+  margin-right: 0.5em;
+  vertical-align: -0.5em;
+}
+
+.editor {
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+}
+
+button {
+  color: #565656;
+  padding: 0.3em 0.6em;
+  margin-bottom: 0.4em;
+  background-color: #eee;
+}
+
+/**matrix 2x2 */
+.parent {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 2em 1em;
+}
+
+.version {
+  color: grey;
+  font-size: 0.8em;
+}
