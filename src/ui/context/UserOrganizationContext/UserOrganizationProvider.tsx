@@ -14,11 +14,11 @@ const useUserOrganizationContext = () => {
 
 const UserOrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
-  const { isLoading, data } = useUserAuth();
+  const { isLoading, userAuth } = useUserAuth();
   const { orgId } = useParams();
 
   // Find the current organization and user based on the orgId from the URL params
-  const userOrganization = data?.orgs?.find(orgEntry => orgEntry.organization.id === orgId) || null;
+  const userOrganization = userAuth?.orgs?.find(orgEntry => orgEntry.organization.id === orgId) || null;
   const organization = userOrganization ? userOrganization.organization : null;
   const user = userOrganization ? userOrganization.user : null;
 

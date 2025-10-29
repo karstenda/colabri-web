@@ -24,13 +24,18 @@ import OrgUserProtectedRoute from './routes/OrgUserProtectedRoute';
 
 
 const router = createHashRouter([
-
   {
     path: '/onboard',
     Component: OnboardPage,
   },
   {
-    Component: () => <OrgUserProtectedRoute><MainLayout /></OrgUserProtectedRoute>,
+    Component: () => (
+      <UserOrganizationProvider>
+        <OrgUserProtectedRoute>
+          <MainLayout />
+        </OrgUserProtectedRoute>
+      </UserOrganizationProvider>
+    ),
     children: [
       {
         path: 'org/:orgId/docs',
@@ -92,13 +97,11 @@ export default function App(props: { disableCustomTheme?: boolean }) {
       <QueryClientProvider client={queryClient}>
         <AppTheme {...props} themeComponents={themeComponents}>
             <CssBaseline enableColorScheme />
-            <UserOrganizationProvider>
-                <NotificationsProvider>
-                    <DialogsProvider>
-                        <RouterProvider router={router} />
-                    </DialogsProvider>
-                </NotificationsProvider>
-            </UserOrganizationProvider>
+              <NotificationsProvider>
+                  <DialogsProvider>
+                      <RouterProvider router={router} />
+                  </DialogsProvider>
+              </NotificationsProvider>
         </AppTheme>
       </QueryClientProvider>
     );

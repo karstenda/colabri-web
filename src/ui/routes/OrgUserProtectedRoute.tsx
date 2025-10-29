@@ -33,7 +33,7 @@ const OrgUserProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
         if (orgs.length == 1) {
             // Auto-redirect to the home page of the single organization.
             const defaultOrgId = orgs[0].organization.id;
-            return <Navigate to={`/#/org/${defaultOrgId}/`} replace />;
+            return <Navigate to={`/org/${defaultOrgId}/`} replace />;
         }
         // No single organization
         else {
