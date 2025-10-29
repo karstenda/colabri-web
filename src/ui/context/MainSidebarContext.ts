@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-const DashboardSidebarContext = React.createContext<{
+const MainSidebarContext = React.createContext<{
   onPageItemClick: (id: string, hasNestedNavigation: boolean) => void;
   mini: boolean;
   fullyExpanded: boolean;
@@ -8,4 +8,4 @@ const DashboardSidebarContext = React.createContext<{
   hasDrawerTransitions: boolean;
 } | null>(null);
 
-export default DashboardSidebarContext;
+export default MainSidebarContext;

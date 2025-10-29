@@ -12,29 +12,29 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import DescriptionIcon from '@mui/icons-material/Description';
 import LayersIcon from '@mui/icons-material/Layers';
 import { matchPath, useLocation } from 'react-router';
-import DashboardSidebarContext from '../context/DashboardSidebarContext';
-import { DRAWER_WIDTH, MINI_DRAWER_WIDTH } from '../constants';
-import DashboardSidebarPageItem from './DashboardSidebarPageItem';
-import DashboardSidebarHeaderItem from './DashboardSidebarHeaderItem';
-import DashboardSidebarDividerItem from './DashboardSidebarDividerItem';
+import MainSidebarContext from '../../context/MainSidebarContext';
+import { DRAWER_WIDTH, MINI_DRAWER_WIDTH } from '../../constants';
+import MainSidebarPageItem from './MainSidebarPageItem';
+import MainSidebarHeaderItem from './MainSidebarHeaderItem';
+import MainSidebarDividerItem from './MainSidebarDividerItem';
 import {
   getDrawerSxTransitionMixin,
   getDrawerWidthTransitionMixin,
-} from '../mixins';
+} from '../../mixins';
 
-export interface DashboardSidebarProps {
+export interface MainSidebarProps {
   expanded?: boolean;
   setExpanded: (expanded: boolean) => void;
   disableCollapsibleSidebar?: boolean;
   container?: Element;
 }
 
-export default function DashboardSidebar({
+export default function MainSidebar({
   expanded = true,
   setExpanded,
   disableCollapsibleSidebar = false,
   container,
-}: DashboardSidebarProps) {
+}: MainSidebarProps) {
   const theme = useTheme();
 
   const { pathname } = useLocation();
@@ -133,24 +133,24 @@ export default function DashboardSidebar({
               width: mini ? MINI_DRAWER_WIDTH : 'auto',
             }}
           >
-            <DashboardSidebarHeaderItem>Content</DashboardSidebarHeaderItem>
-            <DashboardSidebarPageItem
+            <MainSidebarHeaderItem>Content</MainSidebarHeaderItem>
+            <MainSidebarPageItem
               id="docs"
               title="Documents"
               icon={<InsertDriveFileIcon />}
               href="/docs"
               selected={!!matchPath('/docs/*', pathname) || pathname === '/'}
             />
-            <DashboardSidebarDividerItem />
-            <DashboardSidebarHeaderItem>Admin</DashboardSidebarHeaderItem>
-            <DashboardSidebarPageItem
+            <MainSidebarDividerItem />
+            <MainSidebarHeaderItem>Admin</MainSidebarHeaderItem>
+            <MainSidebarPageItem
               id="employees"
               title="Employees"
               icon={<PersonIcon />}
               href="/employees"
               selected={!!matchPath('/employees/*', pathname) || pathname === '/'}
             />
-            <DashboardSidebarPageItem
+            <MainSidebarPageItem
               id="reports"
               title="Reports"
               icon={<BarChartIcon />}
@@ -168,14 +168,14 @@ export default function DashboardSidebar({
                     minWidth: 240,
                   }}
                 >
-                  <DashboardSidebarPageItem
+                  <MainSidebarPageItem
                     id="sales"
                     title="Sales"
                     icon={<DescriptionIcon />}
                     href="/reports/sales"
                     selected={!!matchPath('/reports/sales', pathname)}
                   />
-                  <DashboardSidebarPageItem
+                  <MainSidebarPageItem
                     id="traffic"
                     title="Traffic"
                     icon={<DescriptionIcon />}
@@ -185,7 +185,7 @@ export default function DashboardSidebar({
                 </List>
               }
             />
-            <DashboardSidebarPageItem
+            <MainSidebarPageItem
               id="integrations"
               title="Integrations"
               icon={<LayersIcon />}
@@ -238,7 +238,7 @@ export default function DashboardSidebar({
   ]);
 
   return (
-    <DashboardSidebarContext.Provider value={sidebarContextValue}>
+    <MainSidebarContext.Provider value={sidebarContextValue}>
       <Drawer
         container={container}
         variant="temporary"
@@ -280,6 +280,6 @@ export default function DashboardSidebar({
       >
         {getDrawerContent('desktop')}
       </Drawer>
-    </DashboardSidebarContext.Provider>
+    </MainSidebarContext.Provider>
   );
 }

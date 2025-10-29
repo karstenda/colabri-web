@@ -4,11 +4,11 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import { Outlet } from 'react-router';
-import DashboardHeader from './DashboardHeader';
-import DashboardSidebar from './DashboardSidebar';
+import MainHeader from './MainHeader';
+import MainSidebar from './MainSidebar';
 import ColabriSvgIcon from './icons/ColabriSvgIcon';
 
-export default function DashboardLayout() {
+export default function MainLayout() {
   const theme = useTheme();
 
   const [isDesktopNavigationExpanded, setIsDesktopNavigationExpanded] =
@@ -57,13 +57,13 @@ export default function DashboardLayout() {
         width: '100%',
       }}
     >
-      <DashboardHeader
+      <MainHeader
         logo={<ColabriSvgIcon expanded={isOverMdViewport} />}
         title=""
         menuOpen={isNavigationExpanded}
         onToggleMenu={handleToggleHeaderMenu}
       />
-      <DashboardSidebar
+      <MainSidebar
         expanded={isNavigationExpanded}
         setExpanded={setIsNavigationExpanded}
         container={layoutRef?.current ?? undefined}

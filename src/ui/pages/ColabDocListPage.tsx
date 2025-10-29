@@ -20,12 +20,12 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useLocation, useNavigate, useSearchParams } from 'react-router';
-import { useDialogs } from '../../mui-crud/hooks/useDialogs/useDialogs';
-import useNotifications from '../../mui-crud/hooks/useNotifications/useNotifications';
+import { useDialogs } from '../hooks/useDialogs/useDialogs';
+import useNotifications from '../hooks/useNotifications/useNotifications';
 import {
   deleteOne as deleteColabDoc,
   getMany as getColabDocs,
-} from '../data/ColabDocs';
+} from '../data/ColabDoc';
 import { type ColabDoc } from '../../editor/data/ColabDoc';
 import PageContainer from '../../mui-crud/components/PageContainer';
 

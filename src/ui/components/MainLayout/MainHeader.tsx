@@ -10,7 +10,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import Stack from '@mui/material/Stack';
 import { Link } from 'react-router';
-import ThemeSwitcher from './ThemeSwitcher';
+import ThemeSwitcher from '../ThemeSwitcher/ThemeSwitcher';
 
 const AppBar = styled(MuiAppBar)(({ theme }) => ({
   borderWidth: 0,
@@ -31,19 +31,19 @@ const LogoContainer = styled('div')({
   },
 });
 
-export interface DashboardHeaderProps {
+export interface MainHeaderProps {
   logo?: React.ReactNode;
   title?: string;
   menuOpen: boolean;
   onToggleMenu: (open: boolean) => void;
 }
 
-export default function DashboardHeader({
+export default function MainHeader({
   logo,
   title,
   menuOpen,
   onToggleMenu,
-}: DashboardHeaderProps) {
+}: MainHeaderProps) {
   const theme = useTheme();
 
   const handleMenuOpen = React.useCallback(() => {
