@@ -18,21 +18,36 @@ export enum OrganizationStatus {
   OrgStatusSubscriptionExpired = "subscription_expired",
 }
 
+export interface CreateGroupRequest {
+  description?: string;
+  name: string;
+}
+
 export interface CreateOrganizationRequest {
   expiryDate?: string;
   name: string;
   ownerEmail: string;
   ownerFirstName: string;
   ownerLastName: string;
-  ownerUid?: string;
   status: OrganizationStatus;
 }
 
 export interface CreateUserRequest {
   email: string;
-  firstName: string;
-  lastName: string;
-  uid: string;
+  firstName?: string;
+  groupIds?: string[];
+  lastName?: string;
+}
+
+export interface Group {
+  createdAt: string;
+  createdBy: string;
+  description: string;
+  id: string;
+  name: string;
+  system: boolean;
+  updatedAt: string;
+  updatedBy: string;
 }
 
 export interface HTTPError {
@@ -56,6 +71,11 @@ export interface Organization {
   updatedBy?: string;
 }
 
+export interface UpdateGroupRequest {
+  description?: string;
+  name?: string;
+}
+
 export interface UpdateOrganizationRequest {
   expiryDate?: string;
   name?: string;
@@ -63,14 +83,20 @@ export interface UpdateOrganizationRequest {
   status?: OrganizationStatus;
 }
 
+export interface UpdateUserRequest {
+  disabled?: boolean;
+  uid?: string;
+}
+
 export interface User {
+  avatarUrl?: string;
   createdAt?: string;
   createdBy?: string;
+  disabled?: boolean;
   email?: string;
   firstName?: string;
   id?: string;
   lastName?: string;
-  uid?: string;
   updatedAt?: string;
   updatedBy?: string;
 }
@@ -346,11 +372,11 @@ export class Api<
      * @description This endpoint will retrieve a list of organizations. Only cloud admins are allowed to list organizations.
      *
      * @tags organizations
-     * @name OrganizationsList
+     * @name GetOrganizations
      * @summary List organizations
      * @request GET:/organizations
      */
-    organizationsList: (
+    getOrganizations: (
       query?: {
         /**
          * Number of organizations to return
@@ -378,11 +404,11 @@ export class Api<
      * @description This endpoint will create a new organization on the platform. Only cloud admins are allowed to create organizations.
      *
      * @tags organizations
-     * @name OrganizationsCreate
+     * @name PostOrganization
      * @summary Create a new organization
      * @request POST:/organizations
      */
-    organizationsCreate: (
+    postOrganization: (
       organization: CreateOrganizationRequest,
       params: RequestParams = {},
     ) =>
@@ -396,14 +422,14 @@ export class Api<
       }),
 
     /**
-     * @description This endpoint will retrieve an organization by its ID.
+     * @description This endpoint will retrieve an organization by its ID. Only users who are members of the organization can retrieve organizations.
      *
      * @tags organizations
-     * @name OrganizationsDetail
+     * @name GetOrganization
      * @summary Get an organization by ID
      * @request GET:/organizations/{orgId}
      */
-    organizationsDetail: (orgId: string, params: RequestParams = {}) =>
+    getOrganization: (orgId: string, params: RequestParams = {}) =>
       this.request<Organization, HTTPError>({
         path: `/organizations/${orgId}`,
         method: "GET",
@@ -416,11 +442,11 @@ export class Api<
      * @description This endpoint will mark an existing organization as deleted on the platform. Only cloud admins are allowed to delete organizations.
      *
      * @tags organizations
-     * @name OrganizationsDelete
+     * @name DeleteOrganization
      * @summary Mark an existing organization as deleted
      * @request DELETE:/organizations/{orgId}
      */
-    organizationsDelete: (
+    deleteOrganization: (
       orgId: string,
       organization: UpdateOrganizationRequest,
       params: RequestParams = {},
@@ -438,11 +464,11 @@ export class Api<
      * @description This endpoint will update an existing organization on the platform. Only cloud admins are allowed to update organizations.
      *
      * @tags organizations
-     * @name OrganizationsPartialUpdate
+     * @name PatchOrganization
      * @summary Update an existing organization
      * @request PATCH:/organizations/{orgId}
      */
-    organizationsPartialUpdate: (
+    patchOrganization: (
       orgId: string,
       organization: UpdateOrganizationRequest,
       params: RequestParams = {},
@@ -458,14 +484,183 @@ export class Api<
   };
   orgId = {
     /**
-     * @description This endpoint will create a new user in the specified organization.
+     * @description This endpoint will retrieve all groups in the specified organization. Only users who are members of the organization can list groups.
+     *
+     * @tags groups
+     * @name GetGroups
+     * @summary List all groups in an organization
+     * @request GET:/{orgId}/groups
+     */
+    getGroups: (
+      orgId: string,
+      query?: {
+        /**
+         * Number of groups to return
+         * @default 10
+         */
+        limit?: number;
+        /**
+         * Number of groups to skip
+         * @default 0
+         */
+        offset?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<Group[], HTTPError>({
+        path: `/${orgId}/groups`,
+        method: "GET",
+        query: query,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description This endpoint will create a new group in the specified organization. Only organization admins can create groups.
+     *
+     * @tags groups
+     * @name PostGroup
+     * @summary Create a new group
+     * @request POST:/{orgId}/groups
+     */
+    postGroup: (
+      orgId: string,
+      group: CreateGroupRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<Group, HTTPError>({
+        path: `/${orgId}/groups`,
+        method: "POST",
+        body: group,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description This endpoint will retrieve a group by its name. Only users who are members of the organization can retrieve groups.
+     *
+     * @tags groups
+     * @name GetGroupsByName
+     * @summary Get a group by name
+     * @request GET:/{orgId}/groups/by-name
+     */
+    getGroupsByName: (
+      orgId: string,
+      query: {
+        /** Group Name */
+        name: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<Group, HTTPError>({
+        path: `/${orgId}/groups/by-name`,
+        method: "GET",
+        query: query,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description This endpoint will retrieve a group by its ID. Only users who are members of the organization can retrieve groups.
+     *
+     * @tags groups
+     * @name GetGroup
+     * @summary Get a group by ID
+     * @request GET:/{orgId}/groups/{groupId}
+     */
+    getGroup: (orgId: string, groupId: string, params: RequestParams = {}) =>
+      this.request<Group, HTTPError>({
+        path: `/${orgId}/groups/${groupId}`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description This endpoint will delete a group by its ID. Only organization admins can delete groups.
+     *
+     * @tags groups
+     * @name DeleteGroup
+     * @summary Delete a group by ID
+     * @request DELETE:/{orgId}/groups/{groupId}
+     */
+    deleteGroup: (orgId: string, groupId: string, params: RequestParams = {}) =>
+      this.request<void, HTTPError>({
+        path: `/${orgId}/groups/${groupId}`,
+        method: "DELETE",
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description This endpoint will update the specified group. Only organization admins can update groups.
+     *
+     * @tags groups
+     * @name PatchGroup
+     * @summary Update a group
+     * @request PATCH:/{orgId}/groups/{groupId}
+     */
+    patchGroup: (
+      orgId: string,
+      groupId: string,
+      group: UpdateGroupRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<Group, HTTPError>({
+        path: `/${orgId}/groups/${groupId}`,
+        method: "PATCH",
+        body: group,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description This endpoint will retrieve all users in the specified organization. Only users who are members of the organization can list users.
      *
      * @tags users
-     * @name UsersCreate
+     * @name GetUsers
+     * @summary List all users in an organization
+     * @request GET:/{orgId}/users
+     */
+    getUsers: (
+      orgId: string,
+      query?: {
+        /**
+         * Number of users to return
+         * @default 10
+         */
+        limit?: number;
+        /**
+         * Number of users to skip
+         * @default 0
+         */
+        offset?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<User[], HTTPError>({
+        path: `/${orgId}/users`,
+        method: "GET",
+        query: query,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description This endpoint will create a new user in the specified organization. Only organization admins can create users.
+     *
+     * @tags users
+     * @name PostUser
      * @summary Create a new user
      * @request POST:/{orgId}/users
      */
-    usersCreate: (
+    postUser: (
       orgId: string,
       user: CreateUserRequest,
       params: RequestParams = {},
@@ -480,16 +675,101 @@ export class Api<
       }),
 
     /**
-     * @description This endpoint will retrieve a user by its ID.
+     * @description This endpoint will retrieve all users in the specified organization matching the given email. Only users who are members of the organization can retrieve users.
      *
      * @tags users
-     * @name UsersDetail
+     * @name GetUsersByEmail
+     * @summary Get users by email
+     * @request GET:/{orgId}/users/by-email
+     */
+    getUsersByEmail: (
+      orgId: string,
+      query: {
+        /** Email to search for */
+        email: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<User[], HTTPError>({
+        path: `/${orgId}/users/by-email`,
+        method: "GET",
+        query: query,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description This endpoint will retrieve a user by its ID. Only users who are members of the organization can retrieve users.
+     *
+     * @tags users
+     * @name GetUser
      * @summary Get a user by ID
      * @request GET:/{orgId}/users/{userId}
      */
-    usersDetail: (orgId: string, userId: string, params: RequestParams = {}) =>
+    getUser: (orgId: string, userId: string, params: RequestParams = {}) =>
       this.request<User, HTTPError>({
         path: `/${orgId}/users/${userId}`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description This endpoint will delete a user by its ID. Only organization admins can delete users.
+     *
+     * @tags users
+     * @name DeleteUser
+     * @summary Delete a user by ID
+     * @request DELETE:/{orgId}/users/{userId}
+     */
+    deleteUser: (orgId: string, userId: string, params: RequestParams = {}) =>
+      this.request<void, HTTPError>({
+        path: `/${orgId}/users/${userId}`,
+        method: "DELETE",
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description This endpoint will update the specified user. Only organization admins can update users. The UID and email can only be updated by cloud admins.
+     *
+     * @tags users
+     * @name PatchUser
+     * @summary Update a user
+     * @request PATCH:/{orgId}/users/{userId}
+     */
+    patchUser: (
+      orgId: string,
+      userId: string,
+      user: UpdateUserRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<User, HTTPError>({
+        path: `/${orgId}/users/${userId}`,
+        method: "PATCH",
+        body: user,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description This endpoint will retrieve all groups of a specified user. Only organization admins can access this endpoint or the user themself.
+     *
+     * @tags users
+     * @name GetUsersGroups
+     * @summary Get groups of a user
+     * @request GET:/{orgId}/users/{userId}/groups
+     */
+    getUsersGroups: (
+      orgId: string,
+      userId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<Group[], HTTPError>({
+        path: `/${orgId}/users/${userId}/groups`,
         method: "GET",
         type: ContentType.Json,
         format: "json",

@@ -21,6 +21,7 @@ import {
   getDrawerSxTransitionMixin,
   getDrawerWidthTransitionMixin,
 } from '../../mixins';
+import { useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';
 
 export interface MainSidebarProps {
   expanded?: boolean;
@@ -46,6 +47,8 @@ export default function MainSidebar({
 
   const [isFullyExpanded, setIsFullyExpanded] = React.useState(expanded);
   const [isFullyCollapsed, setIsFullyCollapsed] = React.useState(!expanded);
+
+  const organization = useOrganization();
 
   React.useEffect(() => {
     if (expanded) {
@@ -144,11 +147,11 @@ export default function MainSidebar({
             <MainSidebarDividerItem />
             <MainSidebarHeaderItem>Admin</MainSidebarHeaderItem>
             <MainSidebarPageItem
-              id="employees"
-              title="Employees"
+              id="users"
+              title="Users"
               icon={<PersonIcon />}
-              href="/employees"
-              selected={!!matchPath('/employees/*', pathname) || pathname === '/'}
+              href={`/org/${organization?.id}/users`}
+              selected={!!matchPath(`/org/${organization?.id}/users/*`, pathname) || pathname === '/'}
             />
             <MainSidebarPageItem
               id="reports"

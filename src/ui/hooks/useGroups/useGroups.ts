@@ -1,0 +1,155 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Api, CreateGroupRequest, UpdateGroupRequest } from '../../../api/ColabriAPI';
+
+// Create a singleton API client instance
+const apiClient = new Api({
+	baseUrl: '/api/v1',
+	baseApiParams: {
+		credentials: 'include',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+	},
+});
+
+// Query keys factory for groups
+export const groupKeys = {
+	all: ['groups'] as const,
+	lists: () => [...groupKeys.all, 'list'] as const,
+	list: (orgId: string, filters: { limit?: number; offset?: number }) =>
+		[...groupKeys.lists(), orgId, filters] as const,
+	details: () => [...groupKeys.all, 'detail'] as const,
+	detail: (orgId: string, groupId: string) => [...groupKeys.details(), orgId, groupId] as const,
+};
+
+// Custom hooks for group operations
+
+/**
+ * Hook to fetch a list of groups in an organization with pagination
+ */
+export const useGroups = (orgId: string, params?: { limit?: number; offset?: number }, enabled = true) => {
+	const {data, isLoading, error, refetch} = useQuery({
+		queryKey: groupKeys.list(orgId, params || {}),
+		queryFn: () => apiClient.orgId.getGroups(orgId, params),
+		enabled: enabled && !!orgId,
+		staleTime: 5 * 60 * 1000, // 5 minutes
+		gcTime: 10 * 60 * 1000, // 10 minutes
+	});
+	return {groups: data?.data || [], isLoading, error, refetch};
+};
+
+/**
+ * Hook to fetch a single group by ID
+ */
+export const useGroup = (orgId: string, groupId: string, enabled = true) => {
+	const {data, isLoading, error, refetch} = useQuery({
+		queryKey: groupKeys.detail(orgId, groupId),
+		queryFn: () => apiClient.orgId.getGroup(orgId, groupId),
+		enabled: enabled && !!orgId && !!groupId,
+		staleTime: 5 * 60 * 1000, // 5 minutes
+		gcTime: 10 * 60 * 1000, // 10 minutes
+	});
+	return {group: data?.data || null, isLoading, error, refetch};
+};
+
+/**
+ * Hook to fetch a single group by name
+ */
+export const useGroupByName = (orgId: string, groupName: string, enabled = true) => {
+    const {data, isLoading, error, refetch} = useQuery({
+        queryKey: [...groupKeys.details(), orgId, 'by-name', groupName] as const,
+        queryFn: () => apiClient.orgId.getGroupsByName(orgId, {name: groupName}),
+        enabled: enabled && !!orgId && !!groupName,
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        gcTime: 10 * 60 * 1000, // 10 minutes
+    });
+	return {group: data?.data || null, isLoading, error, refetch};
+};
+
+/**
+ * Hook to create a new group
+ */
+export const useCreateGroup = (orgId: string) => {
+	const queryClient = useQueryClient();
+
+	const mutation = useMutation({
+		mutationFn: (data: CreateGroupRequest) => apiClient.orgId.postGroup(orgId, data),
+		onSuccess: (newGroup) => {
+			// Invalidate and refetch groups list
+			queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
+
+			// Optionally add the new group to the cache
+			queryClient.setQueryData(groupKeys.detail(orgId, newGroup.data.id!), newGroup);
+		},
+		onError: (error) => {
+			console.error('Failed to create group:', error);
+		},
+	});
+	return {
+		createGroup: mutation.mutateAsync,
+		createdGroup: mutation.data,
+		isPending: mutation.isPending,
+		error: mutation.error
+	};
+};
+
+/**
+ * Hook to update an existing group
+ */
+export const useUpdateGroup = (orgId: string) => {
+	const queryClient = useQueryClient();
+
+	const mutation = useMutation({
+		mutationFn: ({ groupId, data }: { groupId: string; data: UpdateGroupRequest }) =>
+			apiClient.orgId.patchGroup(orgId, groupId, data),
+		onSuccess: (updatedGroup, variables) => {
+			const { groupId } = variables;
+
+			// Update the specific group in cache
+			queryClient.setQueryData(groupKeys.detail(orgId, groupId), updatedGroup);
+
+			// Invalidate groups list to reflect changes
+			queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
+		},
+		onError: (error) => {
+			console.error('Failed to update group:', error);
+		},
+	});
+	return {
+		updateGroup: mutation.mutateAsync,
+		updatedGroup: mutation.data,
+		isPending: mutation.isPending,
+		error: mutation.error
+	};
+};
+
+/**
+ * Hook to delete a group
+ */
+export const useDeleteGroup = (orgId: string) => {
+	const queryClient = useQueryClient();
+
+	const mutation = useMutation({
+		mutationFn: (groupId: string) => apiClient.orgId.deleteGroup(orgId, groupId),
+		onSuccess: (_, groupId) => {
+			// Remove the group from cache
+			queryClient.removeQueries({ queryKey: groupKeys.detail(orgId, groupId) });
+
+			// Invalidate groups list
+			queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
+		},
+		onError: (error) => {
+			console.error('Failed to delete group:', error);
+		},
+	});
+	return {
+		deleteGroup: mutation.mutateAsync,
+		deletedGroup: mutation.data,
+		isPending: mutation.isPending,
+		error: mutation.error
+	};
+};
+
+// Optional: Export the API client instance for direct use if needed
+export { apiClient };
+

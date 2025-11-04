@@ -10,7 +10,7 @@ import EmployeeForm, {
   type FormFieldValue,
   type EmployeeFormState,
 } from './EmployeeForm';
-import PageContainer from './PageContainer';
+import PageContainer from '../../ui/components/MainLayout/PageContainer';
 
 const INITIAL_FORM_VALUES: Partial<EmployeeFormState['values']> = {
   role: 'Market',

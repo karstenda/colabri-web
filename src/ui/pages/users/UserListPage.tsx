@@ -19,19 +19,19 @@ import AddIcon from '@mui/icons-material/Add';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import PersonOffIcon from '@mui/icons-material/PersonOff';
 import { useLocation, useNavigate, useSearchParams } from 'react-router';
-import { useDialogs } from '../hooks/useDialogs/useDialogs';
-import useNotifications from '../hooks/useNotifications/useNotifications';
-import {
-  deleteOne as deleteColabDoc,
-  getMany as getColabDocs,
-} from '../data/ColabDoc';
-import { type ColabDoc } from '../../editor/data/ColabDoc';
-import PageContainer from '../components/MainLayout/PageContainer';
+import { useDialogs } from '../../hooks/useDialogs/useDialogs';
+import useNotifications from '../../hooks/useNotifications/useNotifications';
+import { useUsers, useDeleteUser } from '../../hooks/useUsers/useUsers';
+import { User } from '../../../api/ColabriAPI';
+import PageContainer from '../../components/MainLayout/PageContainer';
+import { useUserOrganizationContext } from '../../context/UserOrganizationContext/UserOrganizationProvider';
+import UserAvatar from '../../components/UserAvatar/UserAvatar';
 
 const INITIAL_PAGE_SIZE = 10;
 
-export default function ColabDocListPage() {
+export default function UserListPage() {
 
   const { pathname } = useLocation();
   const [searchParams] = useSearchParams();
@@ -39,6 +39,7 @@ export default function ColabDocListPage() {
 
   const dialogs = useDialogs();
   const notifications = useNotifications();
+  const { organization } = useUserOrganizationContext();
 
   const [paginationModel, setPaginationModel] = React.useState<GridPaginationModel>({
     page: searchParams.get('page') ? Number(searchParams.get('page')) : 0,
@@ -55,16 +56,21 @@ export default function ColabDocListPage() {
     searchParams.get('sort') ? JSON.parse(searchParams.get('sort') ?? '') : [],
   );
 
-  const [rowsState, setRowsState] = React.useState<{
-    rows: ColabDoc[];
-    rowCount: number;
-  }>({
-    rows: [],
-    rowCount: 0,
-  });
+  const { deleteUser, isPending: isDeletePending } = useDeleteUser(organization?.id || '');
 
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [error, setError] = React.useState<Error | null>(null);
+  // Use React Query hook for fetching users
+  const { 
+    users, 
+    isLoading, 
+    error,
+    refetch 
+  } = useUsers(
+    organization?.id || '', 
+    { 
+      limit: paginationModel.pageSize, 
+      offset: paginationModel.page * paginationModel.pageSize 
+    }
+  );
 
   const handlePaginationModelChange = React.useCallback(
     (model: GridPaginationModel) => {
@@ -123,62 +129,39 @@ export default function ColabDocListPage() {
     [navigate, pathname, searchParams],
   );
 
-  const loadData = React.useCallback(async () => {
-    setError(null);
-    setIsLoading(true);
-
-    try {
-      const listData = await getColabDocs({
-        paginationModel,
-        sortModel,
-        filterModel,
-      });
-
-      setRowsState({
-        rows: listData.items,
-        rowCount: listData.itemCount,
-      });
-    } catch (listDataError) {
-      setError(listDataError as Error);
-    }
-
-    setIsLoading(false);
-  }, [paginationModel, sortModel, filterModel]);
-
-  React.useEffect(() => {
-    loadData();
-  }, [loadData]);
-
   const handleRefresh = React.useCallback(() => {
     if (!isLoading) {
-      loadData();
+      refetch();
     }
-  }, [isLoading, loadData]);
+  }, [isLoading, refetch]);
 
   const handleRowClick = React.useCallback<GridEventListener<'rowClick'>>(
     ({ row }) => {
-      navigate(`/docs/${row.id}`);
+      navigate(`/org/${organization?.id}/users/${row.id}`);
     },
     [navigate],
   );
 
   const handleCreateClick = React.useCallback(() => {
-    navigate('/docs/new');
+    navigate(`/org/${organization?.id}/users/new`);
   }, [navigate]);
 
   const handleRowEdit = React.useCallback(
-    (colabDoc: ColabDoc) => () => {
-      navigate(`/docs/${colabDoc.id}/edit`);
+    (user: User) => () => {
+      navigate(`/org/${organization?.id}/users/${user.id}/edit`);
     },
     [navigate],
   );
 
   const handleRowDelete = React.useCallback(
-    (colabDoc: ColabDoc) => async () => {
+    (user: User) => async () => {
+      const userName = user.firstName && user.lastName 
+        ? `${user.firstName} ${user.lastName}` 
+        : user.email || 'this user';
       const confirmed = await dialogs.confirm(
-        `Do you wish to delete ${colabDoc.name}?`,
+        `Do you wish to delete ${userName}?`,
         {
-          title: `Delete document?`,
+          title: `Delete user?`,
           severity: 'error',
           okText: 'Delete',
           cancelText: 'Cancel',
@@ -186,28 +169,25 @@ export default function ColabDocListPage() {
       );
 
       if (confirmed) {
-        setIsLoading(true);
         try {
-          await deleteColabDoc(Number(colabDoc.id));
+          await deleteUser(user.id!);
 
-          notifications.show('Document deleted successfully.', {
+          notifications.show('User deleted successfully.', {
             severity: 'success',
             autoHideDuration: 3000,
           });
-          loadData();
         } catch (deleteError) {
           notifications.show(
-            `Failed to delete document. Reason:' ${(deleteError as Error).message}`,
+            `Failed to delete user. Reason: ${(deleteError as Error).message}`,
             {
               severity: 'error',
               autoHideDuration: 3000,
             },
           );
         }
-        setIsLoading(false);
       }
     },
-    [dialogs, notifications, loadData],
+    [dialogs, notifications],
   );
 
   const initialState = React.useMemo(
@@ -219,20 +199,54 @@ export default function ColabDocListPage() {
 
   const columns = React.useMemo<GridColDef[]>(
     () => [
-      { field: 'id', headerName: 'ID' },
-      { field: 'name', headerName: 'Name', width: 280 },
-      { field: 'author', headerName: 'Author', width: 140 },
-      { field: 'state', headerName: 'State', width: 140 },
+      { 
+        field: 'avatar', 
+        headerName: ' ', 
+        width: 50, 
+        renderCell: (params) => (
+          <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+            <UserAvatar
+              user={params.row}
+              width={35}
+              height={35}
+            />
+          </div>
+        ),
+        sortable: false,
+        filterable: false,
+        disableColumnMenu: true,
+        resizable: false,
+        disableReorder: true,
+      },
+      { field: 'email', headerName: 'Email', width: 250 },
+      { field: 'firstName', headerName: 'First Name', width: 150 },
+      { field: 'lastName', headerName: 'Last Name', width: 150 },
       {
-        field: 'addedOn',
-        headerName: 'Added on',
+        field: 'disabled',
+        headerName: 'Disabled',
+        type: 'boolean',
+        width: 100,
+        renderCell: (params) => {
+          const isDisabled = params.row.disabled;
+          if (isDisabled) {
+            return (<div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+              <PersonOffIcon />
+            </div>);
+          } else {
+            return <></>
+          }
+        },
+      },
+      {
+        field: 'createdAt',
+        headerName: 'Created',
         type: 'date',
         valueGetter: (value) => value && new Date(value),
         width: 140,
       },
       {
-        field: 'modifiedOn',
-        headerName: 'Modified on',
+        field: 'updatedAt',
+        headerName: 'Updated',
         type: 'date',
         valueGetter: (value) => value && new Date(value),
         width: 140,
@@ -261,7 +275,7 @@ export default function ColabDocListPage() {
     [handleRowEdit, handleRowDelete],
   );
 
-  const pageTitle = 'Documents';
+  const pageTitle = 'Users';
 
   return (
     <PageContainer
@@ -293,10 +307,10 @@ export default function ColabDocListPage() {
           </Box>
         ) : (
           <DataGrid
-            rows={rowsState.rows}
-            rowCount={rowsState.rowCount}
+            rows={users}
+            rowCount={users.length}
             columns={columns}
-            columnVisibilityModel={{ modifiedOn: false }}
+            columnVisibilityModel={{ updatedAt: false }}
             pagination
             sortingMode="server"
             filterMode="server"
@@ -309,7 +323,7 @@ export default function ColabDocListPage() {
             onFilterModelChange={handleFilterModelChange}
             disableRowSelectionOnClick
             onRowClick={handleRowClick}
-            loading={isLoading}
+            loading={isLoading || isDeletePending}
             initialState={initialState}
             showToolbar
             pageSizeOptions={[5, INITIAL_PAGE_SIZE, 25]}

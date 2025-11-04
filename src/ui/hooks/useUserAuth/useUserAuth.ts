@@ -1,14 +1,21 @@
 
 import { useQuery } from '@tanstack/react-query';
-import type { Organization, User } from '../../../api/ColabriAPI';
+import type { Organization, Group } from '../../../api/ColabriAPI';
 
 type UserAuth = {
-    uid?: string;
-    prpls?: string[];
-    orgs?: {
+    uid: string;
+    prpls: string[];
+    orgs: {
         organization: Organization;
-        user: User;
+        userId: string;
+        userGroups: Group[];
     }[];
+    profile: {
+        email: string;
+        firstName: string;
+        lastName: string;
+        avatarUrl?: string;
+    }
 }
 
 export const useUserAuth = () => {

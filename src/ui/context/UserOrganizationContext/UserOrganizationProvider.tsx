@@ -4,13 +4,42 @@ import UserOrganizationContext from './UserOrganizationContext';
 import { useUserAuth } from '../../hooks/useUserAuth/useUserAuth';
 import { useParams } from 'react-router';
 
-const useUserOrganizationContext = () => {
+export const useUserOrganizationContext = () => {
   const context = useContext(UserOrganizationContext);
   if (!context) {
     throw new Error('useUserOrganizationContext must be used within a UserOrganizationProvider');
   }
   return context;
 };
+
+export const useOrganization = () => {
+  const { organization } = useUserOrganizationContext();
+  return organization;
+}
+
+export const useOrgUserId = () => {
+  const { orgUserId } = useUserOrganizationContext();
+  return orgUserId;
+}
+
+export const useOrgGroups = () => {
+  const { orgGroups } = useUserOrganizationContext();
+  return orgGroups;
+}
+
+export const useIsOrgAdmin = () => {
+  const { orgGroups } = useUserOrganizationContext();
+  if (!orgGroups) {
+    return false;
+  } else {
+    return orgGroups.some(group => group.name === 'Administrators');
+  }
+}
+
+export const useUserProfile = () => {
+  const { userProfile } = useUserOrganizationContext();
+  return userProfile;
+}
 
 const UserOrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
@@ -20,13 +49,15 @@ const UserOrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // Find the current organization and user based on the orgId from the URL params
   const userOrganization = userAuth?.orgs?.find(orgEntry => orgEntry.organization.id === orgId) || null;
   const organization = userOrganization ? userOrganization.organization : null;
-  const user = userOrganization ? userOrganization.user : null;
+  const orgUserId = userOrganization ? userOrganization.userId : null;
+  const orgGroups = userOrganization ? userOrganization.userGroups : null;
+  const userProfile = userAuth?.profile || null;
 
   return (
-    <UserOrganizationContext.Provider value={{ organization, user, isLoading }}>
+    <UserOrganizationContext.Provider value={{ organization, orgUserId, orgGroups, userProfile, isLoading }}>
       {children}
     </UserOrganizationContext.Provider>
   );
 };
 
-export { UserOrganizationProvider, useUserOrganizationContext };
+export { UserOrganizationProvider };

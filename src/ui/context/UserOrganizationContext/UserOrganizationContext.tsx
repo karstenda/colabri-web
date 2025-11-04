@@ -1,9 +1,16 @@
 import * as React from 'react';
-import { Organization, User } from '../../../api/ColabriAPI';
+import { Organization, Group } from '../../../api/ColabriAPI';
 
 const UserOrganizationContext = React.createContext<{
   organization: Organization | null;
-  user: User | null;
+  orgUserId: string | null;
+  orgGroups: Group[] | null;
+  userProfile: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    avatarUrl?: string;
+  } | null;
   isLoading: boolean;
 } | null>(null);
 

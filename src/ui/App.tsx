@@ -2,10 +2,6 @@ import * as React from 'react';
 import CssBaseline from '@mui/material/CssBaseline';
 import { createHashRouter, RouterProvider } from 'react-router';
 import MainLayout from './components/MainLayout/MainLayout';
-import EmployeeList from '../mui-crud/components/EmployeeList';
-import EmployeeShow from '../mui-crud/components/EmployeeShow';
-import EmployeeCreate from '../mui-crud/components/EmployeeCreate';
-import EmployeeEdit from '../mui-crud/components/EmployeeEdit';
 import NotificationsProvider from './hooks/useNotifications/NotificationsProvider';
 import DialogsProvider from './hooks/useDialogs/DialogsProvider';
 import AppTheme from '../shared-theme/AppTheme';
@@ -16,11 +12,14 @@ import {
   formInputCustomizations,
 } from './theme/customizations';
 import { LoroDoc } from 'loro-crdt/base64';
-import ColabDocListPage from './pages/ColabDocListPage';
 import OnboardPage from './pages/OnboardPage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { UserOrganizationProvider } from './context/UserOrganizationContext/UserOrganizationProvider';
 import OrgUserProtectedRoute from './routes/OrgUserProtectedRoute';
+import UserListPage from './pages/users/UserListPage';
+import UserCreatePage from './pages/users/UserCreatePage';
+import UserShowPage from './pages/users/UserShowPage';
+import UserEditPage from './pages/users/UserEditPage';
 
 
 const router = createHashRouter([
@@ -38,28 +37,24 @@ const router = createHashRouter([
     ),
     children: [
       {
-        path: 'org/:orgId/docs',
-        Component: ColabDocListPage,
+        path: 'org/:orgId/users',
+        Component: UserListPage,
       },
       {
-        path: 'org/:orgId/employees',
-        Component: EmployeeList,
+        path: 'org/:orgId/users/:userId',
+        Component: UserShowPage,
       },
       {
-        path: 'org/:orgId/employees/:employeeId',
-        Component: EmployeeShow,
+        path: 'org/:orgId/users/new',
+        Component: UserCreatePage,
       },
       {
-        path: 'org/:orgId/employees/new',
-        Component: EmployeeCreate,
-      },
-      {
-        path: 'org/:orgId/employees/:employeeId/edit',
-        Component: EmployeeEdit,
+        path: 'org/:orgId/users/:userId/edit',
+        Component: UserEditPage,
       },
       {
         path: 'org/:orgId/*',
-        Component: EmployeeList,
+        Component: UserListPage,
       },
     ],
   },

@@ -14,7 +14,7 @@ import EmployeeForm, {
   type FormFieldValue,
   type EmployeeFormState,
 } from './EmployeeForm';
-import PageContainer from './PageContainer';
+import PageContainer from '../../ui/components/MainLayout/PageContainer';
 
 function EmployeeEditForm({
   initialValues,

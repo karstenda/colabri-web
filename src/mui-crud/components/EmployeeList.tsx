@@ -27,7 +27,7 @@ import {
   getMany as getEmployees,
   type Employee,
 } from '../data/employees';
-import PageContainer from './PageContainer';
+import PageContainer from '../../ui/components/MainLayout/PageContainer';
 
 const INITIAL_PAGE_SIZE = 10;
 

@@ -1,9 +1,6 @@
-import * as React from "react"
 import { useColorScheme } from '@mui/material/styles';
 
-const ColabriSvgIcon = (props: {expanded: boolean}) => {
-
-  const expanded = props.expanded || false;
+const ColabriSvgIcon = ({expanded, ...restProps}: {expanded: boolean}) => {
 
   const { mode } = useColorScheme();
 
@@ -15,7 +12,7 @@ const ColabriSvgIcon = (props: {expanded: boolean}) => {
     width={expanded ? "90" : "30"}
     height="30"
     viewBox={expanded? "0 0 300 100" : "0 0 100 100"}
-    {...props}
+    {...restProps}
   >
     <defs>
       <radialGradient

@@ -10,8 +10,7 @@ This project contains the main front end of the Colabri platform. It produces an
 
 In order to create the TypeScript types from the swagger:
 
-> npx swagger-typescript-api generate --path http://localhost:8080/swagger/doc.json --output="./src/api" --name="ColabriAPI.ts"
-
+> node swagger-api-generate.js
 
 ## Build
 

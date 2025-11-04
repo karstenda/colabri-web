@@ -13,57 +13,42 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate, useParams } from 'react-router';
 import dayjs from 'dayjs';
-import { useDialogs } from '../../ui/hooks/useDialogs/useDialogs';
-import useNotifications from '../../ui/hooks/useNotifications/useNotifications';
+import { useDialogs } from '../../hooks/useDialogs/useDialogs';
+import useNotifications from '../../hooks/useNotifications/useNotifications';
 import {
-  deleteOne as deleteEmployee,
-  getOne as getEmployee,
-  type Employee,
-} from '../data/employees';
-import PageContainer from '../../ui/components/MainLayout/PageContainer';
+    useDeleteUser,
+    useUser,
+} from '../../hooks/useUsers/useUsers';
+import PageContainer from '../../components/MainLayout/PageContainer';
+import { useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';
 
-export default function EmployeeShow() {
-  const { employeeId } = useParams();
+export default function UserShowPage() {
+  const { userId } = useParams();
   const navigate = useNavigate();
 
   const dialogs = useDialogs();
   const notifications = useNotifications();
 
-  const [employee, setEmployee] = React.useState<Employee | null>(null);
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [error, setError] = React.useState<Error | null>(null);
+  const organization = useOrganization();
 
-  const loadData = React.useCallback(async () => {
-    setError(null);
-    setIsLoading(true);
+  const {user, isLoading: isUserLoading, error: userError} = useUser(organization?.id || '', userId || '', organization !== undefined && userId !== undefined);
 
-    try {
-      const showData = await getEmployee(Number(employeeId));
+  const { deleteUser } = useDeleteUser(organization?.id || '');
 
-      setEmployee(showData);
-    } catch (showDataError) {
-      setError(showDataError as Error);
-    }
-    setIsLoading(false);
-  }, [employeeId]);
 
-  React.useEffect(() => {
-    loadData();
-  }, [loadData]);
+  const handleUserEdit = React.useCallback(() => {
+    navigate(`/org/${organization?.id}/users/${userId}/edit`);
+  }, [navigate, userId, organization]);
 
-  const handleEmployeeEdit = React.useCallback(() => {
-    navigate(`/employees/${employeeId}/edit`);
-  }, [navigate, employeeId]);
-
-  const handleEmployeeDelete = React.useCallback(async () => {
-    if (!employee) {
+  const handleUserDelete = React.useCallback(async () => {
+    if (!user) {
       return;
     }
 
     const confirmed = await dialogs.confirm(
-      `Do you wish to delete ${employee.name}?`,
+      `Do you wish to delete ${user.email}?`,
       {
-        title: `Delete employee?`,
+        title: `Delete user?`,
         severity: 'error',
         okText: 'Delete',
         cancelText: 'Cancel',
@@ -71,35 +56,37 @@ export default function EmployeeShow() {
     );
 
     if (confirmed) {
-      setIsLoading(true);
+
+
+
       try {
-        await deleteEmployee(Number(employeeId));
+        await deleteUser(userId as string);
 
-        navigate('/employees');
+        navigate(`/org/${organization?.id}/users/`);
 
-        notifications.show('Employee deleted successfully.', {
+        notifications.show('User deleted successfully.', {
           severity: 'success',
           autoHideDuration: 3000,
         });
+        
       } catch (deleteError) {
         notifications.show(
-          `Failed to delete employee. Reason:' ${(deleteError as Error).message}`,
+          `Failed to delete user. Reason:' ${(deleteError as Error).message}`,
           {
             severity: 'error',
             autoHideDuration: 3000,
           },
         );
       }
-      setIsLoading(false);
     }
-  }, [employee, dialogs, employeeId, navigate, notifications]);
+  }, [user, dialogs, userId, navigate, notifications]);
 
   const handleBack = React.useCallback(() => {
-    navigate('/employees');
-  }, [navigate]);
+    navigate(`/org/${organization?.id}/users`);
+  }, [navigate, organization]);
 
   const renderShow = React.useMemo(() => {
-    if (isLoading) {
+    if (isUserLoading) {
       return (
         <Box
           sx={{
@@ -116,54 +103,54 @@ export default function EmployeeShow() {
         </Box>
       );
     }
-    if (error) {
+    if (userError) {
       return (
         <Box sx={{ flexGrow: 1 }}>
-          <Alert severity="error">{error.message}</Alert>
+          <Alert severity="error">{userError.message}</Alert>
         </Box>
       );
     }
 
-    return employee ? (
+    return user ? (
       <Box sx={{ flexGrow: 1, width: '100%' }}>
         <Grid container spacing={2} sx={{ width: '100%' }}>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid size={{ xs: 12, sm: 12 }}>
             <Paper sx={{ px: 2, py: 1 }}>
-              <Typography variant="overline">Name</Typography>
+              <Typography variant="overline">Email</Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
-                {employee.name}
+                {user.email}
               </Typography>
             </Paper>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <Paper sx={{ px: 2, py: 1 }}>
-              <Typography variant="overline">Age</Typography>
+              <Typography variant="overline">First Name</Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
-                {employee.age}
+                {user.firstName}
               </Typography>
             </Paper>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <Paper sx={{ px: 2, py: 1 }}>
-              <Typography variant="overline">Join date</Typography>
+              <Typography variant="overline">Last Name</Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
-                {dayjs(employee.joinDate).format('MMMM D, YYYY')}
+                {user.lastName}
               </Typography>
             </Paper>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <Paper sx={{ px: 2, py: 1 }}>
-              <Typography variant="overline">Department</Typography>
+              <Typography variant="overline">Created date</Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
-                {employee.role}
+                {dayjs(user.createdAt).format('MMMM D, YYYY')}
               </Typography>
             </Paper>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <Paper sx={{ px: 2, py: 1 }}>
-              <Typography variant="overline">Full-time</Typography>
+              <Typography variant="overline">Disabled</Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
-                {employee.isFullTime ? 'Yes' : 'No'}
+                {user.disabled ? 'Yes' : 'No'}
               </Typography>
             </Paper>
           </Grid>
@@ -181,7 +168,7 @@ export default function EmployeeShow() {
             <Button
               variant="contained"
               startIcon={<EditIcon />}
-              onClick={handleEmployeeEdit}
+              onClick={handleUserEdit}
             >
               Edit
             </Button>
@@ -189,7 +176,7 @@ export default function EmployeeShow() {
               variant="contained"
               color="error"
               startIcon={<DeleteIcon />}
-              onClick={handleEmployeeDelete}
+              onClick={handleUserDelete}
             >
               Delete
             </Button>
@@ -198,21 +185,21 @@ export default function EmployeeShow() {
       </Box>
     ) : null;
   }, [
-    isLoading,
-    error,
-    employee,
+    isUserLoading,
+    userError,
+    user,
     handleBack,
-    handleEmployeeEdit,
-    handleEmployeeDelete,
+    handleUserDelete,
+    handleUserEdit,
   ]);
 
-  const pageTitle = `Employee ${employeeId}`;
+  const pageTitle = `${user ? user.email : ''}`;
 
   return (
     <PageContainer
       title={pageTitle}
       breadcrumbs={[
-        { title: 'Employees', path: '/employees' },
+        { title: 'Users', path: '/org/'+organization?.id+'/users' },
         { title: pageTitle },
       ]}
     >
