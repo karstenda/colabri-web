@@ -85,7 +85,7 @@ export interface UpdateOrganizationRequest {
 
 export interface UpdateUserRequest {
   disabled?: boolean;
-  uid?: string;
+  groupIds?: string[];
 }
 
 export interface User {
@@ -640,6 +640,10 @@ export class Api<
          * @default 0
          */
         offset?: number;
+        /** Sort users by fields: e.g. ?sort={'direction':'asc','field':'lastName'} */
+        sort?: string;
+        /** Filter users by fields: e.g. ?filter={'items':[{'id':'1','field':'lastName', 'operator':'equals','value':'Smith'}], 'logicOperator':'and'} */
+        filter?: string;
       },
       params: RequestParams = {},
     ) =>
@@ -733,7 +737,7 @@ export class Api<
       }),
 
     /**
-     * @description This endpoint will update the specified user. Only organization admins can update users. The UID and email can only be updated by cloud admins.
+     * @description This endpoint will update the specified user. Only organization admins can update users.
      *
      * @tags users
      * @name PatchUser

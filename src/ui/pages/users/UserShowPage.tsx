@@ -18,9 +18,11 @@ import useNotifications from '../../hooks/useNotifications/useNotifications';
 import {
     useDeleteUser,
     useUser,
+    useUserGroups,
 } from '../../hooks/useUsers/useUsers';
 import PageContainer from '../../components/MainLayout/PageContainer';
 import { useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';
+import Chip from '@mui/material/Chip';
 
 export default function UserShowPage() {
   const { userId } = useParams();
@@ -32,6 +34,10 @@ export default function UserShowPage() {
   const organization = useOrganization();
 
   const {user, isLoading: isUserLoading, error: userError} = useUser(organization?.id || '', userId || '', organization !== undefined && userId !== undefined);
+
+  const { userGroups, isLoading: isUserGroupsLoading, error: userGroupsError } = useUserGroups(organization?.id || '', userId || '', organization !== undefined && userId !== undefined);
+
+  const isLoading = isUserLoading || isUserGroupsLoading;
 
   const { deleteUser } = useDeleteUser(organization?.id || '');
 
@@ -86,7 +92,7 @@ export default function UserShowPage() {
   }, [navigate, organization]);
 
   const renderShow = React.useMemo(() => {
-    if (isUserLoading) {
+    if (isLoading) {
       return (
         <Box
           sx={{
@@ -107,6 +113,13 @@ export default function UserShowPage() {
       return (
         <Box sx={{ flexGrow: 1 }}>
           <Alert severity="error">{userError.message}</Alert>
+        </Box>
+      );
+    }
+    if (userGroupsError) {
+      return (
+        <Box sx={{ flexGrow: 1 }}>
+          <Alert severity="error">{userGroupsError.message}</Alert>
         </Box>
       );
     }
@@ -154,6 +167,22 @@ export default function UserShowPage() {
               </Typography>
             </Paper>
           </Grid>
+          <Grid size={{ xs: 12, sm: 12 }}>
+            <Paper sx={{ px: 2, py: 1 }}>
+              <Typography variant="overline">Groups</Typography>
+              {userGroups?.length > 0 ? (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, paddingTop: '10px', paddingBottom: '10px' }}>
+                    {userGroups.map((group) => (
+                        <Chip key={group.id} label={group.name} />
+                    ))}
+                </Box>
+              ) : (
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  No groups assigned
+                </Typography>
+              )}
+            </Paper>
+          </Grid>
         </Grid>
         <Divider sx={{ my: 3 }} />
         <Stack direction="row" spacing={2} justifyContent="space-between">
@@ -185,7 +214,7 @@ export default function UserShowPage() {
       </Box>
     ) : null;
   }, [
-    isUserLoading,
+    isLoading,
     userError,
     user,
     handleBack,

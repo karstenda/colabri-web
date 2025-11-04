@@ -147,6 +147,7 @@ export default function UserEdit() {
         if (userId) {
             await updateUser({ userId, data: {
                 disabled: formValues.disabled,
+                groupIds: formValues.groupIds,
             }});
         }
     },

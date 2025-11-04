@@ -14,6 +14,8 @@ import {
   GridSortModel,
   GridEventListener,
   gridClasses,
+  GridColumnVisibilityModel,
+  GridLogicOperator,
 } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -41,6 +43,7 @@ export default function UserListPage() {
   const notifications = useNotifications();
   const { organization } = useUserOrganizationContext();
 
+  // Create the states for pagination, filtering, sorting, and column visibility
   const [paginationModel, setPaginationModel] = React.useState<GridPaginationModel>({
     page: searchParams.get('page') ? Number(searchParams.get('page')) : 0,
     pageSize: searchParams.get('pageSize')
@@ -55,8 +58,22 @@ export default function UserListPage() {
   const [sortModel, setSortModel] = React.useState<GridSortModel>(
     searchParams.get('sort') ? JSON.parse(searchParams.get('sort') ?? '') : [],
   );
+  const [columnVisibilityModel, setColumnVisibilityModel] = React.useState<GridColumnVisibilityModel>(
+    searchParams.get('columnVisibility')
+      ? JSON.parse(searchParams.get('columnVisibility') ?? '')
+      : { updatedAt: false },
+  );
+
+  // Default quick filter logic operator to 'or'
+  filterModel.quickFilterLogicOperator = GridLogicOperator.Or;
 
   const { deleteUser, isPending: isDeletePending } = useDeleteUser(organization?.id || '');
+
+  // All filterable column fields for quick filter
+  const allFilterableFields = React.useMemo(() => 
+    ['email', 'firstName', 'lastName', 'disabled', 'createdAt', 'updatedAt'],
+    []
+  );
 
   // Use React Query hook for fetching users
   const { 
@@ -68,7 +85,31 @@ export default function UserListPage() {
     organization?.id || '', 
     { 
       limit: paginationModel.pageSize, 
-      offset: paginationModel.page * paginationModel.pageSize 
+      offset: paginationModel.page * paginationModel.pageSize,
+      sort: sortModel.map(item => ({
+        field: item.field,
+        direction: item.sort === 'asc' ? 'asc' : 'desc'
+      })),
+      filter: {
+        items: filterModel.items.map(item => ({
+          id: item.id ? `${item.field}-${item.operator}` : item.id+"",
+          field: item.field,
+          operator: item.operator,
+          value: item.value?.toString()
+        })),
+        logicOperator: (filterModel.logicOperator as 'and' | 'or') || 'and',
+        quickFilterValues: filterModel.quickFilterValues,
+        quickFilterLogicOperator: (filterModel.quickFilterLogicOperator as 'and' | 'or') || 'and',
+        quickFilterFields: (() => {
+          const quickFilterFields = [];
+          for (const field of allFilterableFields) {
+            if (columnVisibilityModel[field] || !filterModel.quickFilterExcludeHiddenColumns) {
+              quickFilterFields.push(field);
+            }
+          }
+          return quickFilterFields;
+        })()
+      },
     }
   );
 
@@ -118,6 +159,25 @@ export default function UserListPage() {
         searchParams.set('sort', JSON.stringify(model));
       } else {
         searchParams.delete('sort');
+      }
+
+      const newSearchParamsString = searchParams.toString();
+
+      navigate(
+        `${pathname}${newSearchParamsString ? '?' : ''}${newSearchParamsString}`,
+      );
+    },
+    [navigate, pathname, searchParams],
+  );
+
+  const handleColumnVisibilityModelChange = React.useCallback(
+    (model: Record<string, boolean>) => {
+      setColumnVisibilityModel(model);
+
+      if (Object.keys(model).length > 0) {
+        searchParams.set('columnVisibility', JSON.stringify(model));
+      } else {
+        searchParams.delete('columnVisibility');
       }
 
       const newSearchParamsString = searchParams.toString();
@@ -200,8 +260,8 @@ export default function UserListPage() {
   const columns = React.useMemo<GridColDef[]>(
     () => [
       { 
-        field: 'avatar', 
-        headerName: ' ', 
+        field: 'Avatar',
+        headerName: '',
         width: 50, 
         renderCell: (params) => (
           <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
@@ -252,7 +312,8 @@ export default function UserListPage() {
         width: 140,
       },
       {
-        field: 'actions',
+        field: 'Actions',
+        headerName: '',
         type: 'actions',
         flex: 1,
         align: 'right',
@@ -310,7 +371,8 @@ export default function UserListPage() {
             rows={users}
             rowCount={users.length}
             columns={columns}
-            columnVisibilityModel={{ updatedAt: false }}
+            columnVisibilityModel={columnVisibilityModel}
+            onColumnVisibilityModelChange={handleColumnVisibilityModelChange}
             pagination
             sortingMode="server"
             filterMode="server"
@@ -346,6 +408,11 @@ export default function UserListPage() {
               },
               baseIconButton: {
                 size: 'small',
+              },
+              toolbar: {
+                quickFilterProps: {
+                  debounceMs: 500,
+                },
               },
             }}
           />

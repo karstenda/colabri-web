@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Api, CreateUserRequest, UpdateUserRequest } from '../../../api/ColabriAPI';
+import { GridListFilterModel, GridListSortModel } from '../../data/GridListOptions';
 
 // Create a singleton API client instance
 const apiClient = new Api({
@@ -28,10 +29,28 @@ export const userKeys = {
 /**
  * Hook to fetch a list of users in an organization with pagination
  */
-export const useUsers = (orgId: string, params?: { limit?: number; offset?: number }) => {
+export const useUsers = (orgId: string, params?: { limit?: number; offset?: number; sort?: GridListSortModel; filter?: GridListFilterModel }) => {
   const {data, isLoading, error, refetch} = useQuery({
     queryKey: userKeys.list(orgId, params || {}),
-    queryFn: () => apiClient.orgId.getUsers(orgId, params),
+    queryFn: () => {
+
+      const apiParams: { limit?: number; offset?: number; filter?: string; sort?: string } = {};
+
+      if (params?.limit) {
+        apiParams.limit = params.limit;
+      }
+      if (params?.offset) {
+        apiParams.offset = params.offset;
+      }
+      if (params?.filter) {
+        apiParams.filter = JSON.stringify(params.filter);
+      }
+      if (params?.sort) {
+        apiParams.sort = JSON.stringify(params.sort);
+      }
+
+      return apiClient.orgId.getUsers(orgId, apiParams)
+    },
     enabled: !!orgId,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
@@ -104,6 +123,9 @@ export const useUpdateUser = (orgId: string) => {
         userKeys.detail(orgId, userId),
         updatedUser
       );
+
+      // Invalidate the user groups as they might have changed
+      queryClient.invalidateQueries({ queryKey: userKeys.groups(orgId, userId) });
       
       // Invalidate users list to reflect changes
       queryClient.invalidateQueries({ queryKey: userKeys.lists() });

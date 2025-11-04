@@ -1,4 +1,3 @@
-import * as React from 'react';
 import CssBaseline from '@mui/material/CssBaseline';
 import { createHashRouter, RouterProvider } from 'react-router';
 import MainLayout from './components/MainLayout/MainLayout';
