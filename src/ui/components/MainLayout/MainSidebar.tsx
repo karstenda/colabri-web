@@ -7,10 +7,9 @@ import List from '@mui/material/List';
 import Toolbar from '@mui/material/Toolbar';
 import type {} from '@mui/material/themeCssVarsAugmentation';
 import PersonIcon from '@mui/icons-material/Person';
+import GroupIcon from '@mui/icons-material/Group';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
-import BarChartIcon from '@mui/icons-material/BarChart';
 import DescriptionIcon from '@mui/icons-material/Description';
-import LayersIcon from '@mui/icons-material/Layers';
 import { matchPath, useLocation } from 'react-router';
 import MainSidebarContext from '../../context/MainSidebarContext';
 import { DRAWER_WIDTH, MINI_DRAWER_WIDTH } from '../../constants';
@@ -142,25 +141,9 @@ export default function MainSidebar({
               title="Documents"
               icon={<InsertDriveFileIcon />}
               href="/docs"
-              selected={!!matchPath('/docs/*', pathname) || pathname === '/'}
-            />
-            <MainSidebarDividerItem />
-            <MainSidebarHeaderItem>Admin</MainSidebarHeaderItem>
-            <MainSidebarPageItem
-              id="users"
-              title="Users"
-              icon={<PersonIcon />}
-              href={`/org/${organization?.id}/users`}
-              selected={!!matchPath(`/org/${organization?.id}/users/*`, pathname) || pathname === '/'}
-            />
-            <MainSidebarPageItem
-              id="reports"
-              title="Reports"
-              icon={<BarChartIcon />}
-              href="/reports"
-              selected={!!matchPath('/reports', pathname)}
-              defaultExpanded={!!matchPath('/reports', pathname)}
-              expanded={expandedItemIds.includes('reports')}
+              selected={!!matchPath('/docs', pathname)}
+              defaultExpanded={!!matchPath('/docs', pathname)}
+              expanded={expandedItemIds.includes('docs')}
               nestedNavigation={
                 <List
                   dense
@@ -188,12 +171,21 @@ export default function MainSidebar({
                 </List>
               }
             />
+            <MainSidebarDividerItem />
+            <MainSidebarHeaderItem>Admin</MainSidebarHeaderItem>
             <MainSidebarPageItem
-              id="integrations"
-              title="Integrations"
-              icon={<LayersIcon />}
-              href="/integrations"
-              selected={!!matchPath('/integrations', pathname)}
+              id="users"
+              title="Users"
+              icon={<PersonIcon />}
+              href={`/org/${organization?.id}/users`}
+              selected={!!matchPath(`/org/${organization?.id}/users/*`, pathname) || pathname === '/'}
+            />
+            <MainSidebarPageItem
+              id="groups"
+              title="Groups"
+              icon={<GroupIcon />}
+              href={`/org/${organization?.id}/groups`}
+              selected={!!matchPath(`/org/${organization?.id}/groups/*`, pathname) || pathname === '/'}
             />
           </List>
         </Box>

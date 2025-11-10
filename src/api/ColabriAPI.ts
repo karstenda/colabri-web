@@ -504,6 +504,10 @@ export class Api<
          * @default 0
          */
         offset?: number;
+        /** Sort groups by fields: e.g. [{'direction':'asc','field':'name'}] */
+        sort?: string;
+        /** Filter groups by fields: e.g. {'items':[{'id':'1','field':'name', 'operator':'contains','value':'Admin'}], 'logicOperator':'and'} */
+        filter?: string;
       },
       params: RequestParams = {},
     ) =>
@@ -640,9 +644,9 @@ export class Api<
          * @default 0
          */
         offset?: number;
-        /** Sort users by fields: e.g. ?sort={'direction':'asc','field':'lastName'} */
+        /** Sort users by fields: e.g. [{'direction':'asc','field':'lastName'}] */
         sort?: string;
-        /** Filter users by fields: e.g. ?filter={'items':[{'id':'1','field':'lastName', 'operator':'equals','value':'Smith'}], 'logicOperator':'and'} */
+        /** Filter users by fields: e.g. {'items':[{'id':'1','field':'lastName', 'operator':'equals','value':'Smith'}], 'logicOperator':'and'} */
         filter?: string;
       },
       params: RequestParams = {},

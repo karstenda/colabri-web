@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Api, CreateGroupRequest, UpdateGroupRequest } from '../../../api/ColabriAPI';
+import { GridListFilterModel, GridListSortModel } from '../../data/GridListOptions';
 
 // Create a singleton API client instance
 const apiClient = new Api({
@@ -27,10 +28,27 @@ export const groupKeys = {
 /**
  * Hook to fetch a list of groups in an organization with pagination
  */
-export const useGroups = (orgId: string, params?: { limit?: number; offset?: number }, enabled = true) => {
+export const useGroups = (orgId: string, params?: { limit?: number; offset?: number; sort?: GridListSortModel; filter?: GridListFilterModel }, enabled = true) => {
 	const {data, isLoading, error, refetch} = useQuery({
 		queryKey: groupKeys.list(orgId, params || {}),
-		queryFn: () => apiClient.orgId.getGroups(orgId, params),
+		queryFn: () => {
+			const apiParams: { limit?: number; offset?: number; filter?: string; sort?: string } = {};
+
+			if (params?.limit) {
+				apiParams.limit = params.limit;
+			}
+			if (params?.offset) {
+				apiParams.offset = params.offset;
+			}
+			if (params?.filter) {
+				apiParams.filter = JSON.stringify(params.filter);
+			}
+			if (params?.sort) {
+				apiParams.sort = JSON.stringify(params.sort);
+			}
+
+			return apiClient.orgId.getGroups(orgId, apiParams);
+		},
 		enabled: enabled && !!orgId,
 		staleTime: 5 * 60 * 1000, // 5 minutes
 		gcTime: 10 * 60 * 1000, // 10 minutes

@@ -8,62 +8,51 @@ import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import Chip from '@mui/material/Chip';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate, useParams } from 'react-router';
 import dayjs from 'dayjs';
-import { useDialogs } from '../../ui/hooks/useDialogs/useDialogs';
-import useNotifications from '../../ui/hooks/useNotifications/useNotifications';
+import { useDialogs } from '../../hooks/useDialogs/useDialogs';
+import useNotifications from '../../hooks/useNotifications/useNotifications';
 import {
-  deleteOne as deleteEmployee,
-  getOne as getEmployee,
-  type Employee,
-} from '../data/employees';
-import PageContainer from '../../ui/components/MainLayout/PageContainer';
+  useDeleteGroup,
+  useGroup,
+} from '../../hooks/useGroups/useGroups';
+import PageContainer from '../../components/MainLayout/PageContainer';
+import { useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';
 
-export default function EmployeeShow() {
-  const { employeeId } = useParams();
+export default function GroupShowPage() {
+  const { groupId } = useParams();
   const navigate = useNavigate();
 
   const dialogs = useDialogs();
   const notifications = useNotifications();
 
-  const [employee, setEmployee] = React.useState<Employee | null>(null);
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [error, setError] = React.useState<Error | null>(null);
+  const organization = useOrganization();
 
-  const loadData = React.useCallback(async () => {
-    setError(null);
-    setIsLoading(true);
+  const { group, isLoading, error } = useGroup(
+    organization?.id || '',
+    groupId || '',
+    organization !== undefined && groupId !== undefined
+  );
 
-    try {
-      const showData = await getEmployee(Number(employeeId));
+  const { deleteGroup } = useDeleteGroup(organization?.id || '');
 
-      setEmployee(showData);
-    } catch (showDataError) {
-      setError(showDataError as Error);
-    }
-    setIsLoading(false);
-  }, [employeeId]);
+  const handleGroupEdit = React.useCallback(() => {
+    navigate(`/org/${organization?.id}/groups/${groupId}/edit`);
+  }, [navigate, groupId, organization]);
 
-  React.useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  const handleEmployeeEdit = React.useCallback(() => {
-    navigate(`/employees/${employeeId}/edit`);
-  }, [navigate, employeeId]);
-
-  const handleEmployeeDelete = React.useCallback(async () => {
-    if (!employee) {
+  const handleGroupDelete = React.useCallback(async () => {
+    if (!group) {
       return;
     }
 
     const confirmed = await dialogs.confirm(
-      `Do you wish to delete ${employee.name}?`,
+      `Do you wish to delete ${group.name}?`,
       {
-        title: `Delete employee?`,
+        title: `Delete group?`,
         severity: 'error',
         okText: 'Delete',
         cancelText: 'Cancel',
@@ -71,32 +60,30 @@ export default function EmployeeShow() {
     );
 
     if (confirmed) {
-      setIsLoading(true);
       try {
-        await deleteEmployee(Number(employeeId));
+        await deleteGroup(groupId as string);
 
-        navigate('/employees');
+        navigate(`/org/${organization?.id}/groups/`);
 
-        notifications.show('Employee deleted successfully.', {
+        notifications.show('Group deleted successfully.', {
           severity: 'success',
           autoHideDuration: 3000,
         });
       } catch (deleteError) {
         notifications.show(
-          `Failed to delete employee. Reason:' ${(deleteError as Error).message}`,
+          `Failed to delete group. Reason: ${(deleteError as Error).message}`,
           {
             severity: 'error',
             autoHideDuration: 3000,
           },
         );
       }
-      setIsLoading(false);
     }
-  }, [employee, dialogs, employeeId, navigate, notifications]);
+  }, [group, dialogs, groupId, deleteGroup, navigate, organization, notifications]);
 
   const handleBack = React.useCallback(() => {
-    navigate('/employees');
-  }, [navigate]);
+    navigate(`/org/${organization?.id}/groups`);
+  }, [navigate, organization]);
 
   const renderShow = React.useMemo(() => {
     if (isLoading) {
@@ -124,46 +111,42 @@ export default function EmployeeShow() {
       );
     }
 
-    return employee ? (
+    return group ? (
       <Box sx={{ flexGrow: 1, width: '100%' }}>
         <Grid container spacing={2} sx={{ width: '100%' }}>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid size={{ xs: 12, sm: 12 }}>
             <Paper sx={{ px: 2, py: 1 }}>
               <Typography variant="overline">Name</Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
-                {employee.name}
+                {group.name}
+              </Typography>
+            </Paper>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 12 }}>
+            <Paper sx={{ px: 2, py: 1 }}>
+              <Typography variant="overline">Description</Typography>
+              <Typography variant="body1" sx={{ mb: 1 }}>
+                {group.description || 'No description'}
               </Typography>
             </Paper>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <Paper sx={{ px: 2, py: 1 }}>
-              <Typography variant="overline">Age</Typography>
+              <Typography variant="overline">Created date</Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
-                {employee.age}
+                {dayjs(group.createdAt).format('MMMM D, YYYY')}
               </Typography>
             </Paper>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <Paper sx={{ px: 2, py: 1 }}>
-              <Typography variant="overline">Join date</Typography>
+              <Typography variant="overline">System Group</Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
-                {dayjs(employee.joinDate).format('MMMM D, YYYY')}
-              </Typography>
-            </Paper>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Paper sx={{ px: 2, py: 1 }}>
-              <Typography variant="overline">Department</Typography>
-              <Typography variant="body1" sx={{ mb: 1 }}>
-                {employee.role}
-              </Typography>
-            </Paper>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Paper sx={{ px: 2, py: 1 }}>
-              <Typography variant="overline">Full-time</Typography>
-              <Typography variant="body1" sx={{ mb: 1 }}>
-                {employee.isFullTime ? 'Yes' : 'No'}
+                {group.system ? (
+                  <Chip label="System" color="primary" size="small" />
+                ) : (
+                  'No'
+                )}
               </Typography>
             </Paper>
           </Grid>
@@ -181,7 +164,8 @@ export default function EmployeeShow() {
             <Button
               variant="contained"
               startIcon={<EditIcon />}
-              onClick={handleEmployeeEdit}
+              onClick={handleGroupEdit}
+              disabled={group.system}
             >
               Edit
             </Button>
@@ -189,7 +173,8 @@ export default function EmployeeShow() {
               variant="contained"
               color="error"
               startIcon={<DeleteIcon />}
-              onClick={handleEmployeeDelete}
+              onClick={handleGroupDelete}
+              disabled={group.system}
             >
               Delete
             </Button>
@@ -200,19 +185,19 @@ export default function EmployeeShow() {
   }, [
     isLoading,
     error,
-    employee,
+    group,
     handleBack,
-    handleEmployeeEdit,
-    handleEmployeeDelete,
+    handleGroupDelete,
+    handleGroupEdit,
   ]);
 
-  const pageTitle = `Employee ${employeeId}`;
+  const pageTitle = `${group ? group.name : ''}`;
 
   return (
     <PageContainer
       title={pageTitle}
       breadcrumbs={[
-        { title: 'Employees', path: '/employees' },
+        { title: 'Groups', path: '/org/' + organization?.id + '/groups' },
         { title: pageTitle },
       ]}
     >

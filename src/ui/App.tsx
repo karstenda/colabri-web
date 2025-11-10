@@ -19,6 +19,8 @@ import UserListPage from './pages/users/UserListPage';
 import UserCreatePage from './pages/users/UserCreatePage';
 import UserShowPage from './pages/users/UserShowPage';
 import UserEditPage from './pages/users/UserEditPage';
+import GroupListPage from './pages/groups/GroupListPage';
+import GroupShowPage from './pages/groups/GroupShowPage';
 
 
 const router = createHashRouter([
@@ -50,6 +52,14 @@ const router = createHashRouter([
       {
         path: 'org/:orgId/users/:userId/edit',
         Component: UserEditPage,
+      },
+      {
+        path: 'org/:orgId/groups',
+        Component: GroupListPage,
+      },
+      {
+        path: 'org/:orgId/groups/:groupId',
+        Component: GroupShowPage,
       },
       {
         path: 'org/:orgId/*',
