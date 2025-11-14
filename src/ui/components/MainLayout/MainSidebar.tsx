@@ -10,6 +10,8 @@ import PersonIcon from '@mui/icons-material/Person';
 import GroupIcon from '@mui/icons-material/Group';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import DescriptionIcon from '@mui/icons-material/Description';
+import LocalLibraryIcon from '@mui/icons-material/LocalLibrary';
+import TitleIcon from '@mui/icons-material/Title';
 import { matchPath, useLocation } from 'react-router';
 import MainSidebarContext from '../../context/MainSidebarContext';
 import { DRAWER_WIDTH, MINI_DRAWER_WIDTH } from '../../constants';
@@ -155,18 +157,53 @@ export default function MainSidebar({
                   }}
                 >
                   <MainSidebarPageItem
-                    id="sales"
-                    title="Sales"
+                    id="pending_docs"
+                    title="Pending Documents"
                     icon={<DescriptionIcon />}
-                    href="/reports/sales"
-                    selected={!!matchPath('/reports/sales', pathname)}
+                    href="/docs/pending"
+                    selected={!!matchPath('/docs/pending', pathname)}
                   />
                   <MainSidebarPageItem
-                    id="traffic"
-                    title="Traffic"
+                    id="library_docs"
+                    title="Document Library"
+                    icon={<LocalLibraryIcon />}
+                    href="/docs/lib"
+                    selected={!!matchPath('/docs/lib', pathname)}
+                  />
+                </List>
+              }
+            />
+            <MainSidebarPageItem
+              id="texts"
+              title="Texts"
+              icon={<TitleIcon />}
+              href="/texts"
+              selected={!!matchPath('/texts', pathname)}
+              defaultExpanded={!!matchPath('/texts', pathname)}
+              expanded={expandedItemIds.includes('texts')}
+              nestedNavigation={
+                <List
+                  dense
+                  sx={{
+                    padding: 0,
+                    my: 1,
+                    pl: mini ? 0 : 1,
+                    minWidth: 240,
+                  }}
+                >
+                  <MainSidebarPageItem
+                    id="pending_texts"
+                    title="Pending Texts"
                     icon={<DescriptionIcon />}
-                    href="/reports/traffic"
-                    selected={!!matchPath('/reports/traffic', pathname)}
+                    href="/texts/pending"
+                    selected={!!matchPath('/texts/pending', pathname)}
+                  />
+                  <MainSidebarPageItem
+                    id="library_texts"
+                    title="Text Library"
+                    icon={<LocalLibraryIcon />}
+                    href="/texts/lib"
+                    selected={!!matchPath('/texts/lib', pathname)}
                   />
                 </List>
               }

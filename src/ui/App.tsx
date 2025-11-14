@@ -21,6 +21,7 @@ import UserShowPage from './pages/users/UserShowPage';
 import UserEditPage from './pages/users/UserEditPage';
 import GroupListPage from './pages/groups/GroupListPage';
 import GroupShowPage from './pages/groups/GroupShowPage';
+import ColabDocEditorPage from './pages/editor/ColabDocEditorPage';
 
 
 const router = createHashRouter([
@@ -60,6 +61,10 @@ const router = createHashRouter([
       {
         path: 'org/:orgId/groups/:groupId',
         Component: GroupShowPage,
+      },
+      {
+        path: 'org/:orgId/docs/:docId',
+        Component: ColabDocEditorPage,
       },
       {
         path: 'org/:orgId/*',

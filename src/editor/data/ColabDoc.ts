@@ -13,8 +13,12 @@ export type ColabDoc = {
     name: string;
     author: string;
     state: "draft" | "approval-pending" | "approved";
-    loroDoc?: LoroDoc;
+    loroDoc: LoroDoc;
     permissionMap?: PermissionMap;
     modifiedOn: string;
     addedOn: string;
 }
+
+export type SerializedColabDoc = Omit<ColabDoc, "loroDoc"> & {
+    loroDoc: string;
+};

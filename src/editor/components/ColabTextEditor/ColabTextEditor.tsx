@@ -1,11 +1,10 @@
-import { useEffect, useState, useRef } from "react";
-import { LoroText } from "loro-crdt/base64";
+import { useEffect, useRef } from "react";
 import Quill from "quill";
 import "quill/dist/quill.core.css";
 import "quill/dist/quill.bubble.css";
 import "quill/dist/quill.snow.css";
 import { QuillBinding } from "../QuillEditor/binding";
-import { LoroDoc } from "loro-crdt";
+import { LoroDoc, LoroText } from "loro-crdt/base64";
 
 export type ColabTextEditorProps = {
     loroDoc: LoroDoc

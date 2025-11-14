@@ -421,6 +421,8 @@ export default function GroupListPage() {
                 quickFilterProps: {
                   debounceMs: 500,
                 },
+                csvOptions: { disableToolbarButton: true },
+                printOptions: { disableToolbarButton: true },
               },
             }}
           />

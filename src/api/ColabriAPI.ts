@@ -18,6 +18,10 @@ export enum OrganizationStatus {
   OrgStatusSubscriptionExpired = "subscription_expired",
 }
 
+export interface AddGroupMembersRequest {
+  userIds: string[];
+}
+
 export interface CreateGroupRequest {
   description?: string;
   name: string;
@@ -69,6 +73,10 @@ export interface Organization {
   status?: OrganizationStatus;
   updatedAt?: string;
   updatedBy?: string;
+}
+
+export interface RemoveGroupMembersRequest {
+  userIds: string[];
 }
 
 export interface UpdateGroupRequest {
@@ -154,7 +162,7 @@ export enum ContentType {
 }
 
 export class HttpClient<SecurityDataType = unknown> {
-  public baseUrl: string = "";
+  public baseUrl: string = "/api/v1";
   private securityData: SecurityDataType | null = null;
   private securityWorker?: ApiConfig<SecurityDataType>["securityWorker"];
   private abortControllers = new Map<CancelToken, AbortController>();
@@ -360,6 +368,7 @@ export class HttpClient<SecurityDataType = unknown> {
  * @title Colabri API
  * @version 1.0
  * @termsOfService http://swagger.io/terms/
+ * @baseUrl /api/v1
  * @contact Karsten Daemen <support@colabri.cloud> (http://colabri.cloud/support)
  *
  * This is the Colabri API.
@@ -484,7 +493,7 @@ export class Api<
   };
   orgId = {
     /**
-     * @description This endpoint will retrieve all groups in the specified organization. Only users who are members of the organization can list groups.
+     * @description This endpoint will retrieve all groups in the specified organization. Only users who are members of the organization can list groups. The following fields are supported for filtering or sorting: name, description, system, createdAt, updatedAt.
      *
      * @tags groups
      * @name GetGroups
@@ -620,6 +629,88 @@ export class Api<
         body: group,
         type: ContentType.Json,
         format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description This endpoint will retrieve all members of the specified group. Only users who are members of the organization can list group members. The following fields are supported for filtering or sorting: firstName, lastName, email.
+     *
+     * @tags groups
+     * @name GetGroupsMembers
+     * @summary List all members of a group
+     * @request GET:/{orgId}/groups/{groupId}/members
+     */
+    getGroupsMembers: (
+      orgId: string,
+      groupId: string,
+      query?: {
+        /**
+         * Number of members to return
+         * @default 10
+         */
+        limit?: number;
+        /**
+         * Number of members to skip
+         * @default 0
+         */
+        offset?: number;
+        /** Sort members by fields: e.g. [{'direction':'asc','field':'firstName'}] */
+        sort?: string;
+        /** Filter members by fields: e.g. {'items':[{'id':'1','field':'firstName', 'operator':'contains','value':'John'}], 'logicOperator':'and'} */
+        filter?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<User[], HTTPError>({
+        path: `/${orgId}/groups/${groupId}/members`,
+        method: "GET",
+        query: query,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description This endpoint will add members to the specified group. Only organization admins can add group members.
+     *
+     * @tags groups
+     * @name PostGroupsMember
+     * @summary Add members to a group
+     * @request POST:/{orgId}/groups/{groupId}/members
+     */
+    postGroupsMember: (
+      orgId: string,
+      groupId: string,
+      members: AddGroupMembersRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<void, HTTPError>({
+        path: `/${orgId}/groups/${groupId}/members`,
+        method: "POST",
+        body: members,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description This endpoint will remove members from the specified group. Only organization admins can remove group members.
+     *
+     * @tags groups
+     * @name DeleteGroupsMember
+     * @summary Remove members from a group
+     * @request DELETE:/{orgId}/groups/{groupId}/members
+     */
+    deleteGroupsMember: (
+      orgId: string,
+      groupId: string,
+      members: RemoveGroupMembersRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<void, HTTPError>({
+        path: `/${orgId}/groups/${groupId}/members`,
+        method: "DELETE",
+        body: members,
+        type: ContentType.Json,
         ...params,
       }),
 

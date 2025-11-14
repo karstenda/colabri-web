@@ -22,7 +22,16 @@ import {
 } from '../../hooks/useUsers/useUsers';
 import PageContainer from '../../components/MainLayout/PageContainer';
 import { useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';
-import Chip from '@mui/material/Chip';
+import { styled } from '@mui/material/styles';
+import { AssigneeChip } from '../../components/AssigneeChip';
+
+
+// Create styled Paper component (with border)
+const StyledPaper = styled(Paper)(
+  ({ theme }) => ({
+    border: `1px solid ${(theme.vars || theme).palette.divider}`,
+  })
+);
 
 export default function UserShowPage() {
   const { userId } = useParams();
@@ -128,52 +137,57 @@ export default function UserShowPage() {
       <Box sx={{ flexGrow: 1, width: '100%' }}>
         <Grid container spacing={2} sx={{ width: '100%' }}>
           <Grid size={{ xs: 12, sm: 12 }}>
-            <Paper sx={{ px: 2, py: 1 }}>
+            <StyledPaper sx={{ px: 2, py: 1 }}>
               <Typography variant="overline">Email</Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
                 {user.email}
               </Typography>
-            </Paper>
+            </StyledPaper>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
-            <Paper sx={{ px: 2, py: 1 }}>
+            <StyledPaper sx={{ px: 2, py: 1 }}>
               <Typography variant="overline">First Name</Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
                 {user.firstName}
               </Typography>
-            </Paper>
+            </StyledPaper>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
-            <Paper sx={{ px: 2, py: 1 }}>
+            <StyledPaper sx={{ px: 2, py: 1 }}>
               <Typography variant="overline">Last Name</Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
                 {user.lastName}
               </Typography>
-            </Paper>
+            </StyledPaper>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
-            <Paper sx={{ px: 2, py: 1 }}>
+            <StyledPaper sx={{ px: 2, py: 1 }}>
               <Typography variant="overline">Created date</Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
                 {dayjs(user.createdAt).format('MMMM D, YYYY')}
               </Typography>
-            </Paper>
+            </StyledPaper>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
-            <Paper sx={{ px: 2, py: 1 }}>
+            <StyledPaper sx={{ px: 2, py: 1 }}>
               <Typography variant="overline">Disabled</Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
                 {user.disabled ? 'Yes' : 'No'}
               </Typography>
-            </Paper>
+            </StyledPaper>
           </Grid>
           <Grid size={{ xs: 12, sm: 12 }}>
-            <Paper sx={{ px: 2, py: 1 }}>
+            <StyledPaper sx={{ px: 2, py: 1 }}>
               <Typography variant="overline">Groups</Typography>
               {userGroups?.length > 0 ? (
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, paddingTop: '10px', paddingBottom: '10px' }}>
                     {userGroups.map((group) => (
-                        <Chip key={group.id} label={group.name} />
+                        <AssigneeChip
+                            key={`group-${group.id}`}
+                            assignee={{...group, type: 'group'}}
+                            variant="outlined"
+                            size="small"
+                        />
                     ))}
                 </Box>
               ) : (
@@ -181,7 +195,7 @@ export default function UserShowPage() {
                   No groups assigned
                 </Typography>
               )}
-            </Paper>
+            </StyledPaper>
           </Grid>
         </Grid>
         <Divider sx={{ my: 3 }} />

@@ -413,6 +413,8 @@ export default function UserListPage() {
                 quickFilterProps: {
                   debounceMs: 500,
                 },
+                csvOptions: { disableToolbarButton: true },
+                printOptions: { disableToolbarButton: true },
               },
             }}
           />

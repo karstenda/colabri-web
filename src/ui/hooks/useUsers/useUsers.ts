@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Api, CreateUserRequest, UpdateUserRequest } from '../../../api/ColabriAPI';
 import { GridListFilterModel, GridListSortModel } from '../../data/GridListOptions';
+import { groupKeys } from '../useGroups/useGroups';
 
 // Create a singleton API client instance
 const apiClient = new Api({
@@ -29,7 +30,7 @@ export const userKeys = {
 /**
  * Hook to fetch a list of users in an organization with pagination
  */
-export const useUsers = (orgId: string, params?: { limit?: number; offset?: number; sort?: GridListSortModel; filter?: GridListFilterModel }) => {
+export const useUsers = (orgId: string, params?: { limit?: number; offset?: number; sort?: GridListSortModel; filter?: GridListFilterModel }, enabled = true) => {
   const {data, isLoading, error, refetch} = useQuery({
     queryKey: userKeys.list(orgId, params || {}),
     queryFn: () => {
@@ -51,7 +52,7 @@ export const useUsers = (orgId: string, params?: { limit?: number; offset?: numb
 
       return apiClient.orgId.getUsers(orgId, apiParams)
     },
-    enabled: !!orgId,
+    enabled: enabled && !!orgId,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
   });
@@ -81,15 +82,23 @@ export const useCreateUser = (orgId: string) => {
   const mutation = useMutation({
     mutationFn: (data: CreateUserRequest) => 
       apiClient.orgId.postUser(orgId, data),
-    onSuccess: (newUser) => {
+    onSuccess: (newUser, variables) => {
+
+      const {data} = newUser;
+
       // Invalidate and refetch users list
       queryClient.invalidateQueries({ queryKey: userKeys.lists() });
       
       // Optionally add the new user to the cache
       queryClient.setQueryData(
-        userKeys.detail(orgId, newUser.data.id!),
+        userKeys.detail(orgId, data.id!),
         newUser
       );
+
+      // Invalidate the group members of those groups the user belongs to
+      for (const groupId of variables.groupIds || []) {
+        queryClient.invalidateQueries({ queryKey: groupKeys.members(orgId, groupId, {}) });
+      }
     },
     onError: (error) => {
       console.error('Failed to create user:', error);
@@ -116,7 +125,7 @@ export const useUpdateUser = (orgId: string) => {
       data: UpdateUserRequest 
     }) => apiClient.orgId.patchUser(orgId, userId, data),
     onSuccess: (updatedUser, variables) => {
-      const { userId } = variables;
+      const { userId, data } = variables;
       
       // Update the specific user in cache
       queryClient.setQueryData(
@@ -129,6 +138,11 @@ export const useUpdateUser = (orgId: string) => {
       
       // Invalidate users list to reflect changes
       queryClient.invalidateQueries({ queryKey: userKeys.lists() });
+
+      // Invalidate the group members of those groups the user belongs to
+      for (const groupId of data.groupIds || []) {
+        queryClient.invalidateQueries({ queryKey: groupKeys.members(orgId, groupId, {}) });
+      }
     },
     onError: (error) => {
       console.error('Failed to update user:', error);

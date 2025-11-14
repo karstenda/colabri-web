@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Api, CreateGroupRequest, UpdateGroupRequest } from '../../../api/ColabriAPI';
 import { GridListFilterModel, GridListSortModel } from '../../data/GridListOptions';
+import { userKeys } from '../useUsers/useUsers';
 
 // Create a singleton API client instance
 const apiClient = new Api({
@@ -21,6 +22,8 @@ export const groupKeys = {
 		[...groupKeys.lists(), orgId, filters] as const,
 	details: () => [...groupKeys.all, 'detail'] as const,
 	detail: (orgId: string, groupId: string) => [...groupKeys.details(), orgId, groupId] as const,
+	members: (orgId: string, groupId: string, params: { limit?: number; offset?: number; sort?: GridListSortModel; filter?: GridListFilterModel }) =>
+		[...groupKeys.detail(orgId, groupId), 'members', params] as const,
 };
 
 // Custom hooks for group operations
@@ -55,6 +58,42 @@ export const useGroups = (orgId: string, params?: { limit?: number; offset?: num
 	});
 	return {groups: data?.data || [], isLoading, error, refetch};
 };
+
+/**
+ * Hook to fetch all members in a group
+ * @param orgId
+ * @param groupId 
+ * @param enabled 
+ * @returns 
+ */
+export const useGroupMembers = (orgId: string, groupId: string, params?: { limit?: number; offset?: number; sort?: GridListSortModel; filter?: GridListFilterModel }, enabled = true) => {
+	const {data, isLoading, error, refetch} = useQuery({
+		queryKey: groupKeys.members(orgId, groupId, params || {}),
+		queryFn: () => {
+
+			const apiParams: { limit?: number; offset?: number; filter?: string; sort?: string } = {};
+
+			if (params?.limit) {
+				apiParams.limit = params.limit;
+			}
+			if (params?.offset) {
+				apiParams.offset = params.offset;
+			}
+			if (params?.filter) {
+				apiParams.filter = JSON.stringify(params.filter);
+			}
+			if (params?.sort) {
+				apiParams.sort = JSON.stringify(params.sort);
+			}
+			
+			return apiClient.orgId.getGroupsMembers(orgId, groupId, apiParams)
+		},
+		enabled: enabled && !!orgId && !!groupId,
+		staleTime: 5 * 60 * 1000, // 5 minutes
+		gcTime: 10 * 60 * 1000, // 10 minutes
+	});
+	return {members: data?.data || [], isLoading, error, refetch};
+}
 
 /**
  * Hook to fetch a single group by ID
@@ -163,6 +202,57 @@ export const useDeleteGroup = (orgId: string) => {
 	return {
 		deleteGroup: mutation.mutateAsync,
 		deletedGroup: mutation.data,
+		isPending: mutation.isPending,
+		error: mutation.error
+	};
+};
+
+// Add members to a group
+export const useAddGroupMembers = (orgId: string, groupId: string) => {
+	const queryClient = useQueryClient();
+	const mutation = useMutation({
+		mutationFn: (memberIds: string[]) => apiClient.orgId.postGroupsMember(orgId, groupId, { userIds: memberIds }),
+		onSuccess: (_, memberIds) => {
+			// Invalidate group members list to reflect changes
+			queryClient.invalidateQueries({ queryKey: groupKeys.members(orgId, groupId, {}) });
+
+			// Invalidate the user groups as they might have changed
+			for (const userId of memberIds) {
+				queryClient.invalidateQueries({ queryKey: userKeys.groups(orgId, userId) });
+			}
+		},
+		onError: (error) => {
+			console.error('Failed to add group members:', error);
+		},
+	});
+	return {
+		addGroupMembers: mutation.mutateAsync,
+		isPending: mutation.isPending,
+		error: mutation.error
+	};
+};
+
+// Remove members from a group
+export const useRemoveGroupMembers = (orgId: string, groupId: string) => {
+	const queryClient = useQueryClient();
+	const mutation = useMutation({
+		mutationFn: (memberIds: string[]) => apiClient.orgId.deleteGroupsMember(orgId, groupId, { userIds: memberIds }),
+		onSuccess: (_, memberIds) => {
+
+			// Invalidate group members list to reflect changes
+			queryClient.invalidateQueries({ queryKey: groupKeys.members(orgId, groupId, {}) });
+
+			// Invalidate the user groups as they might have changed
+			for (const userId of memberIds) {
+				queryClient.invalidateQueries({ queryKey: userKeys.groups(orgId, userId) });
+			}
+		},
+		onError: (error) => {
+			console.error('Failed to remove group members:', error);
+		},
+	});
+	return {
+		removeGroupMembers: mutation.mutateAsync,
 		isPending: mutation.isPending,
 		error: mutation.error
 	};

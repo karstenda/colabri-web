@@ -8,7 +8,6 @@ import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -22,6 +21,16 @@ import {
 } from '../../hooks/useGroups/useGroups';
 import PageContainer from '../../components/MainLayout/PageContainer';
 import { useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';
+import MembersGrid from '../../components/MembersGrid/MembersGrid';
+import { User } from '../../../api/ColabriAPI';
+import { styled } from '@mui/material/styles';
+
+// Create styled Paper component (with border)
+const StyledPaper = styled(Paper)(
+  ({ theme }) => ({
+    border: `1px solid ${(theme.vars || theme).palette.divider}`,
+  })
+);
 
 export default function GroupShowPage() {
   const { groupId } = useParams();
@@ -32,6 +41,7 @@ export default function GroupShowPage() {
 
   const organization = useOrganization();
 
+  // Load the group
   const { group, isLoading, error } = useGroup(
     organization?.id || '',
     groupId || '',
@@ -114,41 +124,51 @@ export default function GroupShowPage() {
     return group ? (
       <Box sx={{ flexGrow: 1, width: '100%' }}>
         <Grid container spacing={2} sx={{ width: '100%' }}>
-          <Grid size={{ xs: 12, sm: 12 }}>
-            <Paper sx={{ px: 2, py: 1 }}>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <StyledPaper sx={{ px: 2, py: 1 }}>
               <Typography variant="overline">Name</Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
                 {group.name}
               </Typography>
-            </Paper>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 12 }}>
-            <Paper sx={{ px: 2, py: 1 }}>
-              <Typography variant="overline">Description</Typography>
-              <Typography variant="body1" sx={{ mb: 1 }}>
-                {group.description || 'No description'}
-              </Typography>
-            </Paper>
+            </StyledPaper>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
-            <Paper sx={{ px: 2, py: 1 }}>
-              <Typography variant="overline">Created date</Typography>
-              <Typography variant="body1" sx={{ mb: 1 }}>
-                {dayjs(group.createdAt).format('MMMM D, YYYY')}
-              </Typography>
-            </Paper>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Paper sx={{ px: 2, py: 1 }}>
+            <StyledPaper sx={{ px: 2, py: 1 }}>
               <Typography variant="overline">System Group</Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
                 {group.system ? (
-                  <Chip label="System" color="primary" size="small" />
+                  'Yes'
                 ) : (
                   'No'
                 )}
               </Typography>
-            </Paper>
+            </StyledPaper>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <StyledPaper sx={{ px: 2, py: 1 }}>
+              <Typography variant="overline">Description</Typography>
+              <Typography variant="body1" sx={{ mb: 1 }}>
+                {group.description || 'No description'}
+              </Typography>
+            </StyledPaper>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <StyledPaper sx={{ px: 2, py: 1 }}>
+              <Typography variant="overline">Created date</Typography>
+              <Typography variant="body1" sx={{ mb: 1 }}>
+                {dayjs(group.createdAt).format('MMMM D, YYYY')}
+              </Typography>
+            </StyledPaper>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 12 }}>
+            <Typography variant="overline" sx={{ px: 2, py: 1 }}>Members</Typography>
+            <MembersGrid 
+              group={group}
+              handleClick={(member: User) => {
+                navigate(`/org/${organization?.id}/users/${member.id}`);
+              }}
+              editable={false}
+            />
           </Grid>
         </Grid>
         <Divider sx={{ my: 3 }} />

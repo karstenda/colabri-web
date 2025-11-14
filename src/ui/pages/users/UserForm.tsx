@@ -7,9 +7,6 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import FormHelperText from '@mui/material/FormHelperText';
 import Grid from '@mui/material/Grid';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select, { SelectChangeEvent, SelectProps } from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -17,8 +14,7 @@ import { useNavigate } from 'react-router';
 import type { User } from '../../../api/ColabriAPI';
 import { useGroups } from '../../hooks/useGroups/useGroups';
 import { useIsOrgAdmin, useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';
-import ListItemText from '@mui/material/ListItemText';
-import Chip from '@mui/material/Chip';
+import { AssigneeSelector, type Assignee } from '../../components/AssigneeSelector';
 
 export type UserFormEntries = Partial<Omit<User, 'id' | 'updatedAt' | 'createdBy' | 'updatedBy'> & { groupIds: string[] }>;
 
@@ -64,6 +60,69 @@ export default function UserForm(props: UserFormProps) {
   const isOrgAdmin = useIsOrgAdmin();
   const { groups } = useGroups(organization?.id || '', { limit: 100 });
 
+  // Get special groups
+  const usersGroup = React.useMemo(() => groups.find(g => g.name === 'Users'), [groups]);
+  const adminGroup = React.useMemo(() => groups.find(g => g.name === 'Administrators'), [groups]);
+
+  // Filter groups based on business rules
+  const availableGroups = React.useMemo(() => {
+    return groups.filter(group => {
+      // Hide admin group from non-admins
+      const isAdminGroup = group.name === 'Administrators';
+      return !isAdminGroup || (isAdminGroup && isOrgAdmin);
+    });
+  }, [groups, isOrgAdmin]);
+
+  // Helper function to convert group IDs to Assignee objects
+  const getSelectedGroupAssignees = React.useMemo((): Assignee[] => {
+    if (!formValues.groupIds) return [];
+    return formValues.groupIds
+      .map((groupId) => {
+        // First try to find in available groups
+        let group = availableGroups.find((g) => g.id === groupId);
+        
+        // If not found in available groups, try to find in all groups
+        // This handles cases where non-admin users are viewing admin group members
+        if (!group) {
+          group = groups.find((g) => g.id === groupId);
+        }
+        
+        return group ? { ...group, type: 'group' as const } : null;
+      })
+      .filter((assignee): assignee is (typeof assignee & { type: 'group' }) => assignee !== null) as Assignee[];
+  }, [formValues.groupIds, availableGroups, groups]);
+
+  // Helper function to handle group selection changes
+  const handleGroupAssigneeChange = React.useCallback(
+    (assignees: Assignee | Assignee[] | null) => {
+      if (!assignees) {
+        assignees = [];
+      }
+      
+      const assigneeArray = Array.isArray(assignees) ? assignees : [assignees];
+      let groupIds = assigneeArray
+        .filter((assignee) => assignee.type === 'group')
+        .map((assignee) => assignee.id);
+      
+      // Business rule: Always ensure Users group is included (if it exists)
+      const usersGroupId = usersGroup?.id;
+      if (usersGroupId && !groupIds.includes(usersGroupId)) {
+        groupIds = [usersGroupId, ...groupIds];
+      }
+      
+      // Business rule: If user was previously in admin group and current user is not an admin, 
+      // they cannot remove themselves or others from admin group
+      const adminGroupId = adminGroup?.id;
+      const wasInAdminGroup = formValues.groupIds?.includes(adminGroupId || '');
+      if (adminGroupId && wasInAdminGroup && !isOrgAdmin && !groupIds.includes(adminGroupId)) {
+        groupIds = [...groupIds, adminGroupId];
+      }
+      
+      onFieldChange('groupIds', groupIds);
+    },
+    [onFieldChange, usersGroup?.id, adminGroup?.id, formValues.groupIds, isOrgAdmin],
+  );
+
   const handleSubmit = React.useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
@@ -94,15 +153,7 @@ export default function UserForm(props: UserFormProps) {
     [onFieldChange],
   );
 
-  const handleSelectFieldChange = React.useCallback(
-    (event: SelectChangeEvent) => {
-      onFieldChange(
-        event.target.name as keyof UserFormState['values'],
-        event.target.value,
-      );
-    },
-    [onFieldChange],
-  );
+
 
   const handleReset = React.useCallback(() => {
     if (onReset) {
@@ -162,48 +213,19 @@ export default function UserForm(props: UserFormProps) {
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 12 }} sx={{ display: 'flex' }}>
-            <FormControl error={!!formErrors.groupIds} fullWidth>
-              <InputLabel id="user-groups-label">Groups</InputLabel>
-              <Select
-                value={formValues.groupIds || []}
-                disabled={isSubmitting}
-                onChange={handleSelectFieldChange as SelectProps['onChange']}
-                multiple
-                renderValue={(selected) => {
-                  const names = selected.map((groupId) => groups.find((g) => g.id === groupId)?.name || groupId);
-                  return <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                    {names.map((value) => (
-                      <Chip key={value} label={value} />
-                    ))}
-                  </Box>
-                }}
-                labelId="user-groups-label"
-                name="groupIds"
-                label="Groups"
-                fullWidth
-              >
-                {groups.map((group) => {
-
-                  // Analyze group selection rules
-                  const isAllUsers = group.name === 'Users';
-                  const isSelectedGroup = formValues.groupIds?.includes(group.id);
-                  const isSelected = isAllUsers || isSelectedGroup;
-                  const isAdminOnly = group.name === 'Administrators';
-                  const isDisabled = isAllUsers || (isAdminOnly && !isOrgAdmin);
-                  const show = !isAdminOnly || (isAdminOnly && isOrgAdmin);
-
-                  if (!show) {
-                    return <></>
-                  } else {
-                    return (<MenuItem key={group.id} value={group.id} disabled={isDisabled}>
-                      <Checkbox checked={isSelected} />
-                        <ListItemText primary={group.name} />
-                    </MenuItem>)
-                  }
-                })}
-              </Select>
-              <FormHelperText>{formErrors.groupIds ?? ' '}</FormHelperText>
-            </FormControl>
+            <AssigneeSelector
+              orgId={organization?.id || ''}
+              groupsOnly
+              multiple
+              value={getSelectedGroupAssignees}
+              onChange={handleGroupAssigneeChange}
+              disabled={isSubmitting}
+              error={!!formErrors.groupIds}
+              helperText={formErrors.groupIds || (usersGroup ? `All users are automatically members of "${usersGroup.name}" group` : ' ')}
+              label="Groups"
+              placeholder="Select groups..."
+              customGroups={availableGroups}
+            />
           </Grid>
           {formMode === "edit" && <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
             <FormControl>
