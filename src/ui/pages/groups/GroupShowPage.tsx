@@ -161,13 +161,12 @@ export default function GroupShowPage() {
             </StyledPaper>
           </Grid>
           <Grid size={{ xs: 12, sm: 12 }}>
-            <Typography variant="overline" sx={{ px: 2, py: 1 }}>Members</Typography>
             <MembersGrid 
               group={group}
               handleClick={(member: User) => {
                 navigate(`/org/${organization?.id}/users/${member.id}`);
               }}
-              editable={false}
+              editable={true}
             />
           </Grid>
         </Grid>
@@ -181,15 +180,15 @@ export default function GroupShowPage() {
             Back
           </Button>
           <Stack direction="row" spacing={2}>
-            <Button
+            {!group.system && <Button
               variant="contained"
               startIcon={<EditIcon />}
               onClick={handleGroupEdit}
               disabled={group.system}
             >
               Edit
-            </Button>
-            <Button
+            </Button>}
+            {!group.system && <Button
               variant="contained"
               color="error"
               startIcon={<DeleteIcon />}
@@ -197,7 +196,7 @@ export default function GroupShowPage() {
               disabled={group.system}
             >
               Delete
-            </Button>
+            </Button>}
           </Stack>
         </Stack>
       </Box>

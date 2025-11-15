@@ -21,6 +21,7 @@ import Tooltip from "@mui/material/Tooltip";
 import IconButton from "@mui/material/IconButton";
 import Button from "@mui/material/Button";
 import AddMemberModal from "./AddMemberModal";
+import { Box, Typography } from "@mui/material";
 
 
 const INITIAL_PAGE_SIZE = 10;
@@ -199,6 +200,11 @@ function MembersGrid(props: MembersGridProps) {
         refetchMembers();
     }, [refetchMembers]);
 
+    // When the member is clicked for inspection
+    const defaultHandleClick = React.useCallback((user: User) => {
+        navigate(`/org/${organization?.id}/users/${user.id}`);
+    }, [organization, navigate]);
+
 
     const columns = React.useMemo<GridColDef[]>(
     () => [
@@ -258,28 +264,33 @@ function MembersGrid(props: MembersGridProps) {
                     icon={<DeleteIcon />}
                     label="Remove"
                     onClick={handleGroupMemberDelete(params.row)}
-                />] : [],
+                />] : () => [],
             },
     ],[handleRowEdit, handleGroupMemberDelete, editable]);
 
     return (
-        <Stack direction="column" spacing={2}>
-            {editable && <Stack direction="row" alignItems="center" spacing={1} justifyContent="flex-end">
-                <Tooltip title="Reload data" placement="right" enterDelay={1000}>
-                    <div>
-                    <IconButton size="small" aria-label="refresh" onClick={handleRefresh}>
-                        <RefreshIcon />
-                    </IconButton>
-                    </div>
-                </Tooltip>
-                <Button
-                    variant="contained"
-                    onClick={handleGroupMemberAdd}
-                    startIcon={<AddIcon />}
-                >
-                    Add Member
-                </Button>
-            </Stack>}
+        <Stack direction="column" spacing={2} sx={{ width: '100%' }}>
+            <Stack direction="row" alignItems="center" justifyContent="space-between">
+                <Box>
+                    <Typography variant="overline" sx={{ px: 2, py: 1 }}>Members</Typography>
+                </Box>
+                {editable && <Stack direction="row" alignItems="center" spacing={1} justifyContent="flex-end">
+                    <Tooltip title="Reload data" placement="right" enterDelay={1000}>
+                        <div>
+                        <IconButton size="small" aria-label="refresh" onClick={handleRefresh}>
+                            <RefreshIcon />
+                        </IconButton>
+                        </div>
+                    </Tooltip>
+                    <Button
+                        variant="contained"
+                        onClick={handleGroupMemberAdd}
+                        startIcon={<AddIcon />}
+                    >
+                        Add Member
+                    </Button>
+                </Stack>}
+            </Stack>
     
             <DataGrid
                 rows={members}
@@ -298,7 +309,7 @@ function MembersGrid(props: MembersGridProps) {
                 filterModel={filterModel}
                 onFilterModelChange={(newModel) => setFilterModel(newModel)}
                 disableRowSelectionOnClick
-                onRowClick={(params) => (handleClick && handleClick(params.row))}
+                onRowClick={(params) => (handleClick ? handleClick(params.row) : defaultHandleClick(params.row))}
                 loading={isLoading}
                 showToolbar
                 pageSizeOptions={[5, INITIAL_PAGE_SIZE, 25]}

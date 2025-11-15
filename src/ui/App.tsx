@@ -10,7 +10,6 @@ import {
   sidebarCustomizations,
   formInputCustomizations,
 } from './theme/customizations';
-import { LoroDoc } from 'loro-crdt/base64';
 import OnboardPage from './pages/OnboardPage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { UserOrganizationProvider } from './context/UserOrganizationContext/UserOrganizationProvider';
@@ -20,6 +19,8 @@ import UserCreatePage from './pages/users/UserCreatePage';
 import UserShowPage from './pages/users/UserShowPage';
 import UserEditPage from './pages/users/UserEditPage';
 import GroupListPage from './pages/groups/GroupListPage';
+import GroupEditPage from './pages/groups/GroupEditPage';
+import GroupCreatePage from './pages/groups/GroupCreatePage';
 import GroupShowPage from './pages/groups/GroupShowPage';
 import ColabDocEditorPage from './pages/editor/ColabDocEditorPage';
 
@@ -63,6 +64,14 @@ const router = createHashRouter([
         Component: GroupShowPage,
       },
       {
+        path: 'org/:orgId/groups/new',
+        Component: GroupCreatePage,
+      },
+      {
+        path: 'org/:orgId/groups/:groupId/edit',
+        Component: GroupEditPage,
+      },
+      {
         path: 'org/:orgId/docs/:docId',
         Component: ColabDocEditorPage,
       },
@@ -87,17 +96,6 @@ const themeComponents = {
 };
 
 export default function App(props: { disableCustomTheme?: boolean }) {
-
-    const loroDoc = new LoroDoc();
-
-    // Generate a random peer ID
-    const peerId = Math.floor(Math.random() * 10000);
-    loroDoc.setPeerId(BigInt(peerId));
-
-    const colabDoc = {
-        loroDoc: loroDoc,
-        permissionMap: {},
-    }
 
     // Create a TanStack Query client
     const queryClient = new QueryClient()
