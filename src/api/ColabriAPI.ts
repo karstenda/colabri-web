@@ -10,6 +10,18 @@
  * ---------------------------------------------------------------
  */
 
+export enum SchemasContentLanguageDirection {
+  ContentLanguageDirectionLTR = "ltr",
+  ContentLanguageDirectionRTL = "rtl",
+}
+
+export enum SchemasAttributeType {
+  AttributeTypeString = "string",
+  AttributeTypeNumber = "number",
+  AttributeTypeBoolean = "boolean",
+  AttributeTypeDate = "date",
+}
+
 export enum OrganizationStatus {
   OrgStatusFree = "free",
   OrgStatusTrial = "trial",
@@ -20,6 +32,45 @@ export enum OrganizationStatus {
 
 export interface AddGroupMembersRequest {
   userIds: string[];
+}
+
+export interface Attribute {
+  config: Record<string, any>;
+  createdAt: string;
+  createdBy: string;
+  id: string;
+  name: string;
+  type: SchemasAttributeType;
+  updatedAt: string;
+  updatedBy: string;
+}
+
+export interface AttributeValue {
+  createdAt: string;
+  createdBy: string;
+  id: string;
+  updatedAt: string;
+  updatedBy: string;
+  value: any;
+}
+
+export interface CreateAttributeRequest {
+  config: Record<string, any>;
+  name: string;
+  type: SchemasAttributeType;
+}
+
+export interface CreateAttributeValueRequest {
+  attribute: string;
+  value: any;
+}
+
+export interface CreateDocumentRequest {
+  acls?: Record<string, string[]>;
+  /** @example "OatKind-Choc-Sheet" */
+  name: string;
+  /** @example "doc-sheet" */
+  type: string;
 }
 
 export interface CreateGroupRequest {
@@ -43,6 +94,18 @@ export interface CreateUserRequest {
   lastName?: string;
 }
 
+export interface Document {
+  acls: Record<string, string[]>;
+  createdAt: string;
+  createdBy: string;
+  id: string;
+  name: string;
+  owner: string;
+  type: string;
+  updatedAt: string;
+  updatedBy: string;
+}
+
 export interface Group {
   createdAt: string;
   createdBy: string;
@@ -63,6 +126,14 @@ export interface HTTPError {
   status?: string;
 }
 
+export interface OrgContentLanguage {
+  code: string;
+  defaultFont: string[];
+  id: string;
+  name: string;
+  textDirection: SchemasContentLanguageDirection;
+}
+
 export interface Organization {
   createdAt?: string;
   createdBy?: string;
@@ -75,8 +146,21 @@ export interface Organization {
   updatedBy?: string;
 }
 
+export interface PlatformContentLanguage {
+  code?: string;
+  defaultFont?: string[];
+  endonym?: string;
+  name?: string;
+  scope?: string;
+  textDirection?: SchemasContentLanguageDirection;
+}
+
 export interface RemoveGroupMembersRequest {
   userIds: string[];
+}
+
+export interface UpdateAttributeValueRequest {
+  value: any;
 }
 
 export interface UpdateGroupRequest {
@@ -376,6 +460,24 @@ export class HttpClient<SecurityDataType = unknown> {
 export class Api<
   SecurityDataType extends unknown,
 > extends HttpClient<SecurityDataType> {
+  languages = {
+    /**
+     * @description Retrieve a list of all languages supported by the platform
+     *
+     * @tags Languages
+     * @name GetLanguages
+     * @summary List all available languages on the platform
+     * @request GET:/languages
+     */
+    getLanguages: (params: RequestParams = {}) =>
+      this.request<PlatformContentLanguage[], HTTPError>({
+        path: `/languages`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+  };
   organizations = {
     /**
      * @description This endpoint will retrieve a list of organizations. Only cloud admins are allowed to list organizations.
@@ -492,6 +594,222 @@ export class Api<
       }),
   };
   orgId = {
+    /**
+     * @description List all attributes in the specified organization
+     *
+     * @tags Attributes
+     * @name GetAttributes
+     * @summary List all attributes
+     * @request GET:/{orgId}/attributes
+     */
+    getAttributes: (orgId: string, params: RequestParams = {}) =>
+      this.request<Attribute[], HTTPError>({
+        path: `/${orgId}/attributes`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Create a new attribute in the specified organization
+     *
+     * @tags Attributes
+     * @name PostAttribute
+     * @summary Create a new attribute
+     * @request POST:/{orgId}/attributes
+     */
+    postAttribute: (
+      orgId: string,
+      attribute: CreateAttributeRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<Attribute, HTTPError>({
+        path: `/${orgId}/attributes`,
+        method: "POST",
+        body: attribute,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Delete an attribute (soft delete) in the specified organization
+     *
+     * @tags Attributes
+     * @name DeleteAttribute
+     * @summary Delete an attribute
+     * @request DELETE:/{orgId}/attributes/{attributeId}
+     */
+    deleteAttribute: (
+      orgId: string,
+      attributeId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<Attribute, HTTPError>({
+        path: `/${orgId}/attributes/${attributeId}`,
+        method: "DELETE",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update an existing attribute in the specified organization
+     *
+     * @tags Attributes
+     * @name PatchAttribute
+     * @summary Update an attribute
+     * @request PATCH:/{orgId}/attributes/{attributeId}
+     */
+    patchAttribute: (
+      orgId: string,
+      attributeId: string,
+      attribute: CreateAttributeRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<Attribute, HTTPError>({
+        path: `/${orgId}/attributes/${attributeId}`,
+        method: "PATCH",
+        body: attribute,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Create a new document in the specified organization
+     *
+     * @tags Documents
+     * @name PostDocument
+     * @summary Create a new document
+     * @request POST:/{orgId}/documents
+     */
+    postDocument: (
+      orgId: string,
+      document: CreateDocumentRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<Document, HTTPError>({
+        path: `/${orgId}/documents`,
+        method: "POST",
+        body: document,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description List all attribute values for a specific document in the specified organization
+     *
+     * @tags Attributes
+     * @name GetDocumentsAttributes
+     * @summary List all attribute values for a document
+     * @request GET:/{orgId}/documents/{docId}/attributes
+     */
+    getDocumentsAttributes: (
+      orgId: string,
+      docId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<AttributeValue[], HTTPError>({
+        path: `/${orgId}/documents/${docId}/attributes`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Create attribute values for a specific document in the specified organization
+     *
+     * @tags Attributes
+     * @name PostDocumentsAttribute
+     * @summary Create attribute values for a document
+     * @request POST:/{orgId}/documents/{docId}/attributes
+     */
+    postDocumentsAttribute: (
+      orgId: string,
+      docId: string,
+      attributeValues: CreateAttributeValueRequest[],
+      params: RequestParams = {},
+    ) =>
+      this.request<AttributeValue[], HTTPError>({
+        path: `/${orgId}/documents/${docId}/attributes`,
+        method: "POST",
+        body: attributeValues,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Delete attribute values (soft delete) for a specific document in the specified organization
+     *
+     * @tags Attributes
+     * @name DeleteDocumentsAttribute
+     * @summary Delete attribute values for a document
+     * @request DELETE:/{orgId}/documents/{docId}/attributes
+     */
+    deleteDocumentsAttribute: (
+      orgId: string,
+      docId: string,
+      attributeValueIds: string[],
+      params: RequestParams = {},
+    ) =>
+      this.request<AttributeValue[], HTTPError>({
+        path: `/${orgId}/documents/${docId}/attributes`,
+        method: "DELETE",
+        body: attributeValueIds,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update attribute values for a specific document in the specified organization
+     *
+     * @tags Attributes
+     * @name PatchDocumentsAttribute
+     * @summary Update attribute values for a document
+     * @request PATCH:/{orgId}/documents/{docId}/attributes
+     */
+    patchDocumentsAttribute: (
+      orgId: string,
+      docId: string,
+      attributeValues: Record<string, UpdateAttributeValueRequest>,
+      params: RequestParams = {},
+    ) =>
+      this.request<AttributeValue[], HTTPError>({
+        path: `/${orgId}/documents/${docId}/attributes`,
+        method: "PATCH",
+        body: attributeValues,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Retrieve a document by its ID in the specified organization
+     *
+     * @tags Documents
+     * @name GetDocument
+     * @summary Get document by ID
+     * @request GET:/{orgId}/documents/{documentId}
+     */
+    getDocument: (
+      orgId: string,
+      documentId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<Document, HTTPError>({
+        path: `/${orgId}/documents/${documentId}`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
     /**
      * @description This endpoint will retrieve all groups in the specified organization. Only users who are members of the organization can list groups. The following fields are supported for filtering or sorting: name, description, system, createdAt, updatedAt.
      *
@@ -711,6 +1029,67 @@ export class Api<
         method: "DELETE",
         body: members,
         type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description Retrieve a list of all content languages configured for a specific organization
+     *
+     * @tags Languages
+     * @name GetLanguages
+     * @summary List content languages for an organization
+     * @request GET:/{orgId}/languages
+     */
+    getLanguages: (orgId: string, params: RequestParams = {}) =>
+      this.request<OrgContentLanguage[], HTTPError>({
+        path: `/${orgId}/languages`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Add new content languages to be used within a specific organization
+     *
+     * @tags Languages
+     * @name PostLanguage
+     * @summary Add content languages for an organization
+     * @request POST:/{orgId}/languages
+     */
+    postLanguage: (
+      orgId: string,
+      langCodes: string[],
+      params: RequestParams = {},
+    ) =>
+      this.request<arrray, HTTPError>({
+        path: `/${orgId}/languages`,
+        method: "POST",
+        body: langCodes,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Remove content languages from a specific organization by language ID
+     *
+     * @tags Languages
+     * @name DeleteLanguage
+     * @summary Delete content languages for an organization
+     * @request DELETE:/{orgId}/languages
+     */
+    deleteLanguage: (
+      orgId: string,
+      langIds: string[],
+      params: RequestParams = {},
+    ) =>
+      this.request<OrgContentLanguage[], HTTPError>({
+        path: `/${orgId}/languages`,
+        method: "DELETE",
+        body: langIds,
+        type: ContentType.Json,
+        format: "json",
         ...params,
       }),
 

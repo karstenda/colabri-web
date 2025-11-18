@@ -10,6 +10,9 @@ import PersonIcon from '@mui/icons-material/Person';
 import GroupIcon from '@mui/icons-material/Group';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import DescriptionIcon from '@mui/icons-material/Description';
+import ShareIcon from '@mui/icons-material/Share';
+import SettingsIcon from '@mui/icons-material/Settings';
+import LanguageIcon from '@mui/icons-material/Language';
 import LocalLibraryIcon from '@mui/icons-material/LocalLibrary';
 import TitleIcon from '@mui/icons-material/Title';
 import { matchPath, useLocation } from 'react-router';
@@ -142,10 +145,10 @@ export default function MainSidebar({
               id="docs"
               title="Documents"
               icon={<InsertDriveFileIcon />}
-              href="/docs"
-              selected={!!matchPath('/docs', pathname)}
-              defaultExpanded={!!matchPath('/docs', pathname)}
-              expanded={expandedItemIds.includes('docs')}
+              href={`/org/${organization?.id}/docs`}
+              selected={!!matchPath(`/org/${organization?.id}/docs/*`, pathname)}
+              defaultExpanded={!!matchPath(`/org/${organization?.id}/docs`, pathname)}
+              expanded={expandedItemIds.includes(`docs`)}
               nestedNavigation={
                 <List
                   dense
@@ -157,14 +160,21 @@ export default function MainSidebar({
                   }}
                 >
                   <MainSidebarPageItem
-                    id="pending_docs"
-                    title="Pending Documents"
+                    id="my-docs"
+                    title="My Documents"
                     icon={<DescriptionIcon />}
-                    href="/docs/pending"
-                    selected={!!matchPath('/docs/pending', pathname)}
+                    href="/docs/my"
+                    selected={!!matchPath('/docs/my', pathname)}
                   />
                   <MainSidebarPageItem
-                    id="library_docs"
+                    id="shared-docs"
+                    title="Shared Documents"
+                    icon={<ShareIcon />}
+                    href="/docs/shared"
+                    selected={!!matchPath('/docs/shared', pathname)}
+                  />
+                  <MainSidebarPageItem
+                    id="library-docs"
                     title="Document Library"
                     icon={<LocalLibraryIcon />}
                     href="/docs/lib"
@@ -174,13 +184,13 @@ export default function MainSidebar({
               }
             />
             <MainSidebarPageItem
-              id="texts"
-              title="Texts"
+              id="statements"
+              title="Statements"
               icon={<TitleIcon />}
-              href="/texts"
-              selected={!!matchPath('/texts', pathname)}
-              defaultExpanded={!!matchPath('/texts', pathname)}
-              expanded={expandedItemIds.includes('texts')}
+              href={`/org/${organization?.id}/statements`}
+              selected={!!matchPath(`/org/${organization?.id}/statements/*`, pathname)}
+              defaultExpanded={!!matchPath(`/org/${organization?.id}/statements`, pathname)}
+              expanded={expandedItemIds.includes('statements')}
               nestedNavigation={
                 <List
                   dense
@@ -192,18 +202,25 @@ export default function MainSidebar({
                   }}
                 >
                   <MainSidebarPageItem
-                    id="pending_texts"
-                    title="Pending Texts"
+                    id="my-statements"
+                    title="My Statements"
                     icon={<DescriptionIcon />}
-                    href="/texts/pending"
-                    selected={!!matchPath('/texts/pending', pathname)}
+                    href="/statements/my"
+                    selected={!!matchPath('/statements/my', pathname)}
                   />
                   <MainSidebarPageItem
-                    id="library_texts"
-                    title="Text Library"
+                    id="shared-statements"
+                    title="Shared Statements"
+                    icon={<ShareIcon />}
+                    href="/statements/shared-drafts"
+                    selected={!!matchPath('/statements/shared', pathname)}
+                  />
+                  <MainSidebarPageItem
+                    id="library-statements"
+                    title="Statement Library"
                     icon={<LocalLibraryIcon />}
-                    href="/texts/lib"
-                    selected={!!matchPath('/texts/lib', pathname)}
+                    href="/statements/lib"
+                    selected={!!matchPath('/statements/lib', pathname)}
                   />
                 </List>
               }
@@ -223,6 +240,34 @@ export default function MainSidebar({
               icon={<GroupIcon />}
               href={`/org/${organization?.id}/groups`}
               selected={!!matchPath(`/org/${organization?.id}/groups/*`, pathname) || pathname === '/'}
+            />
+            <MainSidebarPageItem
+              id="config"
+              title="Configuration"
+              icon={<SettingsIcon />}
+              href={`/org/${organization?.id}/config`}
+              selected={!!matchPath(`/org/${organization?.id}/config/*`, pathname)}
+              defaultExpanded={!!matchPath(`/org/${organization?.id}/config`, pathname)}
+              expanded={expandedItemIds.includes('config')}
+              nestedNavigation={
+                <List
+                  dense
+                  sx={{
+                    padding: 0,
+                    my: 1,
+                    pl: mini ? 0 : 1,
+                    minWidth: 240,
+                  }}
+                >
+                  <MainSidebarPageItem
+                    id="config-languages"
+                    title="Languages"
+                    icon={<LanguageIcon />}
+                    href={`/org/${organization?.id}/config/languages`}
+                    selected={!!matchPath(`/org/${organization?.id}/config/languages/*`, pathname)}
+                  />
+                </List>
+              }
             />
           </List>
         </Box>

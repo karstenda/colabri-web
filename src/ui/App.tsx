@@ -23,6 +23,7 @@ import GroupEditPage from './pages/groups/GroupEditPage';
 import GroupCreatePage from './pages/groups/GroupCreatePage';
 import GroupShowPage from './pages/groups/GroupShowPage';
 import ColabDocEditorPage from './pages/editor/ColabDocEditorPage';
+import LanguageListPage from './pages/languages/LanguageListPage';
 
 
 const router = createHashRouter([
@@ -74,6 +75,10 @@ const router = createHashRouter([
       {
         path: 'org/:orgId/docs/:docId',
         Component: ColabDocEditorPage,
+      },
+      {
+        path: 'org/:orgId/config/languages/',
+        Component: LanguageListPage,
       },
       {
         path: 'org/:orgId/*',

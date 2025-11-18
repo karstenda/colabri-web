@@ -238,14 +238,15 @@ export default function AssigneeSelector({
           required={required}
           error={error}
           helperText={helperText}
-          InputProps={{
-            ...params.InputProps,
-            endAdornment: (
-              <>
-                {loading ? <CircularProgress color="inherit" size={20} /> : null}
-                {params.InputProps.endAdornment}
-              </>
-            ),
+          slotProps={{
+            input: {
+                ...params.InputProps,
+                endAdornment: (
+                <>
+                    {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                    {params.InputProps.endAdornment}
+                </>),
+            }
           }}
         />
       )}
@@ -256,7 +257,8 @@ export default function AssigneeSelector({
           ) : (
             <Avatar sx={{
                 width: 32,
-                height: 32
+                height: 32,
+                bgcolor: theme.palette.grey[400],
             }}>
               <GroupIcon fontSize="small" />
             </Avatar>
@@ -289,8 +291,6 @@ export default function AssigneeSelector({
                 <AssigneeChip
                   key={`${option.type}-${option.id}`}
                   assignee={option}
-                  variant="outlined"
-                  size="small"
                 />
               ))}
             </Box>

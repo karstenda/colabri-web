@@ -11,16 +11,6 @@ export interface AssigneeChipProps {
   assignee: Assignee;
   
   /**
-   * Size variant of the chip
-   */
-  size?: 'small' | 'medium';
-  
-  /**
-   * Variant of the chip
-   */
-  variant?: 'filled' | 'outlined';
-  
-  /**
    * Whether the chip is deletable (shows delete icon)
    */
   onDelete?: () => void;
@@ -53,8 +43,6 @@ const getAssigneeDisplayName = (assignee: Assignee): string => {
 
 export default function AssigneeChip({
   assignee,
-  size = 'small',
-  variant = 'outlined',
   onDelete,
   chipProps,
 }: AssigneeChipProps) {
@@ -75,23 +63,21 @@ export default function AssigneeChip({
         ) : (
           <Avatar sx={{
             marginLeft: 0,
-            bgcolor:  theme.palette.grey[400],
-            color: theme.palette.getContrastText(theme.palette.grey[400]),
+            bgcolor: theme.palette.grey[400],
             width: 32,
             height: 32,
             '&.MuiChip-avatarSmall': {
               width: 24,
               height: 24,
-              marginLeft: 0,
-              color: theme.palette.getContrastText(theme.palette.grey[400]),
+              marginLeft: 0
             },
           }}>
             <GroupIcon fontSize="small" />
           </Avatar>
         )
       }
-      variant={variant}
-      size={size}
+      variant={'outlined'}
+      size={'small'}
       onDelete={onDelete}
       {...chipProps}
     />
