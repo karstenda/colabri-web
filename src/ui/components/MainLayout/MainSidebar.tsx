@@ -15,6 +15,7 @@ import ShareIcon from '@mui/icons-material/Share';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LanguageIcon from '@mui/icons-material/Language';
 import LocalLibraryIcon from '@mui/icons-material/LocalLibrary';
+import ConstructionIcon from '@mui/icons-material/Construction';
 import TitleIcon from '@mui/icons-material/Title';
 import { matchPath, useLocation } from 'react-router';
 import MainSidebarContext from '../../context/MainSidebarContext';
@@ -26,7 +27,7 @@ import {
   getDrawerSxTransitionMixin,
   getDrawerWidthTransitionMixin,
 } from '../../mixins';
-import { useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';
+import { useIsOrgAdmin, useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';
 
 export interface MainSidebarProps {
   expanded?: boolean;
@@ -54,6 +55,7 @@ export default function MainSidebar({
   const [isFullyCollapsed, setIsFullyCollapsed] = React.useState(!expanded);
 
   const organization = useOrganization();
+  const isOrgAdmin = useIsOrgAdmin();
 
   React.useEffect(() => {
     if (expanded) {
@@ -206,77 +208,114 @@ export default function MainSidebar({
                     id="my-statements"
                     title="My Statements"
                     icon={<DescriptionIcon />}
-                    href="/statements/my"
-                    selected={!!matchPath('/statements/my', pathname)}
+                    href={`/org/${organization?.id}/statements/my`}
+                    selected={!!matchPath(`/org/${organization?.id}/statements/my`, pathname)}
                   />
                   <MainSidebarPageItem
                     id="shared-statements"
                     title="Shared Statements"
                     icon={<ShareIcon />}
-                    href="/statements/shared-drafts"
-                    selected={!!matchPath('/statements/shared', pathname)}
+                    href={`/org/${organization?.id}/statements/shared`}
+                    selected={!!matchPath(`/org/${organization?.id}/statements/shared`, pathname)}
                   />
                   <MainSidebarPageItem
                     id="library-statements"
                     title="Statement Library"
                     icon={<LocalLibraryIcon />}
-                    href="/statements/lib"
-                    selected={!!matchPath('/statements/lib', pathname)}
+                    href={`/org/${organization?.id}/statements/lib`}
+                    selected={!!matchPath(`/org/${organization?.id}/statements/lib`, pathname)}
                   />
                 </List>
               }
             />
-            <MainSidebarDividerItem />
-            <MainSidebarHeaderItem>Admin</MainSidebarHeaderItem>
-            <MainSidebarPageItem
-              id="users"
-              title="Users"
-              icon={<PersonIcon />}
-              href={`/org/${organization?.id}/users`}
-              selected={!!matchPath(`/org/${organization?.id}/users/*`, pathname) || pathname === '/'}
-            />
-            <MainSidebarPageItem
-              id="groups"
-              title="Groups"
-              icon={<GroupIcon />}
-              href={`/org/${organization?.id}/groups`}
-              selected={!!matchPath(`/org/${organization?.id}/groups/*`, pathname) || pathname === '/'}
-            />
-            <MainSidebarPageItem
-              id="config"
-              title="Configuration"
-              icon={<SettingsIcon />}
-              href={`/org/${organization?.id}/config`}
-              selected={!!matchPath(`/org/${organization?.id}/config/*`, pathname)}
-              defaultExpanded={!!matchPath(`/org/${organization?.id}/config`, pathname)}
-              expanded={expandedItemIds.includes('config')}
-              nestedNavigation={
-                <List
-                  dense
-                  sx={{
-                    padding: 0,
-                    my: 1,
-                    pl: mini ? 0 : 1,
-                    minWidth: 240,
-                  }}
-                >
-                  <MainSidebarPageItem
-                    id="config-languages"
-                    title="Languages"
-                    icon={<LanguageIcon />}
-                    href={`/org/${organization?.id}/config/languages`}
-                    selected={!!matchPath(`/org/${organization?.id}/config/languages/*`, pathname)}
-                  />
-                  <MainSidebarPageItem
-                    id="config-attributes"
-                    title="Attributes"
-                    icon={<LabelIcon />}
-                    href={`/org/${organization?.id}/attributes`}
-                    selected={!!matchPath(`/org/${organization?.id}/attributes/*`, pathname)}
-                  />
-                </List>
-              }
-            />
+            { isOrgAdmin &&<Box>
+              <MainSidebarDividerItem />
+              <MainSidebarHeaderItem>Admin</MainSidebarHeaderItem>
+              <MainSidebarPageItem
+                id="users"
+                title="Users"
+                icon={<PersonIcon />}
+                href={`/org/${organization?.id}/users`}
+                selected={!!matchPath(`/org/${organization?.id}/users/*`, pathname) || pathname === '/'}
+              />
+              <MainSidebarPageItem
+                id="groups"
+                title="Groups"
+                icon={<GroupIcon />}
+                href={`/org/${organization?.id}/groups`}
+                selected={!!matchPath(`/org/${organization?.id}/groups/*`, pathname) || pathname === '/'}
+              />
+              <MainSidebarPageItem
+                id="templates"
+                title="Templates"
+                icon={<ConstructionIcon />}
+                href={`/org/${organization?.id}/templates`}
+                selected={!!matchPath(`/org/${organization?.id}/templates/*`, pathname)}
+                defaultExpanded={!!matchPath(`/org/${organization?.id}/templates`, pathname)}
+                expanded={expandedItemIds.includes('templates')}
+                nestedNavigation={
+                  <List
+                    dense
+                    sx={{
+                      padding: 0,
+                      my: 1,
+                      pl: mini ? 0 : 1,
+                      minWidth: 240,
+                    }}
+                  >
+                    <MainSidebarPageItem
+                      id="templates-docs"
+                      title="Document Templates"
+                      icon={<DescriptionIcon />}
+                      href={`/org/${organization?.id}/templates/documents`}
+                      selected={!!matchPath(`/org/${organization?.id}/templates/documents/*`, pathname)}
+                    />
+                    <MainSidebarPageItem
+                      id="templates-statements"
+                      title="Statement Templates"
+                      icon={<TitleIcon />}
+                      href={`/org/${organization?.id}/templates/statements`}
+                      selected={!!matchPath(`/org/${organization?.id}/templates/statements/*`, pathname)}
+                    />
+                  </List>
+                }
+              />
+              <MainSidebarPageItem
+                id="config"
+                title="Configuration"
+                icon={<SettingsIcon />}
+                href={`/org/${organization?.id}/config`}
+                selected={!!matchPath(`/org/${organization?.id}/config/*`, pathname)}
+                defaultExpanded={!!matchPath(`/org/${organization?.id}/config`, pathname)}
+                expanded={expandedItemIds.includes('config')}
+                nestedNavigation={
+                  <List
+                    dense
+                    sx={{
+                      padding: 0,
+                      my: 1,
+                      pl: mini ? 0 : 1,
+                      minWidth: 240,
+                    }}
+                  >
+                    <MainSidebarPageItem
+                      id="config-languages"
+                      title="Languages"
+                      icon={<LanguageIcon />}
+                      href={`/org/${organization?.id}/config/languages`}
+                      selected={!!matchPath(`/org/${organization?.id}/config/languages/*`, pathname)}
+                    />
+                    <MainSidebarPageItem
+                      id="config-attributes"
+                      title="Attributes"
+                      icon={<LabelIcon />}
+                      href={`/org/${organization?.id}/attributes`}
+                      selected={!!matchPath(`/org/${organization?.id}/attributes/*`, pathname)}
+                    />
+                  </List>
+                }
+              />
+            </Box>}
           </List>
         </Box>
       </React.Fragment>

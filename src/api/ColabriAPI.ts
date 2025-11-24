@@ -12,6 +12,7 @@
 
 export enum SchemasDocumentType {
   DocumentTypeColabDoc = "colab-doc",
+  DocumentTypeColabStatement = "colab-statement",
 }
 
 export enum SchemasContentLanguageDirection {
@@ -91,6 +92,13 @@ export interface ColabStatementDoc {
   content: Record<string, ColabStatement>;
   contentType: string;
   type: ColabdocColabDocType;
+}
+
+export interface ContentType {
+  code?: string;
+  description?: string;
+  docType?: SchemasDocumentType;
+  name?: string;
 }
 
 export interface CreateAttributeRequest {
@@ -749,6 +757,23 @@ export class Api<
       }),
 
     /**
+     * @description Retrieves a list of all content types available in the organization.
+     *
+     * @tags templates
+     * @name GetContentTypes
+     * @summary List all content types
+     * @request GET:/{orgId}/content-types
+     */
+    getContentTypes: (orgId: string, params: RequestParams = {}) =>
+      this.request<ContentType[], HTTPError>({
+        path: `/${orgId}/content-types`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Create a new document in the specified organization
      *
      * @tags documents
@@ -1160,6 +1185,43 @@ export class Api<
         path: `/${orgId}/languages`,
         method: "DELETE",
         body: langIds,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description This endpoint will retrieve all statements in the specified organization. Only users who are members of the organization can list statements.
+     *
+     * @tags statements
+     * @name GetStatements
+     * @summary List all statements in an organization
+     * @request GET:/{orgId}/statements
+     */
+    getStatements: (
+      orgId: string,
+      query?: {
+        /**
+         * Number of statements to return
+         * @default 10
+         */
+        limit?: number;
+        /**
+         * Number of statements to skip
+         * @default 0
+         */
+        offset?: number;
+        /** Sort statements by fields: e.g. [{'direction':'asc','field':'lastName'}] */
+        sort?: string;
+        /** Filter statements by fields: e.g. {'items':[{'id':'1','field':'lastName', 'operator':'equals','value':'Smith'}], 'logicOperator':'and'} */
+        filter?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<FullStatementDocument[], HTTPError>({
+        path: `/${orgId}/statements`,
+        method: "GET",
+        query: query,
         type: ContentType.Json,
         format: "json",
         ...params,

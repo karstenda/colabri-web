@@ -28,6 +28,8 @@ import AttributeShowPage from './pages/attributes/AttributeShowPage';
 import AttributeEditPage from './pages/attributes/AttributeEditPage';
 import ColabDocEditorPage from './pages/editor/ColabDocEditorPage';
 import LanguageListPage from './pages/languages/LanguageListPage';
+import StatementListPage from './pages/statements/StatementListPage';
+import StatementCreatePage from './pages/statements/StatementCreatePage';
 
 
 const router = createHashRouter([
@@ -95,6 +97,26 @@ const router = createHashRouter([
       {
         path: 'org/:orgId/docs/:docId',
         Component: ColabDocEditorPage,
+      },
+      {
+        path: 'org/:orgId/statements',
+        Component: StatementListPage,
+      },
+      {
+        path: 'org/:orgId/statements/my',
+        Component: StatementListPage,
+      },
+      {
+        path: 'org/:orgId/statements/shared',
+        Component: StatementListPage,
+      },
+      {
+        path: 'org/:orgId/statements/lib',
+        Component: StatementListPage,
+      },
+      {
+        path: 'org/:orgId/statements/new',
+        Component: StatementCreatePage,
       },
       {
         path: 'org/:orgId/config/languages/',

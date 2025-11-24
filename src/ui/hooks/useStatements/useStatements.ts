@@ -1,0 +1,93 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Api, CreateStatementDocRequest } from '../../../api/ColabriAPI';
+import { GridListFilterModel, GridListSortModel } from '../../data/GridListOptions';
+
+// Create a singleton API client instance
+const apiClient = new Api({
+  baseUrl: "/api/v1",
+  baseApiParams: {
+    credentials: 'include', // Include cookies for authentication
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  },
+});
+
+// Query keys factory for statements
+export const statementKeys = {
+  all: ['statements'] as const,
+  lists: () => [...statementKeys.all, 'list'] as const,
+  list: (orgId: string, filters: { limit?: number; offset?: number }) =>
+    [...statementKeys.lists(), orgId, filters] as const,
+  details: () => [...statementKeys.all, 'detail'] as const,
+  detail: (orgId: string, statementId: string) => [...statementKeys.details(), orgId, statementId] as const,
+};
+
+// Custom hooks for user operations
+
+/**
+ * Hook to fetch a list of users in an organization with pagination
+ */
+export const useStatements = (orgId: string, params?: { limit?: number; offset?: number; sort?: GridListSortModel; filter?: GridListFilterModel }, enabled = true) => {
+  const {data, isLoading, error, refetch} = useQuery({
+    queryKey: statementKeys.list(orgId, params || {}),
+    queryFn: () => {
+
+      const apiParams: { limit?: number; offset?: number; filter?: string; sort?: string } = {};
+
+      if (params?.limit) {
+        apiParams.limit = params.limit;
+      }
+      if (params?.offset) {
+        apiParams.offset = params.offset;
+      }
+      if (params?.filter) {
+        apiParams.filter = JSON.stringify(params.filter);
+      }
+      if (params?.sort) {
+        apiParams.sort = JSON.stringify(params.sort);
+      }
+
+      return apiClient.orgId.getStatements(orgId, apiParams)
+    },
+    enabled: enabled && !!orgId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+  });
+  return {statements: data?.data || [], isLoading, error, refetch};
+};
+
+/**
+ * Hook to create a new statement
+ */
+export const useCreateStatement = (orgId: string) => {
+    const queryClient = useQueryClient();
+  
+    const mutation = useMutation({
+      mutationFn: (data: CreateStatementDocRequest) => 
+        apiClient.orgId.postStatement(orgId, data),
+      onSuccess: (newStatement) => {
+
+        const {data} = newStatement;
+  
+        // Invalidate and refetch users list
+        queryClient.invalidateQueries({ queryKey: statementKeys.lists() });
+        
+        // Optionally add the new user to the cache
+        queryClient.setQueryData(
+          statementKeys.detail(orgId, data.id!),
+          newStatement
+        );
+      },
+      onError: (error) => {
+        console.error('Failed to create statement:', error);
+      },
+    });
+  
+    return {
+      createStatement: mutation.mutateAsync,
+      createdStatement: mutation.data,
+      isPending: mutation.isPending,
+      error: mutation.error,
+    };
+};
