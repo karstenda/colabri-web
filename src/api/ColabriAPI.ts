@@ -10,6 +10,10 @@
  * ---------------------------------------------------------------
  */
 
+export enum SchemasDocumentType {
+  DocumentTypeColabDoc = "colab-doc",
+}
+
 export enum SchemasContentLanguageDirection {
   ContentLanguageDirectionLTR = "ltr",
   ContentLanguageDirectionRTL = "rtl",
@@ -20,6 +24,20 @@ export enum SchemasAttributeType {
   AttributeTypeNumber = "number",
   AttributeTypeBoolean = "boolean",
   AttributeTypeDate = "date",
+}
+
+export enum ColabdocColabDocType {
+  ColabDocStatementType = "doc-statement",
+  ColabDocSheetType = "doc-sheet",
+}
+
+export enum ColabdocColabCommentType {
+  ColabCommentUserType = "user",
+}
+
+export enum ColabdocColabCommentState {
+  ColabCommentStateOpen = "open",
+  ColabCommentStateResolved = "resolved",
 }
 
 export enum OrganizationStatus {
@@ -54,6 +72,27 @@ export interface AttributeValue {
   value: any;
 }
 
+export interface ColabComment {
+  author: string;
+  state: ColabdocColabCommentState;
+  text: string;
+  timestamp: string;
+  type: ColabdocColabCommentType;
+}
+
+export interface ColabStatement {
+  acl?: Record<string, string[]>;
+  comments?: ColabComment[];
+  text: string;
+}
+
+export interface ColabStatementDoc {
+  acl?: Record<string, string[]>;
+  content: Record<string, ColabStatement>;
+  contentType: string;
+  type: ColabdocColabDocType;
+}
+
 export interface CreateAttributeRequest {
   config: Record<string, any>;
   name: string;
@@ -61,7 +100,7 @@ export interface CreateAttributeRequest {
 }
 
 export interface CreateAttributeValueRequest {
-  attribute: string;
+  attributeId: string;
   value: any;
 }
 
@@ -69,8 +108,8 @@ export interface CreateDocumentRequest {
   acls?: Record<string, string[]>;
   /** @example "OatKind-Choc-Sheet" */
   name: string;
-  /** @example "doc-sheet" */
-  type: string;
+  /** @example "colab-doc" */
+  type: SchemasDocumentType;
 }
 
 export interface CreateGroupRequest {
@@ -87,6 +126,12 @@ export interface CreateOrganizationRequest {
   status: OrganizationStatus;
 }
 
+export interface CreateStatementDocRequest {
+  colabStatement?: ColabStatementDoc;
+  /** @example "OatKind-Choc-Sheet" */
+  name: string;
+}
+
 export interface CreateUserRequest {
   email: string;
   firstName?: string;
@@ -101,6 +146,32 @@ export interface Document {
   id: string;
   name: string;
   owner: string;
+  streams: Record<string, DocumentStream[]>;
+  type: string;
+  updatedAt: string;
+  updatedBy: string;
+}
+
+export interface DocumentStream {
+  content: number[];
+  createdAt: string;
+  document: string;
+  id: string;
+  name: string;
+  pointer: string;
+  size: number;
+  version: number;
+}
+
+export interface FullStatementDocument {
+  acls: Record<string, string[]>;
+  createdAt: string;
+  createdBy: string;
+  id: string;
+  name: string;
+  owner: string;
+  statement: ColabStatementDoc;
+  streams: Record<string, DocumentStream[]>;
   type: string;
   updatedAt: string;
   updatedBy: string;
@@ -464,7 +535,7 @@ export class Api<
     /**
      * @description Retrieve a list of all languages supported by the platform
      *
-     * @tags Languages
+     * @tags languages
      * @name GetLanguages
      * @summary List all available languages on the platform
      * @request GET:/languages
@@ -597,7 +668,7 @@ export class Api<
     /**
      * @description List all attributes in the specified organization
      *
-     * @tags Attributes
+     * @tags attributes
      * @name GetAttributes
      * @summary List all attributes
      * @request GET:/{orgId}/attributes
@@ -614,7 +685,7 @@ export class Api<
     /**
      * @description Create a new attribute in the specified organization
      *
-     * @tags Attributes
+     * @tags attributes
      * @name PostAttribute
      * @summary Create a new attribute
      * @request POST:/{orgId}/attributes
@@ -636,7 +707,7 @@ export class Api<
     /**
      * @description Delete an attribute (soft delete) in the specified organization
      *
-     * @tags Attributes
+     * @tags attributes
      * @name DeleteAttribute
      * @summary Delete an attribute
      * @request DELETE:/{orgId}/attributes/{attributeId}
@@ -657,7 +728,7 @@ export class Api<
     /**
      * @description Update an existing attribute in the specified organization
      *
-     * @tags Attributes
+     * @tags attributes
      * @name PatchAttribute
      * @summary Update an attribute
      * @request PATCH:/{orgId}/attributes/{attributeId}
@@ -680,7 +751,7 @@ export class Api<
     /**
      * @description Create a new document in the specified organization
      *
-     * @tags Documents
+     * @tags documents
      * @name PostDocument
      * @summary Create a new document
      * @request POST:/{orgId}/documents
@@ -702,7 +773,7 @@ export class Api<
     /**
      * @description List all attribute values for a specific document in the specified organization
      *
-     * @tags Attributes
+     * @tags attributes
      * @name GetDocumentsAttributes
      * @summary List all attribute values for a document
      * @request GET:/{orgId}/documents/{docId}/attributes
@@ -723,7 +794,7 @@ export class Api<
     /**
      * @description Create attribute values for a specific document in the specified organization
      *
-     * @tags Attributes
+     * @tags attributes
      * @name PostDocumentsAttribute
      * @summary Create attribute values for a document
      * @request POST:/{orgId}/documents/{docId}/attributes
@@ -746,7 +817,7 @@ export class Api<
     /**
      * @description Delete attribute values (soft delete) for a specific document in the specified organization
      *
-     * @tags Attributes
+     * @tags attributes
      * @name DeleteDocumentsAttribute
      * @summary Delete attribute values for a document
      * @request DELETE:/{orgId}/documents/{docId}/attributes
@@ -769,7 +840,7 @@ export class Api<
     /**
      * @description Update attribute values for a specific document in the specified organization
      *
-     * @tags Attributes
+     * @tags attributes
      * @name PatchDocumentsAttribute
      * @summary Update attribute values for a document
      * @request PATCH:/{orgId}/documents/{docId}/attributes
@@ -792,13 +863,14 @@ export class Api<
     /**
      * @description Retrieve a document by its ID in the specified organization
      *
-     * @tags Documents
+     * @tags documents
      * @name GetDocument
      * @summary Get document by ID
      * @request GET:/{orgId}/documents/{documentId}
      */
     getDocument: (
       orgId: string,
+      docId: string,
       documentId: string,
       params: RequestParams = {},
     ) =>
@@ -1035,7 +1107,7 @@ export class Api<
     /**
      * @description Retrieve a list of all content languages configured for a specific organization
      *
-     * @tags Languages
+     * @tags languages
      * @name GetLanguages
      * @summary List content languages for an organization
      * @request GET:/{orgId}/languages
@@ -1052,7 +1124,7 @@ export class Api<
     /**
      * @description Add new content languages to be used within a specific organization
      *
-     * @tags Languages
+     * @tags languages
      * @name PostLanguage
      * @summary Add content languages for an organization
      * @request POST:/{orgId}/languages
@@ -1074,7 +1146,7 @@ export class Api<
     /**
      * @description Remove content languages from a specific organization by language ID
      *
-     * @tags Languages
+     * @tags languages
      * @name DeleteLanguage
      * @summary Delete content languages for an organization
      * @request DELETE:/{orgId}/languages
@@ -1088,6 +1160,28 @@ export class Api<
         path: `/${orgId}/languages`,
         method: "DELETE",
         body: langIds,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Create a new statement for a user
+     *
+     * @tags statements
+     * @name PostStatement
+     * @summary Create a new statement
+     * @request POST:/{orgId}/statements
+     */
+    postStatement: (
+      orgId: string,
+      statement: CreateStatementDocRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<FullStatementDocument, HTTPError>({
+        path: `/${orgId}/statements`,
+        method: "POST",
+        body: statement,
         type: ContentType.Json,
         format: "json",
         ...params,

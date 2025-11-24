@@ -22,6 +22,10 @@ import GroupListPage from './pages/groups/GroupListPage';
 import GroupEditPage from './pages/groups/GroupEditPage';
 import GroupCreatePage from './pages/groups/GroupCreatePage';
 import GroupShowPage from './pages/groups/GroupShowPage';
+import AttributeListPage from './pages/attributes/AttributeListPage';
+import AttributeCreatePage from './pages/attributes/AttributeCreatePage';
+import AttributeShowPage from './pages/attributes/AttributeShowPage';
+import AttributeEditPage from './pages/attributes/AttributeEditPage';
 import ColabDocEditorPage from './pages/editor/ColabDocEditorPage';
 import LanguageListPage from './pages/languages/LanguageListPage';
 
@@ -71,6 +75,22 @@ const router = createHashRouter([
       {
         path: 'org/:orgId/groups/:groupId/edit',
         Component: GroupEditPage,
+      },
+      {
+        path: 'org/:orgId/attributes',
+        Component: AttributeListPage,
+      },
+      {
+        path: 'org/:orgId/attributes/:attributeId',
+        Component: AttributeShowPage,
+      },
+      {
+        path: 'org/:orgId/attributes/new',
+        Component: AttributeCreatePage,
+      },
+      {
+        path: 'org/:orgId/attributes/:attributeId/edit',
+        Component: AttributeEditPage,
       },
       {
         path: 'org/:orgId/docs/:docId',

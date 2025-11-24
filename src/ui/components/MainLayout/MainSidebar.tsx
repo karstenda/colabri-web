@@ -8,6 +8,7 @@ import Toolbar from '@mui/material/Toolbar';
 import type {} from '@mui/material/themeCssVarsAugmentation';
 import PersonIcon from '@mui/icons-material/Person';
 import GroupIcon from '@mui/icons-material/Group';
+import LabelIcon from '@mui/icons-material/Label';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import DescriptionIcon from '@mui/icons-material/Description';
 import ShareIcon from '@mui/icons-material/Share';
@@ -265,6 +266,13 @@ export default function MainSidebar({
                     icon={<LanguageIcon />}
                     href={`/org/${organization?.id}/config/languages`}
                     selected={!!matchPath(`/org/${organization?.id}/config/languages/*`, pathname)}
+                  />
+                  <MainSidebarPageItem
+                    id="config-attributes"
+                    title="Attributes"
+                    icon={<LabelIcon />}
+                    href={`/org/${organization?.id}/attributes`}
+                    selected={!!matchPath(`/org/${organization?.id}/attributes/*`, pathname)}
                   />
                 </List>
               }
