@@ -31,7 +31,6 @@ import LanguageListPage from './pages/languages/LanguageListPage';
 import StatementListPage from './pages/statements/StatementListPage';
 import StatementCreatePage from './pages/statements/StatementCreatePage';
 
-
 const router = createHashRouter([
   {
     path: '/onboard',
@@ -119,6 +118,10 @@ const router = createHashRouter([
         Component: StatementCreatePage,
       },
       {
+        path: 'org/:orgId/statements/:docId',
+        Component: ColabDocEditorPage,
+      },
+      {
         path: 'org/:orgId/config/languages/',
         Component: LanguageListPage,
       },
@@ -132,7 +135,7 @@ const router = createHashRouter([
   {
     path: '*',
     Component: OnboardPage,
-  }
+  },
 ]);
 
 const themeComponents = {
@@ -143,20 +146,19 @@ const themeComponents = {
 };
 
 export default function App(props: { disableCustomTheme?: boolean }) {
+  // Create a TanStack Query client
+  const queryClient = new QueryClient();
 
-    // Create a TanStack Query client
-    const queryClient = new QueryClient()
-  
-    return (
-      <QueryClientProvider client={queryClient}>
-        <AppTheme {...props} themeComponents={themeComponents}>
-            <CssBaseline enableColorScheme />
-              <NotificationsProvider>
-                  <DialogsProvider>
-                      <RouterProvider router={router} />
-                  </DialogsProvider>
-              </NotificationsProvider>
-        </AppTheme>
-      </QueryClientProvider>
-    );
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppTheme {...props} themeComponents={themeComponents}>
+        <CssBaseline enableColorScheme />
+        <NotificationsProvider>
+          <DialogsProvider>
+            <RouterProvider router={router} />
+          </DialogsProvider>
+        </NotificationsProvider>
+      </AppTheme>
+    </QueryClientProvider>
+  );
 }

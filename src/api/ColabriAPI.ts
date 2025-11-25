@@ -10,43 +10,43 @@
  * ---------------------------------------------------------------
  */
 
-export enum SchemasDocumentType {
-  DocumentTypeColabDoc = "colab-doc",
-  DocumentTypeColabStatement = "colab-statement",
-}
-
-export enum SchemasContentLanguageDirection {
-  ContentLanguageDirectionLTR = "ltr",
-  ContentLanguageDirectionRTL = "rtl",
-}
-
-export enum SchemasAttributeType {
-  AttributeTypeString = "string",
-  AttributeTypeNumber = "number",
-  AttributeTypeBoolean = "boolean",
-  AttributeTypeDate = "date",
-}
-
-export enum ColabdocColabDocType {
-  ColabDocStatementType = "doc-statement",
-  ColabDocSheetType = "doc-sheet",
-}
-
-export enum ColabdocColabCommentType {
-  ColabCommentUserType = "user",
-}
-
-export enum ColabdocColabCommentState {
-  ColabCommentStateOpen = "open",
-  ColabCommentStateResolved = "resolved",
-}
-
 export enum OrganizationStatus {
   OrgStatusFree = "free",
   OrgStatusTrial = "trial",
   OrgStatusTrialExpired = "trial_expired",
   OrgStatusSubscribed = "subscribed",
   OrgStatusSubscriptionExpired = "subscription_expired",
+}
+
+export enum DocumentType {
+  DocumentTypeColabDoc = "colab-doc",
+  DocumentTypeColabStatement = "colab-statement",
+}
+
+export enum ContentLanguageDirection {
+  ContentLanguageDirectionLTR = "ltr",
+  ContentLanguageDirectionRTL = "rtl",
+}
+
+export enum ColabDocType {
+  ColabDocStatementType = "doc-statement",
+  ColabDocSheetType = "doc-sheet",
+}
+
+export enum ColabCommentType {
+  ColabCommentUserType = "user",
+}
+
+export enum ColabCommentState {
+  ColabCommentStateOpen = "open",
+  ColabCommentStateResolved = "resolved",
+}
+
+export enum AttributeType {
+  AttributeTypeString = "string",
+  AttributeTypeNumber = "number",
+  AttributeTypeBoolean = "boolean",
+  AttributeTypeDate = "date",
 }
 
 export interface AddGroupMembersRequest {
@@ -59,12 +59,22 @@ export interface Attribute {
   createdBy: string;
   id: string;
   name: string;
-  type: SchemasAttributeType;
+  type: AttributeType;
   updatedAt: string;
   updatedBy: string;
 }
 
 export interface AttributeValue {
+  attribute: Attribute;
+  createdAt: string;
+  createdBy: string;
+  id: string;
+  updatedAt: string;
+  updatedBy: string;
+  value: any;
+}
+
+export interface AttributeValueOnly {
   createdAt: string;
   createdBy: string;
   id: string;
@@ -75,10 +85,10 @@ export interface AttributeValue {
 
 export interface ColabComment {
   author: string;
-  state: ColabdocColabCommentState;
+  state: ColabCommentState;
   text: string;
   timestamp: string;
-  type: ColabdocColabCommentType;
+  type: ColabCommentType;
 }
 
 export interface ColabStatement {
@@ -91,20 +101,20 @@ export interface ColabStatementDoc {
   acl?: Record<string, string[]>;
   content: Record<string, ColabStatement>;
   contentType: string;
-  type: ColabdocColabDocType;
+  type: ColabDocType;
 }
 
 export interface ContentType {
   code?: string;
   description?: string;
-  docType?: SchemasDocumentType;
+  docType?: DocumentType;
   name?: string;
 }
 
 export interface CreateAttributeRequest {
   config: Record<string, any>;
   name: string;
-  type: SchemasAttributeType;
+  type: AttributeType;
 }
 
 export interface CreateAttributeValueRequest {
@@ -117,7 +127,7 @@ export interface CreateDocumentRequest {
   /** @example "OatKind-Choc-Sheet" */
   name: string;
   /** @example "colab-doc" */
-  type: SchemasDocumentType;
+  type: DocumentType;
 }
 
 export interface CreateGroupRequest {
@@ -135,9 +145,9 @@ export interface CreateOrganizationRequest {
 }
 
 export interface CreateStatementDocRequest {
-  colabStatement?: ColabStatementDoc;
   /** @example "OatKind-Choc-Sheet" */
   name: string;
+  statement: ColabStatementDoc;
 }
 
 export interface CreateUserRequest {
@@ -210,7 +220,7 @@ export interface OrgContentLanguage {
   defaultFont: string[];
   id: string;
   name: string;
-  textDirection: SchemasContentLanguageDirection;
+  textDirection: ContentLanguageDirection;
 }
 
 export interface Organization {
@@ -231,7 +241,7 @@ export interface PlatformContentLanguage {
   endonym?: string;
   name?: string;
   scope?: string;
-  textDirection?: SchemasContentLanguageDirection;
+  textDirection?: ContentLanguageDirection;
 }
 
 export interface RemoveGroupMembersRequest {
@@ -853,7 +863,7 @@ export class Api<
       attributeValueIds: string[],
       params: RequestParams = {},
     ) =>
-      this.request<AttributeValue[], HTTPError>({
+      this.request<AttributeValueOnly[], HTTPError>({
         path: `/${orgId}/documents/${docId}/attributes`,
         method: "DELETE",
         body: attributeValueIds,
@@ -876,7 +886,7 @@ export class Api<
       attributeValues: Record<string, UpdateAttributeValueRequest>,
       params: RequestParams = {},
     ) =>
-      this.request<AttributeValue[], HTTPError>({
+      this.request<AttributeValueOnly[], HTTPError>({
         path: `/${orgId}/documents/${docId}/attributes`,
         method: "PATCH",
         body: attributeValues,

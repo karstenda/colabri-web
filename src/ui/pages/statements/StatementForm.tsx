@@ -7,16 +7,40 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from 'react-router';
-import type { FullStatementDocument } from '../../../api/ColabriAPI';
+import {
+  ColabDocType,
+  ColabStatementDoc,
+  DocumentType,
+  type FullStatementDocument,
+} from '../../../api/ColabriAPI';
+import { ContentTypeSelector } from '../../components/ContentTypeSelector';
+import { useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';
 
-export type StatementFormEntries = Partial<Omit<FullStatementDocument, 'id' | 'updatedAt' | 'createdBy' | 'updatedBy' | 'createdAt' | 'owner' | 'type'>>;
+export type StatementFormEntries = Partial<
+  Omit<
+    FullStatementDocument,
+    | 'id'
+    | 'updatedAt'
+    | 'createdBy'
+    | 'updatedBy'
+    | 'createdAt'
+    | 'owner'
+    | 'type'
+  >
+>;
 
 export interface StatementFormState {
   values: StatementFormEntries;
   errors: Partial<Record<keyof StatementFormState['values'], string>>;
 }
 
-export type FormFieldValue = string | string[] | number | boolean | File | null;
+export type FormFieldValue =
+  | string
+  | string[]
+  | number
+  | boolean
+  | ColabStatementDoc
+  | null;
 
 export interface StatementFormProps {
   formMode: 'create' | 'edit';
@@ -25,7 +49,9 @@ export interface StatementFormProps {
     name: keyof StatementFormState['values'],
     value: FormFieldValue,
   ) => void;
-  onSubmit: (formValues: Partial<StatementFormState['values']>) => Promise<void>;
+  onSubmit: (
+    formValues: Partial<StatementFormState['values']>,
+  ) => Promise<void>;
   onReset?: (formValues: Partial<StatementFormState['values']>) => void;
   submitButtonLabel: string;
   backButtonPath?: string;
@@ -47,6 +73,8 @@ export default function StatementForm(props: StatementFormProps) {
   const navigate = useNavigate();
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  const organization = useOrganization();
 
   const handleSubmit = React.useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
@@ -81,6 +109,21 @@ export default function StatementForm(props: StatementFormProps) {
     navigate(backButtonPath ?? '/statements');
   }, [navigate, backButtonPath]);
 
+  const onContentTypeChange = React.useCallback(
+    (newValue: string | string[] | null) => {
+      // Generate a new statement doc with the selected content type
+      const newStatement = {
+        type: ColabDocType.ColabDocStatementType,
+        contentType: newValue,
+        content: {},
+        acl: {},
+      } as ColabStatementDoc;
+
+      onFieldChange('statement', newStatement);
+    },
+    [onFieldChange],
+  );
+
   return (
     <Box
       component="form"
@@ -102,6 +145,17 @@ export default function StatementForm(props: StatementFormProps) {
               error={!!formErrors.name}
               helperText={formErrors.name ?? ' '}
               fullWidth
+            />
+          </Grid>
+        </Grid>
+        <Grid container spacing={2} sx={{ mb: 2, width: '100%' }}>
+          <Grid size={{ xs: 12, sm: 12 }} sx={{ display: 'flex' }}>
+            <ContentTypeSelector
+              value={formValues.statement?.contentType ?? ''}
+              orgId={organization?.id ?? ''}
+              multiple={false}
+              onChange={onContentTypeChange}
+              docTypeFilter={DocumentType.DocumentTypeColabStatement}
             />
           </Grid>
         </Grid>

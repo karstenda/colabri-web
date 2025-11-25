@@ -9,6 +9,7 @@ import StatementForm, {
 } from './StatementForm';
 import PageContainer from '../../components/MainLayout/PageContainer';
 import { useUserOrganizationContext } from '../../context/UserOrganizationContext/UserOrganizationProvider';
+import { ColabStatementDoc } from '../../../api/ColabriAPI';
 
 export default function StatementCreate() {
   const navigate = useNavigate();
@@ -48,7 +49,9 @@ export default function StatementCreate() {
 
   const handleFormFieldChange = React.useCallback(
     (name: keyof StatementFormState['values'], value: FormFieldValue) => {
-      const validateField = async (values: Partial<StatementFormState['values']>) => {
+      const validateField = async (
+        values: Partial<StatementFormState['values']>,
+      ) => {
         const { issues } = validateStatement(values);
         setFormErrors({
           ...formErrors,
@@ -72,7 +75,9 @@ export default function StatementCreate() {
     const { issues } = validateStatement(formValues);
     if (issues && issues.length > 0) {
       setFormErrors(
-        Object.fromEntries(issues.map((issue) => [issue.path?.[0], issue.message])),
+        Object.fromEntries(
+          issues.map((issue) => [issue.path?.[0], issue.message]),
+        ),
       );
       return;
     }
@@ -81,6 +86,7 @@ export default function StatementCreate() {
     try {
       await createStatement({
         name: formValues.name as string,
+        statement: formValues.statement as ColabStatementDoc,
       });
 
       notifications.show('Statement created successfully.', {
@@ -88,7 +94,7 @@ export default function StatementCreate() {
         autoHideDuration: 3000,
       });
 
-      navigate('/org/'+organization?.id+'/statements');
+      navigate('/org/' + organization?.id + '/statements');
     } catch (createError) {
       notifications.show(
         `Failed to create statement. Reason: ${(createError as Error).message}`,
@@ -99,12 +105,25 @@ export default function StatementCreate() {
       );
       throw createError;
     }
-  }, [formValues, navigate, notifications, setFormErrors, createStatement, organization?.id]);
+  }, [
+    formValues,
+    navigate,
+    notifications,
+    setFormErrors,
+    createStatement,
+    organization?.id,
+  ]);
 
   return (
     <PageContainer
       title="New Statement"
-      breadcrumbs={[{ title: 'Statements', path: '/org/'+organization?.id+'/statements' }, { title: 'New' }]}
+      breadcrumbs={[
+        {
+          title: 'Statements',
+          path: '/org/' + organization?.id + '/statements',
+        },
+        { title: 'New' },
+      ]}
     >
       <StatementForm
         formState={formState}
