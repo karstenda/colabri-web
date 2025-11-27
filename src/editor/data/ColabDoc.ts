@@ -1,24 +1,13 @@
-import { LoroDoc } from 'loro-crdt';
+import { EphemeralStore, LoroDoc } from 'loro-crdt';
+import { ColabModelType, StatementDocument } from '../../api/ColabriAPI';
 
-export type PermissionMap = {
-  [contentId: string]: {
-    canEdit: [string];
-    canView: [string];
-    canManage: [string];
-  };
-};
+export type ColabDocType =
+  | ColabModelType.ColabModelStatementType
+  | ColabModelType.ColabModelSheetType;
 
-export type ColabDoc = {
-  id: number;
-  name: string;
-  author: string;
-  state: 'draft' | 'approval-pending' | 'approved';
+export type UnconnectedColabDoc = StatementDocument;
+
+export type ConnectedColabDoc = Omit<UnconnectedColabDoc, 'statement'> & {
   loroDoc: LoroDoc;
-  permissionMap?: PermissionMap;
-  modifiedOn: string;
-  addedOn: string;
-};
-
-export type SerializedColabDoc = Omit<ColabDoc, 'loroDoc'> & {
-  loroDoc: string;
+  ephStore: EphemeralStore;
 };

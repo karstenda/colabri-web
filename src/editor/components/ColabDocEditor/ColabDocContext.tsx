@@ -1,14 +1,11 @@
-import { createContext } from "react";
-import { ColabDoc } from "../../data/ColabDoc";
-
+import { createContext } from 'react';
+import { ConnectedColabDoc } from '../../data/ColabDoc';
 
 export type ColabDocContextType = {
-    docId: string | null;
-    colabDoc: ColabDoc | null;
-    updateColabDoc: ((delta: Uint8Array<ArrayBufferLike>) => void) | null;
-}
+  docId: string | null;
+  colabDoc: ConnectedColabDoc | null;
+};
 
 const ColabDocContext = createContext<ColabDocContextType | null>(null);
 
 export default ColabDocContext;
-

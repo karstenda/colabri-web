@@ -8,17 +8,17 @@ import TextField from '@mui/material/TextField';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from 'react-router';
 import {
-  ColabDocType,
-  ColabStatementDoc,
+  ColabModelType,
+  ColabStatementModel,
   DocumentType,
-  type FullStatementDocument,
+  type StatementDocument,
 } from '../../../api/ColabriAPI';
 import { ContentTypeSelector } from '../../components/ContentTypeSelector';
 import { useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';
 
 export type StatementFormEntries = Partial<
   Omit<
-    FullStatementDocument,
+    StatementDocument,
     | 'id'
     | 'updatedAt'
     | 'createdBy'
@@ -39,7 +39,7 @@ export type FormFieldValue =
   | string[]
   | number
   | boolean
-  | ColabStatementDoc
+  | ColabStatementModel
   | null;
 
 export interface StatementFormProps {
@@ -113,11 +113,27 @@ export default function StatementForm(props: StatementFormProps) {
     (newValue: string | string[] | null) => {
       // Generate a new statement doc with the selected content type
       const newStatement = {
-        type: ColabDocType.ColabDocStatementType,
-        contentType: newValue,
-        content: {},
+        properties: {
+          type: ColabModelType.ColabModelStatementType,
+          contentType: newValue,
+        },
+        content: {
+          en: {
+            textElement: {
+              nodeName: 'doc',
+              children: [
+                {
+                  nodeName: 'paragraph',
+                  children: ['This is set during creation.'],
+                  attributes: {},
+                },
+              ],
+              attributes: {},
+            },
+          },
+        },
         acl: {},
-      } as ColabStatementDoc;
+      } as ColabStatementModel;
 
       onFieldChange('statement', newStatement);
     },
@@ -151,7 +167,7 @@ export default function StatementForm(props: StatementFormProps) {
         <Grid container spacing={2} sx={{ mb: 2, width: '100%' }}>
           <Grid size={{ xs: 12, sm: 12 }} sx={{ display: 'flex' }}>
             <ContentTypeSelector
-              value={formValues.statement?.contentType ?? ''}
+              value={formValues.statement?.properties?.contentType ?? ''}
               orgId={organization?.id ?? ''}
               multiple={false}
               onChange={onContentTypeChange}

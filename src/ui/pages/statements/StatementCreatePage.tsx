@@ -9,7 +9,7 @@ import StatementForm, {
 } from './StatementForm';
 import PageContainer from '../../components/MainLayout/PageContainer';
 import { useUserOrganizationContext } from '../../context/UserOrganizationContext/UserOrganizationProvider';
-import { ColabStatementDoc } from '../../../api/ColabriAPI';
+import { ColabStatementModel } from '../../../api/ColabriAPI';
 
 export default function StatementCreate() {
   const navigate = useNavigate();
@@ -86,7 +86,7 @@ export default function StatementCreate() {
     try {
       await createStatement({
         name: formValues.name as string,
-        statement: formValues.statement as ColabStatementDoc,
+        statement: formValues.statement as ColabStatementModel,
       });
 
       notifications.show('Statement created successfully.', {

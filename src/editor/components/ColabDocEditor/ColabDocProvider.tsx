@@ -1,15 +1,17 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import useWebSocket from 'react-use-websocket';
-import ColabDocContext, { ColabDocContextType } from './ColabDocContext';
+import React, { useContext, useEffect, useState, useRef } from 'react';
+import { LoroWebsocketClient } from 'loro-websocket';
+import { LoroAdaptor, LoroEphemeralAdaptor } from 'loro-adaptors/loro';
+import { ConnectedColabDoc } from '../../data/ColabDoc';
 import {
-  ColabDocReceiveInitMessage,
-  ColabDocReceiveMessage,
-  ColabDocSendUpdateMessage,
-} from '../../data/ColabDocMessage';
-import { ColabDoc } from '../../data/ColabDoc';
-import { useOrgUserId } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
-import { ColabDocSendLoadMessage } from '../../data/ColabDocMessage';
-import { LoroDoc } from 'loro-crdt';
+  useOrgUserId,
+  useOrganization,
+} from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
+
+import ColabDocContext, { ColabDocContextType } from './ColabDocContext';
+
+import { CrdtType } from 'loro-protocol';
+import { useDocument } from '../../../ui/hooks/useDocuments/useDocuments';
+import { ColabModelType, Document } from '../../../api/ColabriAPI';
 
 export type ColabDocProviderProps = {
   docId: string;
@@ -17,110 +19,106 @@ export type ColabDocProviderProps = {
 };
 
 export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
+  // Fetch the user and organization
+  const org = useOrganization();
   const userId = useOrgUserId();
 
-  const { sendJsonMessage, lastJsonMessage } = useWebSocket(
-    `ws://localhost:3000/ws/doc/${docId}`,
-    {
-      shouldReconnect: () => true,
-    },
+  // Fetch the targeted document
+  const { document } = useDocument(
+    org?.id || '',
+    docId || '',
+    org != null && docId != null,
   );
 
-  const [document, setDocument] = useState<ColabDoc | null>(null);
-  const isReady = useRef(false);
+  // A boolean to track whether we're connected or not.
+  const connected = useRef<boolean>(false);
+  const disconnectFnRef = useRef<(() => void) | null>(null);
+
+  // The connected doc state.
+  const [connectedDoc, setConnectedDoc] = useState<ConnectedColabDoc | null>(
+    null,
+  );
 
   // Load initial document (via message or REST)
   useEffect(() => {
-    if (!userId) return;
+    if (document === undefined || docId === undefined || userId === undefined) {
+      return;
+    }
 
-    console.log(
-      'Requesting document load for docId:',
-      docId,
-      'userId:',
-      userId,
-    );
-    const loadMessage: ColabDocSendLoadMessage = {
-      type: 'load',
-      peer: userId + '/p1',
-      user: userId,
-    };
-    sendJsonMessage(loadMessage);
-  }, [docId, userId]);
+    if (document.type !== ColabModelType.ColabModelStatementType) {
+      return;
+    }
 
-  // Handle incoming messages
+    // Check if we're NOT currently connected, then connect once
+    if (!connected.current) {
+      connected.current = true;
+      connect().then((disconnectFn) => {
+        disconnectFnRef.current = disconnectFn;
+      });
+    }
+  }, [document, userId]);
+
+  // Cleanup on unmount only
   useEffect(() => {
-    // Get the last message
-    if (!lastJsonMessage) {
-      return;
-    }
-    const msg = lastJsonMessage as ColabDocReceiveMessage;
+    return () => {
+      if (disconnectFnRef.current) {
+        disconnectFnRef.current();
+        connected.current = false;
+      }
+    };
+  }, []);
 
-    // Log the message for debugging
-    console.log('Received message:', msg);
+  // The function to connect.
+  const connect = async function (): Promise<() => void> {
+    // Create the client
+    const client = new LoroWebsocketClient({ url: 'ws://localhost:9001' });
 
-    switch (msg.type) {
-      case 'init':
-        const initMsg = msg as ColabDocReceiveInitMessage;
+    // Connect to the server
+    await client.waitConnected();
+    console.log('Client connected!');
 
-        // Deserialize the ColabDoc
-        const loroDocBase64 = initMsg.colabDoc.loroDoc;
-        const loroDocData = Uint8Array.from(atob(loroDocBase64), (c) =>
-          c.charCodeAt(0),
-        );
-        const loroDoc = new LoroDoc();
-        loroDoc.import(loroDocData);
-        const colabDoc: ColabDoc = {
-          ...initMsg.colabDoc,
-          loroDoc: loroDoc,
-        };
+    // Generate the room IDs
+    const roomId = org?.id + '/' + docId;
 
-        // Set the document state
-        setDocument(colabDoc);
-        isReady.current = true;
-        break;
+    // Join rooms
+    // --- Room 1: A Loro Document (%LOR) ---
+    const docAdaptor = new LoroAdaptor();
+    const docRoom = await client.join({
+      roomId: roomId,
+      crdtAdaptor: docAdaptor,
+    });
+    console.log('Connected to room ' + docId + '!');
 
-      case 'update':
-        // Make sure we're ready
-        if (!isReady.current || !userId || !document) {
-          return;
-        }
+    // --- Room 2: Ephemeral Presence (%EPH) on the SAME socket ---
+    const ephAdaptor = new LoroEphemeralAdaptor();
+    const presenceRoom = await client.join({
+      roomId: roomId, // Can be the same room ID, but different magic bytes
+      crdtAdaptor: ephAdaptor,
+    });
 
-        // Base64 decode the delta
-        const delta = Uint8Array.from(atob(msg.delta), (c) => c.charCodeAt(0));
-
-        // Apply the remote change
-        document.loroDoc.import(delta);
-
-        break;
-    }
-  }, [lastJsonMessage]);
-
-  // Function to broadcast local edits
-  const updateColabDoc = (delta: Uint8Array<ArrayBufferLike>) => {
-    // Make sure we're ready
-    if (!isReady.current || !userId || !document) {
-      return;
-    }
-
-    // Base64 encode the delta
-    const deltaBase64 = btoa(String.fromCharCode(...Array.from(delta)));
-
-    // Generate the update message
-    const msg: ColabDocSendUpdateMessage = {
-      type: 'update',
-      delta: deltaBase64,
-      user: userId,
-      peer: `${document.loroDoc.peerId}`,
+    const newConnectedDoc: ConnectedColabDoc = {
+      ...(document as Document),
+      loroDoc: docAdaptor.getDoc(),
+      ephStore: ephAdaptor.getStore(),
     };
 
-    // Send the message
-    sendJsonMessage(msg);
+    // Set the document state
+    setConnectedDoc(newConnectedDoc);
+
+    // Return the disconnect function
+    return () => {
+      presenceRoom.leave();
+      docRoom.leave();
+      docRoom.destroy();
+      presenceRoom.destroy();
+      client.cleanupRoom(docId, CrdtType.Loro);
+      client.cleanupRoom(docId, CrdtType.LoroEphemeralStore);
+      client.destroy();
+    };
   };
 
   return (
-    <ColabDocContext.Provider
-      value={{ docId, colabDoc: document, updateColabDoc }}
-    >
+    <ColabDocContext.Provider value={{ docId, colabDoc: connectedDoc }}>
       {children}
     </ColabDocContext.Provider>
   );
@@ -132,7 +130,6 @@ export function useColabDoc(): ColabDocContextType {
     return {
       docId: null,
       colabDoc: null,
-      updateColabDoc: null,
     };
   } else {
     return colabDocContext;

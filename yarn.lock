@@ -963,6 +963,13 @@
   resolved "https://registry.npmjs.org/@types/lodash/-/lodash-4.17.20.tgz"
   integrity sha512-H3MHACvFUEiujabxhaI/ImO6gUrd8oOurg7LQtS7mbwIXA/cUqWrvBsaeJ23aZEPk1TAYkurjfMbSELfoCXlGA==
 
+"@types/node@*":
+  version "24.10.1"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-24.10.1.tgz#91e92182c93db8bd6224fca031e2370cef9a8f01"
+  integrity sha512-GNWcUTRBgIRJD5zj+Tq0fKOJ5XZajIiBroOF0yvj2bSU1WvNdYS/dn9UxwsujGW4JX06dnHyjV2y9rRaybH0iQ==
+  dependencies:
+    undici-types "~7.16.0"
+
 "@types/node@^24.6.0":
   version "24.9.1"
   resolved "https://registry.npmjs.org/@types/node/-/node-24.9.1.tgz"
@@ -1008,6 +1015,13 @@
   version "2.0.25"
   resolved "https://registry.npmjs.org/@types/swagger-schema-official/-/swagger-schema-official-2.0.25.tgz"
   integrity sha512-T92Xav+Gf/Ik1uPW581nA+JftmjWPgskw/WBf4TJzxRG/SJ+DfNnNE+WuZ4mrXuzflQMqMkm1LSYjzYW7MB1Cg==
+
+"@types/ws@^8.18.1":
+  version "8.18.1"
+  resolved "https://registry.yarnpkg.com/@types/ws/-/ws-8.18.1.tgz#48464e4bf2ddfd17db13d845467f6070ffea4aa9"
+  integrity sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==
+  dependencies:
+    "@types/node" "*"
 
 "@typescript-eslint/eslint-plugin@8.46.2":
   version "8.46.2"
@@ -2482,6 +2496,13 @@ loose-envify@^1.4.0:
   dependencies:
     js-tokens "^3.0.0 || ^4.0.0"
 
+loro-adaptors@0.4.1, loro-adaptors@^0.4.1:
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/loro-adaptors/-/loro-adaptors-0.4.1.tgz#fec71e1c2a2bea9424302d88295d7f1fdf6d87e2"
+  integrity sha512-YNXLlTho7DOPqASL9S1b6FegeYie5U5dhPcBL3xxINyTDa1ZpMSYMbdLKCRYyuupSRXM0OF0xO+CHSxRBPIfIA==
+  dependencies:
+    loro-protocol "0.2.0"
+
 loro-crdt@^1.10.0:
   version "1.10.0"
   resolved "https://registry.yarnpkg.com/loro-crdt/-/loro-crdt-1.10.0.tgz#8ab5d4dfd5e279f07f3c85a69f894a3a754f741e"
@@ -2493,6 +2514,21 @@ loro-prosemirror@0.4.1:
   integrity sha512-Nly6ECBCaGKkXmycYSZFlSJaI4juhzH5ZjvYL0Eu2vLebvLcKx6sPtmpM/6KYp69CSBrF6xL1Q31B0rk2Z8qSA==
   dependencies:
     lib0 "^0.2.42"
+
+loro-protocol@0.2.0, loro-protocol@^0.4.1:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/loro-protocol/-/loro-protocol-0.2.0.tgz#34123e29939bb6824aab2c924e8146b831eb57d5"
+  integrity sha512-16FCgPj8A1ZCK8T97O9NWpZHbwJmPbq0WNhE+Nh0IDPxKRNYOi6XbPVfEsnnoe7gZW7X4OEdWERXm1O0W3vhwQ==
+
+loro-websocket@^0.4.1:
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/loro-websocket/-/loro-websocket-0.4.1.tgz#d7cfc551ce05b44889df53adc5d629c8adef40e5"
+  integrity sha512-qGEdsHmcZvokEotzVNYpsITt6B0RvqiMnFDS9cMhMFD8jlEUl0Twognex4xqGzrjSuuzoUcQUhvDD+p09D9Eqg==
+  dependencies:
+    "@types/ws" "^8.18.1"
+    loro-adaptors "0.4.1"
+    loro-protocol "0.2.0"
+    ws "^8.18.3"
 
 lru-cache@^5.1.1:
   version "5.1.1"
@@ -3762,6 +3798,11 @@ wrap-ansi@^7.0.0:
     ansi-styles "^4.0.0"
     string-width "^4.1.0"
     strip-ansi "^6.0.0"
+
+ws@^8.18.3:
+  version "8.18.3"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-8.18.3.tgz#b56b88abffde62791c639170400c93dcb0c95472"
+  integrity sha512-PEIGCY5tSlUt50cqyMXfCzX+oOPqN0vuGqWzbcJ2xvnkzkq46oOpz7dQaTDBdfICb4N14+GARUDw2XV2N4tvzg==
 
 y18n@^5.0.5:
   version "5.0.8"
