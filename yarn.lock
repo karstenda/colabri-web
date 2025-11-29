@@ -2515,7 +2515,7 @@ loro-prosemirror@0.4.1:
   dependencies:
     lib0 "^0.2.42"
 
-loro-protocol@0.2.0, loro-protocol@^0.4.1:
+loro-protocol@0.2.0, loro-protocol@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/loro-protocol/-/loro-protocol-0.2.0.tgz#34123e29939bb6824aab2c924e8146b831eb57d5"
   integrity sha512-16FCgPj8A1ZCK8T97O9NWpZHbwJmPbq0WNhE+Nh0IDPxKRNYOi6XbPVfEsnnoe7gZW7X4OEdWERXm1O0W3vhwQ==

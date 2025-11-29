@@ -5,13 +5,20 @@ import { ConnectedColabDoc } from '../../data/ColabDoc';
 import {
   useOrgUserId,
   useOrganization,
+  useUserProfile,
 } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
 
 import ColabDocContext, { ColabDocContextType } from './ColabDocContext';
 
 import { CrdtType } from 'loro-protocol';
 import { useDocument } from '../../../ui/hooks/useDocuments/useDocuments';
-import { ColabModelType, Document } from '../../../api/ColabriAPI';
+import {
+  ColabModelType,
+  Document,
+  Organization,
+} from '../../../api/ColabriAPI';
+import ColabEphemeralStoreManager from './ColabEphemeralStoreManager';
+import { getUserDisplayName, UserProfile } from '../../../ui/data/User';
 
 export type ColabDocProviderProps = {
   docId: string;
@@ -22,6 +29,7 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
   // Fetch the user and organization
   const org = useOrganization();
   const userId = useOrgUserId();
+  const userProfile = useUserProfile();
 
   // Fetch the targeted document
   const { document } = useDocument(
@@ -41,7 +49,13 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
 
   // Load initial document (via message or REST)
   useEffect(() => {
-    if (document === undefined || docId === undefined || userId === undefined) {
+    if (
+      org === null ||
+      document === undefined ||
+      docId === undefined ||
+      userId === null ||
+      userProfile === null
+    ) {
       return;
     }
 
@@ -52,11 +66,11 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
     // Check if we're NOT currently connected, then connect once
     if (!connected.current) {
       connected.current = true;
-      connect().then((disconnectFn) => {
+      connect(docId, org, userId, userProfile).then((disconnectFn) => {
         disconnectFnRef.current = disconnectFn;
       });
     }
-  }, [document, userId]);
+  }, [document, userId, userProfile]);
 
   // Cleanup on unmount only
   useEffect(() => {
@@ -69,7 +83,12 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
   }, []);
 
   // The function to connect.
-  const connect = async function (): Promise<() => void> {
+  const connect = async function (
+    docId: string,
+    org: Organization,
+    userId: string,
+    userProfile: UserProfile,
+  ): Promise<() => void> {
     // Create the client
     const client = new LoroWebsocketClient({ url: 'ws://localhost:9001' });
 
@@ -96,17 +115,39 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
       crdtAdaptor: ephAdaptor,
     });
 
+    // Extract the loroDoc
+    const loroDoc = docAdaptor.getDoc();
+
+    // Generate a random color for the user
+    const userColor = '#' + Math.floor(Math.random() * 16777215).toString(16);
+
+    // Create the ephemeral store manager
+    const ephStoreMgr = new ColabEphemeralStoreManager(
+      ephAdaptor.getStore(),
+      loroDoc.peerIdStr,
+      {
+        id: userId,
+        name: getUserDisplayName(userProfile),
+        avatar: userProfile?.avatarUrl,
+        color: userColor,
+      },
+    );
+
     const newConnectedDoc: ConnectedColabDoc = {
       ...(document as Document),
       loroDoc: docAdaptor.getDoc(),
-      ephStore: ephAdaptor.getStore(),
+      ephStoreMgr: ephStoreMgr,
     };
+
+    // Start broadcasting the user presence of this user
+    const cancelBcUserPresence = ephStoreMgr.broadcastUserPresence();
 
     // Set the document state
     setConnectedDoc(newConnectedDoc);
 
     // Return the disconnect function
     return () => {
+      cancelBcUserPresence();
       presenceRoom.leave();
       docRoom.leave();
       docRoom.destroy();

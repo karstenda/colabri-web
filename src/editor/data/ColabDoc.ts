@@ -1,5 +1,6 @@
-import { EphemeralStore, LoroDoc } from 'loro-crdt';
+import { LoroDoc } from 'loro-crdt';
 import { ColabModelType, StatementDocument } from '../../api/ColabriAPI';
+import ColabEphemeralStoreManager from '../components/ColabDocEditor/ColabEphemeralStoreManager';
 
 export type ColabDocType =
   | ColabModelType.ColabModelStatementType
@@ -9,5 +10,5 @@ export type UnconnectedColabDoc = StatementDocument;
 
 export type ConnectedColabDoc = Omit<UnconnectedColabDoc, 'statement'> & {
   loroDoc: LoroDoc;
-  ephStore: EphemeralStore;
+  ephStoreMgr: ColabEphemeralStoreManager;
 };

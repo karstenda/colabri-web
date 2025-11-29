@@ -1,18 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
-import ColabTextEditor from '../ColabTextEditor2/ColabTextEditor2';
+import ColabTextEditor from '../ColabTextEditor/ColabTextEditor';
 import { useColabDoc } from './ColabDocProvider';
 import { ContainerID, LoroDoc, LoroMap } from 'loro-crdt';
 import { LoroDocType } from 'loro-prosemirror';
+import ColabEphemeralStoreManager from './ColabEphemeralStoreManager';
 
-export type ColabDocEditorProps = {};
-
-export default function ColabDocEditor(props: ColabDocEditorProps) {
+export default function ColabDocEditor() {
   // Get the ColabDoc context
   const { colabDoc } = useColabDoc();
   // Local state
   const [editorVersion, setEditorVersion] = useState('');
   // Reference to the LoroDoc
   const loroDocRef = useRef<LoroDocType | null>(null);
+  const ephStoreMgrRef = useRef<ColabEphemeralStoreManager | null>(null);
+
+  // Temporary reference to the container we just want to render for now
   const loroContainerRef = useRef<ContainerID | null>(null);
 
   // Initialize version display and set up subscription
@@ -22,8 +24,8 @@ export default function ColabDocEditor(props: ColabDocEditorProps) {
       return;
     }
 
+    // For now, just target english 'en' content
     const loroDoc = colabDoc.loroDoc;
-
     const contentLoroMap = loroDoc.getMap('content');
     const enStatementBlock = contentLoroMap.getOrCreateContainer(
       'en',
@@ -35,9 +37,11 @@ export default function ColabDocEditor(props: ColabDocEditorProps) {
     );
     enTextElement.set('nodeName', 'doc');
 
-    // Store the LoroDoc reference
+    // Store the correct references
     loroDocRef.current = loroDoc as LoroDocType;
+    ephStoreMgrRef.current = colabDoc.ephStoreMgr;
     loroContainerRef.current = enTextElement.id;
+
     // Initial version update
     updateEditorVersion(loroDoc);
 
@@ -80,12 +84,15 @@ export default function ColabDocEditor(props: ColabDocEditorProps) {
       <div className="editor">
         <span>Version: {editorVersion}</span>
 
-        {loroDocRef.current !== null && loroContainerRef.current !== null && (
-          <ColabTextEditor
-            loro={loroDocRef.current}
-            containerId={loroContainerRef.current}
-          />
-        )}
+        {loroDocRef.current !== null &&
+          loroContainerRef.current !== null &&
+          ephStoreMgrRef.current !== null && (
+            <ColabTextEditor
+              loro={loroDocRef.current}
+              ephStoreMgr={ephStoreMgrRef.current}
+              containerId={loroContainerRef.current}
+            />
+          )}
       </div>
     );
   }

@@ -1,54 +1,131 @@
 import { useEffect, useRef } from 'react';
-import Quill from 'quill';
-import 'quill/dist/quill.core.css';
-import 'quill/dist/quill.bubble.css';
-import 'quill/dist/quill.snow.css';
-import { QuillBinding } from '../QuillEditor/binding';
-import { LoroDoc, LoroText } from 'loro-crdt';
+import {
+  CursorEphemeralStore,
+  LoroEphemeralCursorPlugin,
+  LoroDocType,
+  LoroSyncPlugin,
+  LoroUndoPlugin,
+  redo,
+  undo,
+} from 'loro-prosemirror';
+import { ContainerID } from 'loro-crdt';
+import { EditorState } from 'prosemirror-state';
+import { EditorView } from 'prosemirror-view';
+import { keymap } from 'prosemirror-keymap';
+import { DOMParser, Schema } from 'prosemirror-model';
+import { schema } from 'prosemirror-schema-basic';
+import { addListNodes } from 'prosemirror-schema-list';
+import { exampleSetup } from 'prosemirror-example-setup';
+import { buildMenuItems } from './menu';
+import './editor.css';
+import './base.css';
+import ColabEphemeralStoreManager from '../ColabDocEditor/ColabEphemeralStoreManager';
+
+const mySchema = new Schema({
+  nodes: addListNodes(schema.spec.nodes, 'paragraph block*', 'block'),
+  marks: schema.spec.marks,
+});
+
+const doc = DOMParser.fromSchema(mySchema).parse(document.createElement('div'));
+
+/* eslint-disable */
+const plugins = exampleSetup({
+  schema: mySchema,
+  history: false,
+  menuContent: buildMenuItems(mySchema).fullMenu as any,
+});
 
 export type ColabTextEditorProps = {
-  loroDoc: LoroDoc;
-  loroText: LoroText;
+  loro: LoroDocType;
+  ephStoreMgr: ColabEphemeralStoreManager;
+  containerId: ContainerID;
 };
 
-export default function ColabTextEditor(props: ColabTextEditorProps) {
-  const { loroDoc, loroText } = props;
+export default function ColabTextEditor({
+  loro,
+  ephStoreMgr,
+  containerId,
+}: ColabTextEditorProps) {
+  // Reference to the editor view
+  const editorRef = useRef<null | EditorView>(null);
 
-  // Prepare the elements needed to rendere
-  const editorRef = useRef<HTMLDivElement>(null);
+  // Reference to the DOM node that will contain the editor
+  const editorDom = useRef(null);
 
-  // Initialize the editor
+  // Reference to the Loro document
+  const loroRef = useRef(loro);
+  if (loroRef.current && loro && loroRef.current !== loro) {
+    throw new Error('loro ref cannot be changed');
+  }
+
+  // Reference to the ephemeral cursor store
+  const ephemeralCursorStoreRef = useRef<CursorEphemeralStore>(
+    new CursorEphemeralStore(loro.peerIdStr),
+  );
+
   useEffect(() => {
-    // Create a Quill editor
-    const quill = new Quill(editorRef.current!, {
-      modules: {
-        toolbar: [
-          [
-            {
-              header: [1, 2, 3, 4, false],
-            },
-          ],
-          ['bold', 'italic', 'underline', 'link'],
-        ],
-      },
-      //theme: 'bubble',
-      theme: 'bubble',
-      formats: ['bold', 'underline', 'header', 'italic', 'link'],
-      placeholder: 'Type something in here!',
+    // If we already initialized the editor, do nothing
+    if (editorRef.current) {
+      return;
+    }
+
+    // Bind the cursor store to the ephemeral store manager
+    const unBindEphCursorStore = ephStoreMgr.bindCursorStore(
+      containerId,
+      ephemeralCursorStoreRef.current,
+    );
+
+    // Build the list of plugins for the editor
+    const allPlugins = [
+      ...plugins,
+      LoroSyncPlugin({ doc: loroRef.current!, containerId }),
+      LoroUndoPlugin({ doc: loroRef.current! }),
+      LoroEphemeralCursorPlugin(ephemeralCursorStoreRef.current, {
+        createCursor: createCursor,
+      }),
+      keymap({
+        'Mod-z': (state) => undo(state, () => {}),
+        'Mod-y': (state) => redo(state, () => {}),
+        'Mod-Shift-z': (state) => redo(state, () => {}),
+      }),
+    ];
+
+    // Initialize the editor view
+    editorRef.current = new EditorView(editorDom.current, {
+      state: EditorState.create({ doc, plugins: allPlugins }),
     });
 
-    // Bind the LoroText to the Quill editor
-    const binding = new QuillBinding(loroDoc, loroText, quill);
-
-    // Nicely cleanup on unmount
+    // Cleanup function on unmount
     return () => {
-      binding.destroy();
+      unBindEphCursorStore();
     };
-  }, []);
+  }, [ephStoreMgr, containerId]);
+
+  // Function to create the cursor DOM element
+  const createCursor = (peerId: string) => {
+    let userPresence = ephStoreMgr.getUserPresence(peerId);
+    if (!userPresence) {
+      userPresence = {
+        name: peerId,
+        color: '#' + Math.floor(Math.random() * 16777215).toString(16),
+        id: '',
+      };
+    }
+    const cursor = document.createElement('span');
+    cursor.classList.add('ProseMirror-loro-cursor');
+    cursor.setAttribute('style', `border-color: ${userPresence.color}`);
+    const userDiv = document.createElement('div');
+    userDiv.setAttribute('style', `background-color: ${userPresence.color}`);
+    userDiv.insertBefore(document.createTextNode(userPresence.name), null);
+    const nonbreakingSpace1 = document.createTextNode('\u2060');
+    const nonbreakingSpace2 = document.createTextNode('\u2060');
+    cursor.insertBefore(nonbreakingSpace1, null);
+    cursor.insertBefore(userDiv, null);
+    cursor.insertBefore(nonbreakingSpace2, null);
+    return cursor;
+  };
 
   return (
-    <>
-      <div ref={editorRef} />
-    </>
+    <div id="editor" style={{ minHeight: 200, margin: 16 }} ref={editorDom} />
   );
 }
