@@ -12,28 +12,21 @@ import { ContainerID } from 'loro-crdt';
 import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { keymap } from 'prosemirror-keymap';
-import { DOMParser, Schema } from 'prosemirror-model';
-import { schema } from 'prosemirror-schema-basic';
-import { addListNodes } from 'prosemirror-schema-list';
-import { exampleSetup } from 'prosemirror-example-setup';
-import { buildMenuItems } from './menu';
+import { DOMParser } from 'prosemirror-model';
+import { statementTextSchema } from './StatementTextSchema';
 import './editor.css';
 import './base.css';
-import ColabEphemeralStoreManager from '../ColabDocEditor/ColabEphemeralStoreManager';
+import ColabEphemeralStoreManager from '../ColabDocEditor/EphemeralStoreManager';
+import ToolbarPlugin from '../ColabDocEditor/ToolbarMenu/ToolbarPlugin';
+import {
+  useSetActiveToolbar,
+  useSetToolbarSetup,
+} from '../ColabDocEditor/ToolbarMenu/ToolbarMenuProvider';
+import { createFormattingSetup } from '../ColabDocEditor/ToolbarMenu/FormattingMenuSetup';
 
-const mySchema = new Schema({
-  nodes: addListNodes(schema.spec.nodes, 'paragraph block*', 'block'),
-  marks: schema.spec.marks,
-});
-
+// Load the document according to the statement text schema
+const mySchema = statementTextSchema;
 const doc = DOMParser.fromSchema(mySchema).parse(document.createElement('div'));
-
-/* eslint-disable */
-const plugins = exampleSetup({
-  schema: mySchema,
-  history: false,
-  menuContent: buildMenuItems(mySchema).fullMenu as any,
-});
 
 export type ColabTextEditorProps = {
   loro: LoroDocType;
@@ -46,11 +39,20 @@ export default function ColabTextEditor({
   ephStoreMgr,
   containerId,
 }: ColabTextEditorProps) {
+  // Generate a unique editor ID based on the container ID
+  const editorId = 'editor-' + containerId;
+
   // Reference to the editor view
   const editorRef = useRef<null | EditorView>(null);
 
   // Reference to the DOM node that will contain the editor
   const editorDom = useRef(null);
+
+  // Function to set the toolbar menu state
+  const setToolbarSetup = useSetToolbarSetup();
+
+  // Function to set the active toolbar ID
+  const setActiveToolbar = useSetActiveToolbar();
 
   // Reference to the Loro document
   const loroRef = useRef(loro);
@@ -63,6 +65,13 @@ export default function ColabTextEditor({
     new CursorEphemeralStore(loro.peerIdStr),
   );
 
+  // Define the toolbar setup for this editor
+  const toolbarSetup = {
+    id: editorId,
+    formatting: { ...createFormattingSetup(mySchema) },
+  };
+
+  // Initialize the editor on component mount!
   useEffect(() => {
     // If we already initialized the editor, do nothing
     if (editorRef.current) {
@@ -77,11 +86,16 @@ export default function ColabTextEditor({
 
     // Build the list of plugins for the editor
     const allPlugins = [
-      ...plugins,
       LoroSyncPlugin({ doc: loroRef.current!, containerId }),
       LoroUndoPlugin({ doc: loroRef.current! }),
       LoroEphemeralCursorPlugin(ephemeralCursorStoreRef.current, {
         createCursor: createCursor,
+      }),
+      ToolbarPlugin({
+        toolbarId: editorId,
+        toolbarSetup,
+        setToolbarSetup,
+        setActiveToolbar,
       }),
       keymap({
         'Mod-z': (state) => undo(state, () => {}),
@@ -91,9 +105,13 @@ export default function ColabTextEditor({
     ];
 
     // Initialize the editor view
-    editorRef.current = new EditorView(editorDom.current, {
-      state: EditorState.create({ doc, plugins: allPlugins }),
+    const editorView = new EditorView(editorDom.current, {
+      state: EditorState.create({ doc, schema: mySchema, plugins: allPlugins }),
     });
+    editorRef.current = editorView;
+
+    // Set the toolbar setup in the global state
+    setToolbarSetup(editorId, toolbarSetup);
 
     // Cleanup function on unmount
     return () => {

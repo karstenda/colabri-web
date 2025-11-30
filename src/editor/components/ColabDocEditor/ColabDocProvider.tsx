@@ -17,7 +17,7 @@ import {
   Document,
   Organization,
 } from '../../../api/ColabriAPI';
-import ColabEphemeralStoreManager from './ColabEphemeralStoreManager';
+import ColabEphemeralStoreManager from './EphemeralStoreManager';
 import { getUserDisplayName, UserProfile } from '../../../ui/data/User';
 
 export type ColabDocProviderProps = {

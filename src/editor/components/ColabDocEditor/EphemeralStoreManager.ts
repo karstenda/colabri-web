@@ -24,7 +24,7 @@ export type UserPresence = {
 /**
  * A wrapper around the EphemeralStore to manage presence syncing across multiple containers in the colabdoc.
  */
-export default class ColabEphemeralStoreManager {
+export default class EphemeralStoreManager {
   // The underlying ephemeral store that this manager wraps around.
   private ephemeralStore: EphemeralStore<Record<string, Value>>;
 

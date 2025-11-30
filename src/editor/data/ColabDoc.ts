@@ -1,6 +1,6 @@
 import { LoroDoc } from 'loro-crdt';
 import { ColabModelType, StatementDocument } from '../../api/ColabriAPI';
-import ColabEphemeralStoreManager from '../components/ColabDocEditor/ColabEphemeralStoreManager';
+import ColabEphemeralStoreManager from '../components/ColabDocEditor/EphemeralStoreManager';
 
 export type ColabDocType =
   | ColabModelType.ColabModelStatementType

@@ -37,6 +37,26 @@ const router = createHashRouter([
     Component: OnboardPage,
   },
   {
+    path: 'org/:orgId/docs/:docId',
+    Component: () => (
+      <UserOrganizationProvider>
+        <OrgUserProtectedRoute>
+          <ColabDocEditorPage />
+        </OrgUserProtectedRoute>
+      </UserOrganizationProvider>
+    ),
+  },
+  {
+    path: 'org/:orgId/statements/:docId',
+    Component: () => (
+      <UserOrganizationProvider>
+        <OrgUserProtectedRoute>
+          <ColabDocEditorPage />
+        </OrgUserProtectedRoute>
+      </UserOrganizationProvider>
+    ),
+  },
+  {
     Component: () => (
       <UserOrganizationProvider>
         <OrgUserProtectedRoute>
@@ -94,10 +114,6 @@ const router = createHashRouter([
         Component: AttributeEditPage,
       },
       {
-        path: 'org/:orgId/docs/:docId',
-        Component: ColabDocEditorPage,
-      },
-      {
         path: 'org/:orgId/statements',
         Component: StatementListPage,
       },
@@ -116,10 +132,6 @@ const router = createHashRouter([
       {
         path: 'org/:orgId/statements/new',
         Component: StatementCreatePage,
-      },
-      {
-        path: 'org/:orgId/statements/:docId',
-        Component: ColabDocEditorPage,
       },
       {
         path: 'org/:orgId/config/languages/',

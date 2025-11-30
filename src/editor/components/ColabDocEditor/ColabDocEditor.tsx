@@ -3,7 +3,27 @@ import ColabTextEditor from '../ColabTextEditor/ColabTextEditor';
 import { useColabDoc } from './ColabDocProvider';
 import { ContainerID, LoroDoc, LoroMap } from 'loro-crdt';
 import { LoroDocType } from 'loro-prosemirror';
-import ColabEphemeralStoreManager from './ColabEphemeralStoreManager';
+import ColabEphemeralStoreManager from './EphemeralStoreManager';
+import {
+  EditorContentLeftColumn,
+  EditorContentMainColumn,
+  EditorContentRightColumn,
+  EditorContentWrapper,
+  EditorHeaderWrapper,
+  EditorTopHeaderLeftStack,
+  EditorTopHeaderRightStack,
+  EditorTopHeaderWrapper,
+  EditorToolbarWrapper,
+  EditorWrapper,
+} from './ColabDocEditorStyles';
+import Paper from '@mui/material/Paper';
+import ColabriSvgIcon from '../../../ui/components/MainLayout/icons/ColabriSvgIcon';
+import ShareIcon from '@mui/icons-material/Share';
+import ProfileMenu from '../../../ui/components/ProfileMenu/ProfileMenu';
+import ThemeSwitcher from '../../../ui/components/ThemeSwitcher/ThemeSwitcher';
+import { Button, Typography } from '@mui/material';
+import ToolbarMenuProvider from './ToolbarMenu/ToolbarMenuProvider';
+import ToolbarMenu from './ToolbarMenu/ToolbarMenu';
 
 export default function ColabDocEditor() {
   // Get the ColabDoc context
@@ -76,24 +96,56 @@ export default function ColabDocEditor() {
   if (colabDoc == null) {
     return <div>Loading document...</div>;
   } else {
-    // Extract the loroDoc
-    //const loroDoc = colabDoc.loroDoc;
-    //const loroText = loroDoc.getText('text');
-
     return (
-      <div className="editor">
-        <span>Version: {editorVersion}</span>
+      <>
+        <ToolbarMenuProvider>
+          <EditorWrapper>
+            <EditorHeaderWrapper>
+              <EditorTopHeaderWrapper>
+                <EditorTopHeaderLeftStack>
+                  <ColabriSvgIcon expanded={false} />
+                  <Typography variant="h6" component="div">
+                    {colabDoc.name}
+                  </Typography>
+                </EditorTopHeaderLeftStack>
+                <EditorTopHeaderRightStack>
+                  <Button variant="outlined" startIcon={<ShareIcon />}>
+                    Share
+                  </Button>
+                  <ThemeSwitcher />
+                  <ProfileMenu />
+                </EditorTopHeaderRightStack>
+              </EditorTopHeaderWrapper>
+              <EditorToolbarWrapper>
+                <ToolbarMenu />
+              </EditorToolbarWrapper>
+            </EditorHeaderWrapper>
+            <EditorContentWrapper>
+              <EditorContentLeftColumn></EditorContentLeftColumn>
 
-        {loroDocRef.current !== null &&
-          loroContainerRef.current !== null &&
-          ephStoreMgrRef.current !== null && (
-            <ColabTextEditor
-              loro={loroDocRef.current}
-              ephStoreMgr={ephStoreMgrRef.current}
-              containerId={loroContainerRef.current}
-            />
-          )}
-      </div>
+              {/* Main Editor Area */}
+              <EditorContentMainColumn>
+                <Paper>
+                  <div className="editor">
+                    <span>Version: {editorVersion}</span>
+
+                    {loroDocRef.current !== null &&
+                      loroContainerRef.current !== null &&
+                      ephStoreMgrRef.current !== null && (
+                        <ColabTextEditor
+                          loro={loroDocRef.current}
+                          ephStoreMgr={ephStoreMgrRef.current}
+                          containerId={loroContainerRef.current}
+                        />
+                      )}
+                  </div>
+                </Paper>
+              </EditorContentMainColumn>
+              <EditorContentRightColumn></EditorContentRightColumn>
+            </EditorContentWrapper>
+          </EditorWrapper>
+        </ToolbarMenuProvider>
+      </>
     );
   }
 }
