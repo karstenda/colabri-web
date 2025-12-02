@@ -133,16 +133,15 @@ export default function ContentTypeSelector({
   const theme = useTheme();
 
   // Fetch content types
-  const { data, isLoading } = useContentTypes(orgId, !!orgId);
+  const { contentTypes, isLoading } = useContentTypes(orgId, !!orgId);
 
   // Filter options by docType if specified
   const options = React.useMemo(() => {
-    const contentTypes = data?.data || [];
     if (docTypeFilter) {
       return contentTypes.filter((ct) => ct.docType === docTypeFilter);
     }
     return contentTypes;
-  }, [data, docTypeFilter]);
+  }, [contentTypes, docTypeFilter]);
 
   // Convert string codes to ContentType objects for internal use
   const normalizedValue = React.useMemo(() => {

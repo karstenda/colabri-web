@@ -1,14 +1,14 @@
 import React, { ReactNode } from 'react';
-import ToolbarMenuContext, {
-  ToolbarSetup,
-  ToolbarSetups,
-} from './ToolbarMenuContext';
+import ColabDocEditorContext, { ToolbarSetup } from './ColabDocEditorContext';
 import { EditorView } from 'prosemirror-view';
+import { ToolbarSetups } from '../../components/ToolbarMenu/ToolbarSetup';
 
 export function useToolbarContext() {
-  const context = React.useContext(ToolbarMenuContext);
+  const context = React.useContext(ColabDocEditorContext);
   if (!context) {
-    throw new Error('useToolbarSetup must be used within ToolbarMenuProvider');
+    throw new Error(
+      'useToolbarSetup must be used within ColabDocEditorProvider',
+    );
   }
   return context;
 }
@@ -67,13 +67,23 @@ export function useActiveToolbarSetup() {
   }
 }
 
-type ToolbarMenuProviderProps = {
+export function useActiveBlockId() {
+  const context = useToolbarContext();
+  return context.activeBlockId;
+}
+
+export function useSetActiveBlockId() {
+  const context = useToolbarContext();
+  return context.setActiveBlockId;
+}
+
+type ColabDocEditorProviderProps = {
   children: ReactNode;
 };
 
-export default function ToolbarMenuProvider({
+export default function ColabDocEditorProvider({
   children,
-}: ToolbarMenuProviderProps) {
+}: ColabDocEditorProviderProps) {
   // Initialize the state that will keep track of the active toolbar ID
   const [activeToolbarId, setActiveToolbarId] = React.useState<string | null>(
     null,
@@ -83,21 +93,26 @@ export default function ToolbarMenuProvider({
   const [activeEditorView, setActiveEditorView] =
     React.useState<EditorView | null>(null);
 
+  // The currently active block ID
+  const [activeBlockId, setActiveBlockId] = React.useState<string | null>(null);
+
   // Intialize the state that will keep track of toolbar setups
   const [toolbarSetups, setToolbarSetups] = React.useState<ToolbarSetups>({});
 
   return (
-    <ToolbarMenuContext.Provider
+    <ColabDocEditorContext.Provider
       value={{
         activeToolbarId,
         setActiveToolbarId,
         activeEditorView,
         setActiveEditorView,
+        activeBlockId,
+        setActiveBlockId,
         toolbarSetups,
         setToolbarSetups,
       }}
     >
       {children}
-    </ToolbarMenuContext.Provider>
+    </ColabDocEditorContext.Provider>
   );
 }

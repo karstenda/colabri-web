@@ -12,17 +12,19 @@ import { ContainerID } from 'loro-crdt';
 import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { keymap } from 'prosemirror-keymap';
+import { baseKeymap } from 'prosemirror-commands';
 import { DOMParser } from 'prosemirror-model';
 import { statementTextSchema } from './StatementTextSchema';
 import './editor.css';
-import './base.css';
 import ColabEphemeralStoreManager from '../ColabDocEditor/EphemeralStoreManager';
-import ToolbarPlugin from '../ColabDocEditor/ToolbarMenu/ToolbarPlugin';
+import ToolbarPlugin from './plugins/ToolbarPlugin';
 import {
   useSetActiveToolbar,
   useSetToolbarSetup,
-} from '../ColabDocEditor/ToolbarMenu/ToolbarMenuProvider';
-import { createFormattingSetup } from '../ColabDocEditor/ToolbarMenu/FormattingMenuSetup';
+} from '../../context/ColabDocEditorContext/ColabDocEditorProvider';
+import { createFormattingSetup } from '../ToolbarMenu/FormattingMenuSetup';
+import { useColorScheme } from '@mui/material/styles';
+import FocusPlugin from './plugins/FocusPlugin';
 
 // Load the document according to the statement text schema
 const mySchema = statementTextSchema;
@@ -32,15 +34,22 @@ export type ColabTextEditorProps = {
   loro: LoroDocType;
   ephStoreMgr: ColabEphemeralStoreManager;
   containerId: ContainerID;
+  onFocus?: () => void;
+  onBlur?: () => void;
 };
 
 export default function ColabTextEditor({
   loro,
   ephStoreMgr,
   containerId,
+  onFocus,
+  onBlur,
 }: ColabTextEditorProps) {
+  // Get the color scheme
+  const { mode } = useColorScheme();
+
   // Generate a unique editor ID based on the container ID
-  const editorId = 'editor-' + containerId;
+  const editorId = 'editor:' + containerId;
 
   // Reference to the editor view
   const editorRef = useRef<null | EditorView>(null);
@@ -71,6 +80,22 @@ export default function ColabTextEditor({
     formatting: { ...createFormattingSetup(mySchema) },
   };
 
+  // Define what to do on editor focus
+  const onEditorFocus = () => {
+    setActiveToolbar(editorId, editorRef.current);
+    if (onFocus) {
+      onFocus();
+    }
+  };
+
+  // Define what to do on editor blur
+  const onEditorBlur = () => {
+    setActiveToolbar(null, null);
+    if (onBlur) {
+      onBlur();
+    }
+  };
+
   // Initialize the editor on component mount!
   useEffect(() => {
     // If we already initialized the editor, do nothing
@@ -97,11 +122,16 @@ export default function ColabTextEditor({
         setToolbarSetup,
         setActiveToolbar,
       }),
+      FocusPlugin({
+        onFocus: onEditorFocus,
+        onBlur: onEditorBlur,
+      }),
       keymap({
         'Mod-z': (state) => undo(state, () => {}),
         'Mod-y': (state) => redo(state, () => {}),
         'Mod-Shift-z': (state) => redo(state, () => {}),
       }),
+      keymap(baseKeymap),
     ];
 
     // Initialize the editor view
@@ -143,7 +173,11 @@ export default function ColabTextEditor({
     return cursor;
   };
 
-  return (
-    <div id="editor" style={{ minHeight: 200, margin: 16 }} ref={editorDom} />
-  );
+  // Get the color scheme and generate the class name
+  let className = 'ColabTextEditor';
+  if (mode === 'dark') {
+    className += ' dark';
+  }
+
+  return <div id={'editor'} className={className} ref={editorDom} />;
 }

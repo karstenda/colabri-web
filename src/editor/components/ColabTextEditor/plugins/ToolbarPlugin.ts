@@ -1,7 +1,7 @@
 import { PluginKey, Plugin as ProseMirrorPlugin } from 'prosemirror-state';
-import { ToolbarSetup } from './ToolbarMenuContext';
+import { ToolbarSetup } from '../../ToolbarMenu/ToolbarSetup';
 import { EditorView } from 'prosemirror-view';
-import { FormattingSetup } from './FormattingMenuSetup';
+import { FormattingSetup } from '../../ToolbarMenu/FormattingMenuSetup';
 
 type ToolbarPluginProps = {
   toolbarId: string;
@@ -17,9 +17,8 @@ const ToolbarPlugin = ({
   toolbarId,
   toolbarSetup,
   setToolbarSetup,
-  setActiveToolbar,
 }: ToolbarPluginProps): ProseMirrorPlugin => {
-  const key = new PluginKey('toolbar-plugin');
+  const key = new PluginKey('colabri-toolbar-plugin');
 
   // Create a ProseMirror plugin that updates the toolbar state on editor changes
   return new ProseMirrorPlugin({
@@ -68,19 +67,6 @@ const ToolbarPlugin = ({
           setToolbarSetup(toolbarId, undefined);
         },
       };
-    },
-    props: {
-      // Start tracking focus/blur events to potentially update toolbar state
-      handleDOMEvents: {
-        blur: () => {
-          setActiveToolbar(null, null);
-          return false;
-        },
-        focus: (view) => {
-          setActiveToolbar(toolbarId, view);
-          return false;
-        },
-      },
     },
   });
 };

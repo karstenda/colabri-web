@@ -1,5 +1,5 @@
 import React from 'react';
-import { ColabDocProvider } from '../../../editor/components/ColabDocEditor/ColabDocProvider';
+import { ColabDocProvider } from '../../../editor/context/ColabDocContext/ColabDocProvider';
 import ColabDocEditor from '../../../editor/components/ColabDocEditor/ColabDocEditor';
 import { useParams } from 'react-router';
 

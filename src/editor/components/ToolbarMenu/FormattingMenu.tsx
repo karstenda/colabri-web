@@ -9,7 +9,7 @@ import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import FormatIndentDecreaseIcon from '@mui/icons-material/FormatIndentDecrease';
 import { FormattingSetup } from './FormattingMenuSetup';
-import { useActiveEditorView } from './ToolbarMenuProvider';
+import { useActiveEditorView } from '../../context/ColabDocEditorContext/ColabDocEditorProvider';
 import { Command } from 'prosemirror-state';
 import { ToolbarMenuDivider } from './ToolbarMenuStyles';
 

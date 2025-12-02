@@ -77,9 +77,26 @@ export const EditorContentLeftColumn = styled(Box)(({}) => ({
 
 export const EditorContentMainColumn = styled(Box)(({}) => ({
   flexGrow: 0,
+  width: '100%',
   maxWidth: '800px',
 }));
 
 export const EditorContentRightColumn = styled(Box)(({}) => ({
   flexGrow: 1,
+}));
+
+export const DocumentTypeLabel = styled(Box)(({ theme }) => ({
+  backgroundColor: (theme.vars || theme).palette.grey[200],
+  color: (theme.vars || theme).palette.text.secondary,
+  padding: theme.spacing(0.5, 1),
+  borderRadius: '4px',
+  fontSize: '0.75rem',
+  fontWeight: 500,
+}));
+
+export const EditorContentBlock = styled(Box)(({ theme }) => ({
+  backgroundColor: (theme.vars || theme).palette.background.default,
+  border: `1px solid ${theme.palette.divider}`,
+  padding: theme.spacing(2),
+  borderRadius: '6px',
 }));

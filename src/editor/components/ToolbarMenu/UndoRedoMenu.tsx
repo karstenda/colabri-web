@@ -1,7 +1,7 @@
 import { Stack } from '@mui/material';
 import UndoIcon from '@mui/icons-material/Undo';
 import RedoIcon from '@mui/icons-material/Redo';
-import { useActiveEditorView } from './ToolbarMenuProvider';
+import { useActiveEditorView } from '../../context/ColabDocEditorContext/ColabDocEditorProvider';
 import { UndoRedoButton } from './ToolbarMenuStyles';
 import { undo, redo, canUndo, canRedo } from 'loro-prosemirror';
 

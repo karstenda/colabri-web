@@ -1,7 +1,8 @@
 import FormattingMenu from './FormattingMenu';
-import { useActiveToolbarSetup } from './ToolbarMenuProvider';
+import { useActiveToolbarSetup } from '../../context/ColabDocEditorContext/ColabDocEditorProvider';
 import UndoRedoMenu from './UndoRedoMenu';
 import { ToolbarMenuDivider } from './ToolbarMenuStyles';
+import StatementMenu from './StatementMenu';
 
 export default function ToolbarMenu() {
   const toolbarSetup = useActiveToolbarSetup();
@@ -10,6 +11,7 @@ export default function ToolbarMenu() {
       <UndoRedoMenu />
       <ToolbarMenuDivider />
       <FormattingMenu setup={toolbarSetup?.formatting || {}} />
+      <StatementMenu />
     </>
   );
 }

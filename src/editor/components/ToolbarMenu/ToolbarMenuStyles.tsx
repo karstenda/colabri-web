@@ -1,5 +1,6 @@
 import { styled } from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
+import { Button } from '@mui/material';
 
 export const FormattingButton = styled(IconButton, {
   shouldForwardProp: (prop) => prop !== 'active',
@@ -40,13 +41,28 @@ export const UndoRedoButton = styled(IconButton)(({ theme }) => ({
 }));
 
 export const ToolbarMenuDivider = styled('div')(({ theme }) => ({
-  borderColor: (theme.vars || theme).palette.grey[200],
   marginLeft: `${theme.spacing(1)} !important`,
   marginRight: `${theme.spacing(1)} !important`,
-  borderLeft: '1px solid',
+  borderLeft: `1px solid ${(theme.vars || theme).palette.grey[200]}`,
   alignSelf: 'center',
   height: '24px',
   ...theme.applyStyles('dark', {
-    borderColor: (theme.vars || theme).palette.grey[600],
+    borderLeft: `1px solid ${(theme.vars || theme).palette.grey[600]}`,
+  }),
+}));
+
+export const ToolbarButton = styled(Button)(({ theme }) => ({
+  height: '28px',
+  padding: '4px 8px',
+  borderRadius: '4px',
+  textTransform: 'none',
+  fontSize: '12px',
+  '&:hover': {
+    backgroundColor: (theme.vars || theme).palette.grey[200],
+  },
+  ...theme.applyStyles('dark', {
+    '&:hover': {
+      backgroundColor: (theme.vars || theme).palette.grey[600],
+    },
   }),
 }));

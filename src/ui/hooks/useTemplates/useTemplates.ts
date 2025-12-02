@@ -36,5 +36,5 @@ export const useContentTypes = (orgId: string, enabled = true) => {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  return { data, isLoading, error, refetch };
+  return { contentTypes: data?.data || [], isLoading, error, refetch };
 };
