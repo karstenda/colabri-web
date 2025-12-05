@@ -41,7 +41,11 @@ const router = createHashRouter([
     Component: () => (
       <UserOrganizationProvider>
         <OrgUserProtectedRoute>
-          <ColabDocEditorPage />
+          <NotificationsProvider>
+            <DialogsProvider>
+              <ColabDocEditorPage />
+            </DialogsProvider>
+          </NotificationsProvider>
         </OrgUserProtectedRoute>
       </UserOrganizationProvider>
     ),
@@ -51,7 +55,11 @@ const router = createHashRouter([
     Component: () => (
       <UserOrganizationProvider>
         <OrgUserProtectedRoute>
-          <ColabDocEditorPage />
+          <NotificationsProvider>
+            <DialogsProvider>
+              <ColabDocEditorPage />
+            </DialogsProvider>
+          </NotificationsProvider>
         </OrgUserProtectedRoute>
       </UserOrganizationProvider>
     ),
@@ -60,7 +68,11 @@ const router = createHashRouter([
     Component: () => (
       <UserOrganizationProvider>
         <OrgUserProtectedRoute>
-          <MainLayout />
+          <NotificationsProvider>
+            <DialogsProvider>
+              <MainLayout />
+            </DialogsProvider>
+          </NotificationsProvider>
         </OrgUserProtectedRoute>
       </UserOrganizationProvider>
     ),
@@ -165,11 +177,8 @@ export default function App(props: { disableCustomTheme?: boolean }) {
     <QueryClientProvider client={queryClient}>
       <AppTheme {...props} themeComponents={themeComponents}>
         <CssBaseline enableColorScheme />
-        <NotificationsProvider>
-          <DialogsProvider>
-            <RouterProvider router={router} />
-          </DialogsProvider>
-        </NotificationsProvider>
+
+        <RouterProvider router={router} />
       </AppTheme>
     </QueryClientProvider>
   );

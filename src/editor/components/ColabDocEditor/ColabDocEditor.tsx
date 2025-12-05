@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useColabDoc } from '../../context/ColabDocContext/ColabDocProvider';
 import { LoroMap } from 'loro-crdt';
-import { LoroDocType } from 'loro-prosemirror';
 import ColabEphemeralStoreManager from './EphemeralStoreManager';
 import {
   EditorContentLeftColumn,
@@ -15,18 +14,20 @@ import {
   EditorToolbarWrapper,
   EditorWrapper,
   DocumentTypeLabel,
+  EditorContentBlockTrack,
 } from './ColabDocEditorStyles';
 import ColabriSvgIcon from '../../../ui/components/MainLayout/icons/ColabriSvgIcon';
-import ShareIcon from '@mui/icons-material/Share';
 import ProfileMenu from '../../../ui/components/ProfileMenu/ProfileMenu';
 import ThemeSwitcher from '../../../ui/components/ThemeSwitcher/ThemeSwitcher';
-import { Button, Stack, Typography } from '@mui/material';
+import { Stack, Typography, useMediaQuery } from '@mui/material';
 import ColabDocEditorProvider from '../../context/ColabDocEditorContext/ColabDocEditorProvider';
 import ToolbarMenu from '../ToolbarMenu/ToolbarMenu';
 import StatementBlock from '../blocks/StatementBlock/StatementBlock';
 import { useContentTypes } from '../../../ui/hooks/useTemplates/useTemplates';
 import { useOrganization } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
 import { ContentType } from '../../../api/ColabriAPI';
+import { ColabLoroDoc } from '../../data/ColabDoc';
+import ManageDocButton from '../ManageDocButton/ManageDocButton';
 
 export default function ColabDocEditor() {
   // Get the ColabDoc context
@@ -35,6 +36,9 @@ export default function ColabDocEditor() {
   // Get the organization
   const organization = useOrganization();
 
+  // Get the viewport size
+  const compactView = useMediaQuery('(max-width:800px)');
+
   // Get the content types
   const { contentTypes } = useContentTypes(
     organization?.id || '',
@@ -42,7 +46,7 @@ export default function ColabDocEditor() {
   );
 
   // Reference to the LoroDoc
-  const loroDocRef = useRef<LoroDocType | null>(null);
+  const loroDocRef = useRef<ColabLoroDoc | null>(null);
   const ephStoreMgrRef = useRef<ColabEphemeralStoreManager | null>(null);
 
   // Reference to the content type
@@ -71,7 +75,7 @@ export default function ColabDocEditor() {
     }
 
     // Store the correct references
-    loroDocRef.current = loroDoc as LoroDocType;
+    loroDocRef.current = loroDoc;
     ephStoreMgrRef.current = colabDoc.ephStoreMgr;
 
     // Listen for changes in the LoroDoc
@@ -111,10 +115,8 @@ export default function ColabDocEditor() {
                   </Stack>
                 </EditorTopHeaderLeftStack>
                 <EditorTopHeaderRightStack>
-                  <Button variant="outlined" startIcon={<ShareIcon />}>
-                    Share
-                  </Button>
-                  <ThemeSwitcher />
+                  <ManageDocButton />
+                  {!compactView && <ThemeSwitcher />}
                   <ProfileMenu />
                 </EditorTopHeaderRightStack>
               </EditorTopHeaderWrapper>
@@ -127,7 +129,9 @@ export default function ColabDocEditor() {
 
               {/* Main Editor Area */}
               <EditorContentMainColumn>
-                <StatementBlock bp={{}} />
+                <EditorContentBlockTrack>
+                  <StatementBlock bp={{}} />
+                </EditorContentBlockTrack>
               </EditorContentMainColumn>
               <EditorContentRightColumn></EditorContentRightColumn>
             </EditorContentWrapper>

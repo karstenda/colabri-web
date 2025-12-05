@@ -24,6 +24,10 @@ import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
+import ResolvedPrplsProvider, {
+  useCachedResolvedPrpl,
+} from '../../context/PrplsContext/ResolvedPrplsProvider';
+import IdentityDisplay from '../IdentityDisplay/IdentityDisplay';
 
 const INITIAL_PAGE_SIZE = 10;
 
@@ -100,6 +104,23 @@ function StatementsGrid(props: StatementsGridProps) {
     },
   });
 
+  // Extract all the prpls from the statements that we potentially need to display
+  const statementPrpls = React.useMemo(() => {
+    const prplSet = new Set<string>();
+    statements.forEach((statement) => {
+      if (statement.owner) {
+        prplSet.add(statement.owner);
+      }
+      if (statement.createdBy) {
+        prplSet.add(statement.createdBy);
+      }
+      if (statement.updatedBy) {
+        prplSet.add(statement.updatedBy);
+      }
+    });
+    return Array.from(prplSet);
+  }, [statements]);
+
   // When a statement is to be deleted
   const handleStatementDelete = React.useCallback(
     (statement: StatementDocument) => async () => {
@@ -172,8 +193,28 @@ function StatementsGrid(props: StatementsGridProps) {
     () => [
       { field: 'name', headerName: 'Name', width: 250, flex: 1 },
       { field: 'type', headerName: 'Type', width: 150 },
-      { field: 'owner', headerName: 'Owner', width: 150 },
-      { field: 'createdBy', headerName: 'Created By', width: 150 },
+      {
+        field: 'owner',
+        headerName: 'Owner',
+        width: 150,
+        renderCell: (row) => (
+          <IdentityDisplay
+            inTable={true}
+            resolvedPrpl={useCachedResolvedPrpl(row.row.owner)}
+          />
+        ),
+      },
+      {
+        field: 'createdBy',
+        headerName: 'Created By',
+        width: 150,
+        renderCell: (row) => (
+          <IdentityDisplay
+            inTable={true}
+            resolvedPrpl={useCachedResolvedPrpl(row.row.createdBy)}
+          />
+        ),
+      },
       {
         field: 'createdAt',
         headerName: 'Created',
@@ -194,6 +235,7 @@ function StatementsGrid(props: StatementsGridProps) {
         type: 'actions',
         flex: 1,
         align: 'right',
+        width: 100,
         getActions: editable
           ? (params) => [
               <GridActionsCellItem
@@ -245,60 +287,64 @@ function StatementsGrid(props: StatementsGridProps) {
         </Stack>
       )}
 
-      <DataGrid
-        rows={statements}
-        rowCount={statements.length}
-        columns={columns}
-        columnVisibilityModel={columnVisibilityModel}
-        onColumnVisibilityModelChange={(newModel) =>
-          setColumnVisibilityModel(newModel)
-        }
-        pagination
-        sortingMode="server"
-        filterMode="server"
-        paginationMode="server"
-        paginationModel={paginationModel}
-        onPaginationModelChange={(newModel) => setPaginationModel(newModel)}
-        sortModel={sortModel}
-        onSortModelChange={(newModel) => setSortModel(newModel)}
-        filterModel={filterModel}
-        onFilterModelChange={(newModel) => setFilterModel(newModel)}
-        disableRowSelectionOnClick
-        onRowClick={(params) =>
-          handleClick ? handleClick(params.row) : defaultHandleClick(params.row)
-        }
-        loading={isLoading}
-        pageSizeOptions={[5, INITIAL_PAGE_SIZE, 25]}
-        sx={{
-          [`& .${gridClasses.columnHeader}, & .${gridClasses.cell}`]: {
-            outline: 'transparent',
-          },
-          [`& .${gridClasses.columnHeader}:focus-within, & .${gridClasses.cell}:focus-within`]:
-            {
-              outline: 'none',
+      <ResolvedPrplsProvider prpls={statementPrpls}>
+        <DataGrid
+          rows={statements}
+          rowCount={statements.length}
+          columns={columns}
+          columnVisibilityModel={columnVisibilityModel}
+          onColumnVisibilityModelChange={(newModel) =>
+            setColumnVisibilityModel(newModel)
+          }
+          pagination
+          sortingMode="server"
+          filterMode="server"
+          paginationMode="server"
+          paginationModel={paginationModel}
+          onPaginationModelChange={(newModel) => setPaginationModel(newModel)}
+          sortModel={sortModel}
+          onSortModelChange={(newModel) => setSortModel(newModel)}
+          filterModel={filterModel}
+          onFilterModelChange={(newModel) => setFilterModel(newModel)}
+          disableRowSelectionOnClick
+          onRowClick={(params) =>
+            handleClick
+              ? handleClick(params.row)
+              : defaultHandleClick(params.row)
+          }
+          loading={isLoading}
+          pageSizeOptions={[5, INITIAL_PAGE_SIZE, 25]}
+          sx={{
+            [`& .${gridClasses.columnHeader}, & .${gridClasses.cell}`]: {
+              outline: 'transparent',
             },
-          [`& .${gridClasses.row}:hover`]: {
-            cursor: 'pointer',
-          },
-        }}
-        slotProps={{
-          loadingOverlay: {
-            variant: 'circular-progress',
-            noRowsVariant: 'circular-progress',
-          },
-          baseIconButton: {
-            size: 'small',
-          },
-          toolbar: {
-            quickFilterProps: {
-              debounceMs: 500,
+            [`& .${gridClasses.columnHeader}:focus-within, & .${gridClasses.cell}:focus-within`]:
+              {
+                outline: 'none',
+              },
+            [`& .${gridClasses.row}:hover`]: {
+              cursor: 'pointer',
             },
-            showQuickFilter: true,
-            csvOptions: { disableToolbarButton: true },
-            printOptions: { disableToolbarButton: true },
-          },
-        }}
-      />
+          }}
+          slotProps={{
+            loadingOverlay: {
+              variant: 'circular-progress',
+              noRowsVariant: 'circular-progress',
+            },
+            baseIconButton: {
+              size: 'small',
+            },
+            toolbar: {
+              quickFilterProps: {
+                debounceMs: 500,
+              },
+              showQuickFilter: true,
+              csvOptions: { disableToolbarButton: true },
+              printOptions: { disableToolbarButton: true },
+            },
+          }}
+        />
+      </ResolvedPrplsProvider>
     </Stack>
   );
 }

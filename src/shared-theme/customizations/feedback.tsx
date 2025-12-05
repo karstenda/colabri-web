@@ -31,6 +31,15 @@ export const feedbackCustomizations: Components<Theme> = {
       }),
     },
   },
+  MuiDialogActions: {
+    styleOverrides: {
+      root: ({ theme }) => ({
+        paddingLeft: theme.spacing(3),
+        paddingRight: theme.spacing(3),
+        paddingBottom: theme.spacing(2),
+      }),
+    },
+  },
   MuiLinearProgress: {
     styleOverrides: {
       root: ({ theme }) => ({

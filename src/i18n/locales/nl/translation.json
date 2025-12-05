@@ -1,0 +1,51 @@
+{
+  "common": {
+    "save": "Opslaan",
+    "cancel": "Annuleren",
+    "delete": "Verwijderen",
+    "edit": "Bewerken",
+    "create": "Aanmaken",
+    "update": "Bijwerken",
+    "search": "Zoeken",
+    "loading": "Laden...",
+    "error": "Er is een fout opgetreden",
+    "success": "Succesvol",
+    "confirm": "Bevestigen",
+    "back": "Terug",
+    "next": "Volgende",
+    "submit": "Verzenden",
+    "close": "Sluiten"
+  },
+  "navigation": {
+    "home": "Home",
+    "documents": "Documenten",
+    "statements": "Verklaringen",
+    "users": "Gebruikers",
+    "groups": "Groepen",
+    "settings": "Instellingen",
+    "profile": "Profiel",
+    "logout": "Uitloggen"
+  },
+  "permissions": {
+    "view": "Bekijken",
+    "edit": "Bewerken",
+    "approve": "Goedkeuren",
+    "manage": "Beheren",
+    "add-remove": "Toevoegen/Verwijderen",
+    "delete": "Verwijderen",
+    "sections": {
+      "document": "Document Permissies",
+      "language": "Taal Permissies"
+    }
+  },
+  "editor": {
+    "toolbar": {
+      "addLanguage": "Toevoegen",
+      "removeLanguage": "Verwijderen",
+      "manageLanguage": "Beheren",
+      "addLanguageTooltip": "Nieuwe taal toevoegen",
+      "removeLanguageTooltip": "Geselecteerde taal verwijderen",
+      "manageLanguageTooltip": "Taal beheren"
+    }
+  }
+}

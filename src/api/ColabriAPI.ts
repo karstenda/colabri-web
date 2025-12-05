@@ -10,43 +10,50 @@
  * ---------------------------------------------------------------
  */
 
+export enum ResolvedPrplType {
+  ResolvedPrplUserType = "user",
+  ResolvedPrplGroupType = "group",
+  ResolvedPrplSystemType = "system",
+  ResolvedPrplUnknownType = "unknown",
+}
+
 export enum OrganizationStatus {
-  OrgStatusFree = 'free',
-  OrgStatusTrial = 'trial',
-  OrgStatusTrialExpired = 'trial_expired',
-  OrgStatusSubscribed = 'subscribed',
-  OrgStatusSubscriptionExpired = 'subscription_expired',
+  OrgStatusFree = "free",
+  OrgStatusTrial = "trial",
+  OrgStatusTrialExpired = "trial_expired",
+  OrgStatusSubscribed = "subscribed",
+  OrgStatusSubscriptionExpired = "subscription_expired",
 }
 
 export enum DocumentType {
-  DocumentTypeColabDoc = 'colab-doc',
-  DocumentTypeColabStatement = 'colab-statement',
+  DocumentTypeColabDoc = "colab-doc",
+  DocumentTypeColabStatement = "colab-statement",
 }
 
 export enum ContentLanguageDirection {
-  ContentLanguageDirectionLTR = 'ltr',
-  ContentLanguageDirectionRTL = 'rtl',
+  ContentLanguageDirectionLTR = "ltr",
+  ContentLanguageDirectionRTL = "rtl",
 }
 
 export enum ColabModelType {
-  ColabModelStatementType = 'colab-statement',
-  ColabModelSheetType = 'colab-sheet',
+  ColabModelStatementType = "colab-statement",
+  ColabModelSheetType = "colab-sheet",
 }
 
 export enum ColabCommentType {
-  ColabCommentUserType = 'user',
+  ColabCommentUserType = "user",
 }
 
 export enum ColabCommentState {
-  ColabCommentStateOpen = 'open',
-  ColabCommentStateResolved = 'resolved',
+  ColabCommentStateOpen = "open",
+  ColabCommentStateResolved = "resolved",
 }
 
 export enum AttributeType {
-  AttributeTypeString = 'string',
-  AttributeTypeNumber = 'number',
-  AttributeTypeBoolean = 'boolean',
-  AttributeTypeDate = 'date',
+  AttributeTypeString = "string",
+  AttributeTypeNumber = "number",
+  AttributeTypeBoolean = "boolean",
+  AttributeTypeDate = "date",
 }
 
 export interface AddGroupMembersRequest {
@@ -96,7 +103,7 @@ export interface ColabModelProperties {
   type: ColabModelType;
 }
 
-export interface ColabStatementBlock {
+export interface ColabStatementElement {
   acls?: Record<string, string[]>;
   comments?: ColabComment[];
   textElement: TextElement;
@@ -104,7 +111,7 @@ export interface ColabStatementBlock {
 
 export interface ColabStatementModel {
   acls?: Record<string, string[]>;
-  content: Record<string, ColabStatementBlock>;
+  content: Record<string, ColabStatementElement>;
   properties: ColabModelProperties;
 }
 
@@ -238,6 +245,14 @@ export interface RemoveGroupMembersRequest {
   userIds: string[];
 }
 
+export interface ResolvedPrpl {
+  group?: Group;
+  prpl: string;
+  system?: string;
+  type: ResolvedPrplType;
+  user?: User;
+}
+
 export interface StatementDocument {
   acls: Record<string, string[]>;
   createdAt: string;
@@ -304,9 +319,9 @@ export interface User {
 }
 
 export type QueryParamsType = Record<string | number, any>;
-export type ResponseFormat = keyof Omit<Body, 'body' | 'bodyUsed'>;
+export type ResponseFormat = keyof Omit<Body, "body" | "bodyUsed">;
 
-export interface FullRequestParams extends Omit<RequestInit, 'body'> {
+export interface FullRequestParams extends Omit<RequestInit, "body"> {
   /** set parameter to `true` for call `securityWorker` for this request */
   secure?: boolean;
   /** request path */
@@ -327,12 +342,12 @@ export interface FullRequestParams extends Omit<RequestInit, 'body'> {
 
 export type RequestParams = Omit<
   FullRequestParams,
-  'body' | 'method' | 'query' | 'path'
+  "body" | "method" | "query" | "path"
 >;
 
 export interface ApiConfig<SecurityDataType = unknown> {
   baseUrl?: string;
-  baseApiParams?: Omit<RequestParams, 'baseUrl' | 'cancelToken' | 'signal'>;
+  baseApiParams?: Omit<RequestParams, "baseUrl" | "cancelToken" | "signal">;
   securityWorker?: (
     securityData: SecurityDataType | null,
   ) => Promise<RequestParams | void> | RequestParams | void;
@@ -348,26 +363,26 @@ export interface HttpResponse<D extends unknown, E extends unknown = unknown>
 type CancelToken = Symbol | string | number;
 
 export enum ContentType {
-  Json = 'application/json',
-  JsonApi = 'application/vnd.api+json',
-  FormData = 'multipart/form-data',
-  UrlEncoded = 'application/x-www-form-urlencoded',
-  Text = 'text/plain',
+  Json = "application/json",
+  JsonApi = "application/vnd.api+json",
+  FormData = "multipart/form-data",
+  UrlEncoded = "application/x-www-form-urlencoded",
+  Text = "text/plain",
 }
 
 export class HttpClient<SecurityDataType = unknown> {
-  public baseUrl: string = '/api/v1';
+  public baseUrl: string = "/api/v1";
   private securityData: SecurityDataType | null = null;
-  private securityWorker?: ApiConfig<SecurityDataType>['securityWorker'];
+  private securityWorker?: ApiConfig<SecurityDataType>["securityWorker"];
   private abortControllers = new Map<CancelToken, AbortController>();
   private customFetch = (...fetchParams: Parameters<typeof fetch>) =>
     fetch(...fetchParams);
 
   private baseApiParams: RequestParams = {
-    credentials: 'same-origin',
+    credentials: "same-origin",
     headers: {},
-    redirect: 'follow',
-    referrerPolicy: 'no-referrer',
+    redirect: "follow",
+    referrerPolicy: "no-referrer",
   };
 
   constructor(apiConfig: ApiConfig<SecurityDataType> = {}) {
@@ -380,9 +395,7 @@ export class HttpClient<SecurityDataType = unknown> {
 
   protected encodeQueryParam(key: string, value: any) {
     const encodedKey = encodeURIComponent(key);
-    return `${encodedKey}=${encodeURIComponent(
-      typeof value === 'number' ? value : `${value}`,
-    )}`;
+    return `${encodedKey}=${encodeURIComponent(typeof value === "number" ? value : `${value}`)}`;
   }
 
   protected addQueryParam(query: QueryParamsType, key: string) {
@@ -391,13 +404,13 @@ export class HttpClient<SecurityDataType = unknown> {
 
   protected addArrayQueryParam(query: QueryParamsType, key: string) {
     const value = query[key];
-    return value.map((v: any) => this.encodeQueryParam(key, v)).join('&');
+    return value.map((v: any) => this.encodeQueryParam(key, v)).join("&");
   }
 
   protected toQueryString(rawQuery?: QueryParamsType): string {
     const query = rawQuery || {};
     const keys = Object.keys(query).filter(
-      (key) => 'undefined' !== typeof query[key],
+      (key) => "undefined" !== typeof query[key],
     );
     return keys
       .map((key) =>
@@ -405,25 +418,25 @@ export class HttpClient<SecurityDataType = unknown> {
           ? this.addArrayQueryParam(query, key)
           : this.addQueryParam(query, key),
       )
-      .join('&');
+      .join("&");
   }
 
   protected addQueryParams(rawQuery?: QueryParamsType): string {
     const queryString = this.toQueryString(rawQuery);
-    return queryString ? `?${queryString}` : '';
+    return queryString ? `?${queryString}` : "";
   }
 
   private contentFormatters: Record<ContentType, (input: any) => any> = {
     [ContentType.Json]: (input: any) =>
-      input !== null && (typeof input === 'object' || typeof input === 'string')
+      input !== null && (typeof input === "object" || typeof input === "string")
         ? JSON.stringify(input)
         : input,
     [ContentType.JsonApi]: (input: any) =>
-      input !== null && (typeof input === 'object' || typeof input === 'string')
+      input !== null && (typeof input === "object" || typeof input === "string")
         ? JSON.stringify(input)
         : input,
     [ContentType.Text]: (input: any) =>
-      input !== null && typeof input !== 'string'
+      input !== null && typeof input !== "string"
         ? JSON.stringify(input)
         : input,
     [ContentType.FormData]: (input: any) => {
@@ -437,9 +450,9 @@ export class HttpClient<SecurityDataType = unknown> {
           key,
           property instanceof Blob
             ? property
-            : typeof property === 'object' && property !== null
-            ? JSON.stringify(property)
-            : `${property}`,
+            : typeof property === "object" && property !== null
+              ? JSON.stringify(property)
+              : `${property}`,
         );
         return formData;
       }, new FormData());
@@ -500,7 +513,7 @@ export class HttpClient<SecurityDataType = unknown> {
     ...params
   }: FullRequestParams): Promise<HttpResponse<T, E>> => {
     const secureParams =
-      ((typeof secure === 'boolean' ? secure : this.baseApiParams.secure) &&
+      ((typeof secure === "boolean" ? secure : this.baseApiParams.secure) &&
         this.securityWorker &&
         (await this.securityWorker(this.securityData))) ||
       {};
@@ -510,15 +523,13 @@ export class HttpClient<SecurityDataType = unknown> {
     const responseFormat = format || requestParams.format;
 
     return this.customFetch(
-      `${baseUrl || this.baseUrl || ''}${path}${
-        queryString ? `?${queryString}` : ''
-      }`,
+      `${baseUrl || this.baseUrl || ""}${path}${queryString ? `?${queryString}` : ""}`,
       {
         ...requestParams,
         headers: {
           ...(requestParams.headers || {}),
           ...(type && type !== ContentType.FormData
-            ? { 'Content-Type': type }
+            ? { "Content-Type": type }
             : {}),
         },
         signal:
@@ -526,7 +537,7 @@ export class HttpClient<SecurityDataType = unknown> {
             ? this.createAbortSignal(cancelToken)
             : requestParams.signal) || null,
         body:
-          typeof body === 'undefined' || body === null
+          typeof body === "undefined" || body === null
             ? null
             : payloadFormatter(body),
       },
@@ -586,9 +597,9 @@ export class Api<
     getLanguages: (params: RequestParams = {}) =>
       this.request<PlatformContentLanguage[], HTTPError>({
         path: `/languages`,
-        method: 'GET',
+        method: "GET",
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
   };
@@ -618,10 +629,10 @@ export class Api<
     ) =>
       this.request<Organization, HTTPError>({
         path: `/organizations`,
-        method: 'GET',
+        method: "GET",
         query: query,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -639,10 +650,10 @@ export class Api<
     ) =>
       this.request<Organization, HTTPError>({
         path: `/organizations`,
-        method: 'POST',
+        method: "POST",
         body: organization,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -657,9 +668,9 @@ export class Api<
     getOrganization: (orgId: string, params: RequestParams = {}) =>
       this.request<Organization, HTTPError>({
         path: `/organizations/${orgId}`,
-        method: 'GET',
+        method: "GET",
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -678,10 +689,10 @@ export class Api<
     ) =>
       this.request<Organization, HTTPError>({
         path: `/organizations/${orgId}`,
-        method: 'DELETE',
+        method: "DELETE",
         body: organization,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -700,10 +711,29 @@ export class Api<
     ) =>
       this.request<Organization, HTTPError>({
         path: `/organizations/${orgId}`,
-        method: 'PATCH',
+        method: "PATCH",
         body: organization,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
+        ...params,
+      }),
+  };
+  prpls = {
+    /**
+     * @description This endpoint will check the given principal strings and resolve them into their user, group, etc. objects. This endpoint only gets data but requires a POST request to potentially handle a very large list of principals.
+     *
+     * @tags principals
+     * @name PostPrplsResolve
+     * @summary Resolves the passed principals
+     * @request POST:/prpls/resolve
+     */
+    postPrplsResolve: (prpls: string[], params: RequestParams = {}) =>
+      this.request<Record<string, ResolvedPrpl>, HTTPError>({
+        path: `/prpls/resolve`,
+        method: "POST",
+        body: prpls,
+        type: ContentType.Json,
+        format: "json",
         ...params,
       }),
   };
@@ -719,9 +749,9 @@ export class Api<
     getAttributes: (orgId: string, params: RequestParams = {}) =>
       this.request<Attribute[], HTTPError>({
         path: `/${orgId}/attributes`,
-        method: 'GET',
+        method: "GET",
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -740,10 +770,10 @@ export class Api<
     ) =>
       this.request<Attribute, HTTPError>({
         path: `/${orgId}/attributes`,
-        method: 'POST',
+        method: "POST",
         body: attribute,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -762,9 +792,9 @@ export class Api<
     ) =>
       this.request<Attribute, HTTPError>({
         path: `/${orgId}/attributes/${attributeId}`,
-        method: 'DELETE',
+        method: "DELETE",
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -784,10 +814,10 @@ export class Api<
     ) =>
       this.request<Attribute, HTTPError>({
         path: `/${orgId}/attributes/${attributeId}`,
-        method: 'PATCH',
+        method: "PATCH",
         body: attribute,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -802,9 +832,9 @@ export class Api<
     getContentTypes: (orgId: string, params: RequestParams = {}) =>
       this.request<ContentType[], HTTPError>({
         path: `/${orgId}/content-types`,
-        method: 'GET',
+        method: "GET",
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -823,10 +853,10 @@ export class Api<
     ) =>
       this.request<Document, HTTPError>({
         path: `/${orgId}/documents`,
-        method: 'POST',
+        method: "POST",
         body: document,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -841,9 +871,9 @@ export class Api<
     getDocument: (orgId: string, docId: string, params: RequestParams = {}) =>
       this.request<Document, HTTPError>({
         path: `/${orgId}/documents/${docId}`,
-        method: 'GET',
+        method: "GET",
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -862,9 +892,9 @@ export class Api<
     ) =>
       this.request<AttributeValue[], HTTPError>({
         path: `/${orgId}/documents/${docId}/attributes`,
-        method: 'GET',
+        method: "GET",
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -884,10 +914,10 @@ export class Api<
     ) =>
       this.request<AttributeValue[], HTTPError>({
         path: `/${orgId}/documents/${docId}/attributes`,
-        method: 'POST',
+        method: "POST",
         body: attributeValues,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -907,10 +937,10 @@ export class Api<
     ) =>
       this.request<AttributeValueOnly[], HTTPError>({
         path: `/${orgId}/documents/${docId}/attributes`,
-        method: 'DELETE',
+        method: "DELETE",
         body: attributeValueIds,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -930,10 +960,10 @@ export class Api<
     ) =>
       this.request<AttributeValueOnly[], HTTPError>({
         path: `/${orgId}/documents/${docId}/attributes`,
-        method: 'PATCH',
+        method: "PATCH",
         body: attributeValues,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -967,10 +997,10 @@ export class Api<
     ) =>
       this.request<Group[], HTTPError>({
         path: `/${orgId}/groups`,
-        method: 'GET',
+        method: "GET",
         query: query,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -989,10 +1019,10 @@ export class Api<
     ) =>
       this.request<Group, HTTPError>({
         path: `/${orgId}/groups`,
-        method: 'POST',
+        method: "POST",
         body: group,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -1014,10 +1044,10 @@ export class Api<
     ) =>
       this.request<Group, HTTPError>({
         path: `/${orgId}/groups/by-name`,
-        method: 'GET',
+        method: "GET",
         query: query,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -1032,9 +1062,9 @@ export class Api<
     getGroup: (orgId: string, groupId: string, params: RequestParams = {}) =>
       this.request<Group, HTTPError>({
         path: `/${orgId}/groups/${groupId}`,
-        method: 'GET',
+        method: "GET",
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -1049,7 +1079,7 @@ export class Api<
     deleteGroup: (orgId: string, groupId: string, params: RequestParams = {}) =>
       this.request<void, HTTPError>({
         path: `/${orgId}/groups/${groupId}`,
-        method: 'DELETE',
+        method: "DELETE",
         type: ContentType.Json,
         ...params,
       }),
@@ -1070,10 +1100,10 @@ export class Api<
     ) =>
       this.request<Group, HTTPError>({
         path: `/${orgId}/groups/${groupId}`,
-        method: 'PATCH',
+        method: "PATCH",
         body: group,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -1108,10 +1138,10 @@ export class Api<
     ) =>
       this.request<User[], HTTPError>({
         path: `/${orgId}/groups/${groupId}/members`,
-        method: 'GET',
+        method: "GET",
         query: query,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -1131,7 +1161,7 @@ export class Api<
     ) =>
       this.request<void, HTTPError>({
         path: `/${orgId}/groups/${groupId}/members`,
-        method: 'POST',
+        method: "POST",
         body: members,
         type: ContentType.Json,
         ...params,
@@ -1153,7 +1183,7 @@ export class Api<
     ) =>
       this.request<void, HTTPError>({
         path: `/${orgId}/groups/${groupId}/members`,
-        method: 'DELETE',
+        method: "DELETE",
         body: members,
         type: ContentType.Json,
         ...params,
@@ -1170,9 +1200,9 @@ export class Api<
     getLanguages: (orgId: string, params: RequestParams = {}) =>
       this.request<OrgContentLanguage[], HTTPError>({
         path: `/${orgId}/languages`,
-        method: 'GET',
+        method: "GET",
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -1191,10 +1221,10 @@ export class Api<
     ) =>
       this.request<arrray, HTTPError>({
         path: `/${orgId}/languages`,
-        method: 'POST',
+        method: "POST",
         body: langCodes,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -1213,10 +1243,10 @@ export class Api<
     ) =>
       this.request<OrgContentLanguage[], HTTPError>({
         path: `/${orgId}/languages`,
-        method: 'DELETE',
+        method: "DELETE",
         body: langIds,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -1250,10 +1280,10 @@ export class Api<
     ) =>
       this.request<StatementDocument[], HTTPError>({
         path: `/${orgId}/statements`,
-        method: 'GET',
+        method: "GET",
         query: query,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -1272,10 +1302,10 @@ export class Api<
     ) =>
       this.request<StatementDocument, HTTPError>({
         path: `/${orgId}/statements`,
-        method: 'POST',
+        method: "POST",
         body: statement,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -1309,10 +1339,10 @@ export class Api<
     ) =>
       this.request<User[], HTTPError>({
         path: `/${orgId}/users`,
-        method: 'GET',
+        method: "GET",
         query: query,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -1331,10 +1361,10 @@ export class Api<
     ) =>
       this.request<User, HTTPError>({
         path: `/${orgId}/users`,
-        method: 'POST',
+        method: "POST",
         body: user,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -1356,10 +1386,10 @@ export class Api<
     ) =>
       this.request<User[], HTTPError>({
         path: `/${orgId}/users/by-email`,
-        method: 'GET',
+        method: "GET",
         query: query,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -1374,9 +1404,9 @@ export class Api<
     getUser: (orgId: string, userId: string, params: RequestParams = {}) =>
       this.request<User, HTTPError>({
         path: `/${orgId}/users/${userId}`,
-        method: 'GET',
+        method: "GET",
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -1391,7 +1421,7 @@ export class Api<
     deleteUser: (orgId: string, userId: string, params: RequestParams = {}) =>
       this.request<void, HTTPError>({
         path: `/${orgId}/users/${userId}`,
-        method: 'DELETE',
+        method: "DELETE",
         type: ContentType.Json,
         ...params,
       }),
@@ -1412,10 +1442,10 @@ export class Api<
     ) =>
       this.request<User, HTTPError>({
         path: `/${orgId}/users/${userId}`,
-        method: 'PATCH',
+        method: "PATCH",
         body: user,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -1434,9 +1464,9 @@ export class Api<
     ) =>
       this.request<Group[], HTTPError>({
         path: `/${orgId}/users/${userId}/groups`,
-        method: 'GET',
+        method: "GET",
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
   };

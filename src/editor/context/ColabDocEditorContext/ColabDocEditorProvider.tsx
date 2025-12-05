@@ -1,5 +1,8 @@
 import React, { ReactNode } from 'react';
-import ColabDocEditorContext, { ToolbarSetup } from './ColabDocEditorContext';
+import ColabDocEditorContext, {
+  ActiveBlockRef,
+  ToolbarSetup,
+} from './ColabDocEditorContext';
 import { EditorView } from 'prosemirror-view';
 import { ToolbarSetups } from '../../components/ToolbarMenu/ToolbarSetup';
 
@@ -67,14 +70,14 @@ export function useActiveToolbarSetup() {
   }
 }
 
-export function useActiveBlockId() {
+export function useActiveBlock() {
   const context = useToolbarContext();
-  return context.activeBlockId;
+  return context.activeBlock;
 }
 
-export function useSetActiveBlockId() {
+export function useSetActiveBlock() {
   const context = useToolbarContext();
-  return context.setActiveBlockId;
+  return context.setActiveBlock;
 }
 
 type ColabDocEditorProviderProps = {
@@ -94,7 +97,9 @@ export default function ColabDocEditorProvider({
     React.useState<EditorView | null>(null);
 
   // The currently active block ID
-  const [activeBlockId, setActiveBlockId] = React.useState<string | null>(null);
+  const [activeBlock, setActiveBlock] = React.useState<ActiveBlockRef | null>(
+    null,
+  );
 
   // Intialize the state that will keep track of toolbar setups
   const [toolbarSetups, setToolbarSetups] = React.useState<ToolbarSetups>({});
@@ -106,8 +111,8 @@ export default function ColabDocEditorProvider({
         setActiveToolbarId,
         activeEditorView,
         setActiveEditorView,
-        activeBlockId,
-        setActiveBlockId,
+        activeBlock,
+        setActiveBlock,
         toolbarSetups,
         setToolbarSetups,
       }}

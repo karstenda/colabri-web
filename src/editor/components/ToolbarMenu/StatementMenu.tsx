@@ -1,32 +1,49 @@
-import { Stack } from '@mui/material';
+import { Stack, Tooltip } from '@mui/material';
 import { ToolbarButton, ToolbarMenuDivider } from './ToolbarMenuStyles';
 import { useColabDoc } from '../../context/ColabDocContext/ColabDocProvider';
-import { useEffect, useRef, useState } from 'react';
-import { AddLanguageModal } from '../AddLanguageModal';
+import { useEffect, useRef } from 'react';
+import { AddLanguageModal, AddLanguageModalPayload } from '../AddLanguageModal';
 import { useContentLanguages } from '../../../ui/hooks/useContentLanguages/useContentLanguage';
 import { useOrganization } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
 import { OrgContentLanguage } from '../../../api/ColabriAPI';
+import { useDialogs } from '../../../ui/hooks/useDialogs/useDialogs';
+import { useActiveBlock } from '../../context/ColabDocEditorContext/ColabDocEditorProvider';
+import { StmtLoroDoc } from '../../data/ColabDoc';
+import StatementDocController from '../../data/StatementDocController';
+import { Permission } from '../../../ui/data/Permission';
+import { useTranslation } from 'react-i18next';
+import ManageStmtLangModal, {
+  ManageStmtLangModalPayload,
+} from '../ManageStmtLangModal/ManageStmtLangModel';
 import { LoroMap } from 'loro-crdt';
 
 export type StatementMenuProps = {};
 
 export default function StatementMenu({}: StatementMenuProps) {
+  // Get the translation hook
+  const { t } = useTranslation();
+
   // Get the document
   const { colabDoc } = useColabDoc();
-
-  // State to control the Add Language modal
-  const [isAddLanguageModalOpen, setAddLanguageModalOpen] = useState(false);
 
   // Get the current organization
   const organization = useOrganization();
 
+  // Get the dialogs hook
+  const dialogs = useDialogs();
+
   // Get the languages in the organization
   const { languages } = useContentLanguages(organization?.id);
+
+  // Get the focussed block
+  const activeBlock = useActiveBlock();
+  // Check if a statementElementBlock is focussed
+  const isStatementElementBlockFocused =
+    activeBlock?.blockType === 'StatementElementBlock';
 
   // The refs to control menu state
   const showMenuRef = useRef<boolean>(false);
   const disabled = useRef<boolean>(true);
-  const addedLanguagesRef = useRef<OrgContentLanguage[]>([]);
 
   const loroDoc = colabDoc?.loroDoc;
 
@@ -45,8 +62,81 @@ export default function StatementMenu({}: StatementMenuProps) {
     }
   }, [colabDoc, loroDoc]);
 
-  // Handle the opening of the Add Language modal
-  const handleAddLanguageClicked = () => {
+  /**
+   * Get the focussed language
+   * @returns
+   */
+  const getFocusedLanguage = (): OrgContentLanguage | undefined => {
+    // Make sure we have a focussed block
+    if (!activeBlock || !activeBlock.loroContainerId || !activeBlock.loroDoc) {
+      return;
+    }
+
+    // Figure out which statement element is focussed
+    // Get the content map
+    const loroDoc = activeBlock.loroDoc as StmtLoroDoc;
+    const contentLoroMap = loroDoc.getMap('content');
+
+    // Iterate over the entries until the loroContainerId from the active block is found.
+    let contentLanguage;
+    contentLoroMap.entries().forEach(([langCode, stmtElement]) => {
+      if (stmtElement instanceof LoroMap) {
+        if (stmtElement.id === activeBlock.loroContainerId) {
+          // Found the focussed language
+          contentLanguage = languages.find((lang) => lang.code === langCode);
+          return;
+        }
+      }
+    });
+    return contentLanguage;
+  };
+
+  /**
+   * Handle the opening of the Manage Statement modal
+   */
+  const handleManageStatementElementClicked = async (
+    e: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    // Prevent default behavior
+    e.preventDefault();
+
+    // Get the focussed language
+    const contentLanguage = getFocusedLanguage();
+    if (!contentLanguage) {
+      return;
+    }
+
+    // Open the modal to manage the statement element
+    const newStmtElementAclMaps = await dialogs.open<
+      ManageStmtLangModalPayload,
+      Record<Permission, string[]> | undefined
+    >(ManageStmtLangModal, {
+      loroDoc: loroDoc as StmtLoroDoc,
+      contentLanguage,
+    });
+
+    // If a new ACL map was returned, update the document
+    if (newStmtElementAclMaps) {
+      // Create the StatementDocController
+      const stmtDocController = new StatementDocController(
+        loroDoc as StmtLoroDoc,
+      );
+
+      // Patch the document ACL map with the new ACLs
+      stmtDocController.patchStmtElementAclMap(
+        contentLanguage.code,
+        newStmtElementAclMaps,
+      );
+
+      // Commit the changes
+      stmtDocController.commit();
+    }
+  };
+
+  /**
+   * Handle the Add Language button clicked
+   */
+  const handleAddLanguageClicked = async () => {
     // Figure out the existing languages
     const langCodes = loroDoc?.getMap('content')?.keys();
 
@@ -54,35 +144,61 @@ export default function StatementMenu({}: StatementMenuProps) {
     const existingLanguages = languages.filter((lang) =>
       langCodes?.includes(lang.code),
     );
-    addedLanguagesRef.current = existingLanguages;
 
     // Show the modal
-    setAddLanguageModalOpen(true);
+    const constentLanguages = await dialogs.open<
+      AddLanguageModalPayload,
+      OrgContentLanguage[]
+    >(AddLanguageModal, {
+      existingLanguages: existingLanguages,
+    });
+
+    // Create the StatementDocController
+    const stmtDocController = new StatementDocController(
+      loroDoc as StmtLoroDoc,
+    );
+    // Iterate over the languages and add them
+    constentLanguages.forEach((lang) => {
+      stmtDocController.addLanguage(lang.code);
+    });
+    stmtDocController.commit();
   };
 
-  // Add the new languages to the loroDoc
-  const handleAddLanguage = (languages: OrgContentLanguage[]) => {
-    // Iterate over the languages
-    languages.forEach((lang) => {
-      // Add the language to the loroDoc content map
-      const contentMap = loroDoc?.getMap('content');
-      if (!contentMap) {
-        console.error('Could not find content map in loroDoc');
-        return;
-      }
+  /**
+   * Handle the Remove Language button clicked
+   * @param e
+   * @returns
+   */
+  const handleRemoveLanguageClicked = async (
+    e: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    // Prevent default behavior
+    e.preventDefault();
+    // Get the focussed language
+    const contentLanguage = getFocusedLanguage();
+    if (!contentLanguage) {
+      return;
+    }
 
-      // Create it in the loroDoc if it doesn't exist
-      const stmtElementMap = contentMap.getOrCreateContainer(
-        lang.code,
-        new LoroMap(),
-      );
-      const textElementMap = stmtElementMap.getOrCreateContainer(
-        'textElement',
-        new LoroMap(),
-      );
-      textElementMap.set('nodeName', 'doc');
-      loroDoc?.commit();
-    });
+    // Ask for confirmation
+    const confirm = await dialogs.confirm(
+      t('editor.toolbar.removeLanguageConfirm', {
+        language: contentLanguage.name,
+      }),
+    );
+
+    // If not confirmed, return
+    if (!confirm) {
+      return;
+    }
+
+    // Create the StatementDocController
+    const stmtDocController = new StatementDocController(
+      loroDoc as StmtLoroDoc,
+    );
+    // Remove the language
+    stmtDocController.removeLanguage(contentLanguage.code);
+    stmtDocController.commit();
   };
 
   if (showMenuRef.current === false) {
@@ -91,18 +207,37 @@ export default function StatementMenu({}: StatementMenuProps) {
     return (
       <Stack direction="row" spacing={'2px'}>
         <ToolbarMenuDivider />
-        <ToolbarButton
-          disabled={disabled.current}
-          onClick={handleAddLanguageClicked}
-        >
-          Add Language
-        </ToolbarButton>
-        <AddLanguageModal
-          open={isAddLanguageModalOpen}
-          onClose={() => setAddLanguageModalOpen(false)}
-          existingLanguages={addedLanguagesRef.current}
-          onAdd={handleAddLanguage}
-        />
+        <Tooltip title={t('editor.toolbar.addLanguageTooltip')}>
+          <span>
+            <ToolbarButton
+              disabled={disabled.current}
+              onClick={handleAddLanguageClicked}
+            >
+              {t('editor.toolbar.addLanguage')}
+            </ToolbarButton>
+          </span>
+        </Tooltip>
+        <Tooltip title={t('editor.toolbar.removeLanguageTooltip')}>
+          <span>
+            <ToolbarButton
+              disabled={disabled.current || !isStatementElementBlockFocused}
+              onMouseDown={handleRemoveLanguageClicked}
+            >
+              {t('editor.toolbar.removeLanguage')}
+            </ToolbarButton>
+          </span>
+        </Tooltip>
+        <ToolbarMenuDivider />
+        <Tooltip title={t('editor.toolbar.manageLanguageTooltip')}>
+          <span>
+            <ToolbarButton
+              disabled={disabled.current || !isStatementElementBlockFocused}
+              onMouseDown={handleManageStatementElementClicked}
+            >
+              {t('editor.toolbar.manageLanguage')}
+            </ToolbarButton>
+          </span>
+        </Tooltip>
       </Stack>
     );
   }

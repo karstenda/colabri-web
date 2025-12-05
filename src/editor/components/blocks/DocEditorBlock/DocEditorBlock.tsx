@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { Box, BoxProps } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { useSetActiveBlockId } from '../../../context/ColabDocEditorContext/ColabDocEditorProvider';
+import { useSetActiveBlock } from '../../../context/ColabDocEditorContext/ColabDocEditorProvider';
 import DocEditorBlockControls, {
   DocEditorBlockControl,
 } from './DocEditorBlockControls';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import SettingsIcon from '@mui/icons-material/Settings';
+import { ContainerID, LoroDoc } from 'loro-crdt';
 
 const StyledDocEditorBlock = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'hasFocus' && prop !== 'isHovered',
@@ -24,17 +25,25 @@ const StyledDocEditorBlock = styled(Box, {
 
 export type DocEditorBlockProps = BoxProps & {
   blockId: string;
+  blockType: string;
+  loroContainerId?: ContainerID;
+  loroDoc?: LoroDoc;
   onFocusChange?: (hasFocus: boolean) => void;
   onHoverChange?: (isHovered: boolean) => void;
   showUpDownControls?: boolean;
+  onManageBlock?: () => void;
 };
 
 const DocEditorBlock = ({
   children,
   blockId,
+  blockType,
+  loroContainerId,
+  loroDoc,
   onFocusChange,
   onHoverChange,
   showUpDownControls,
+  onManageBlock,
   ...boxProps
 }: DocEditorBlockProps) => {
   // The reference to the EditorContentBlock element
@@ -47,7 +56,7 @@ const DocEditorBlock = ({
   const [isHovered, setIsHovered] = useState(false);
 
   // Set the active block ID when this block gains focus
-  const setActiveBlockId = useSetActiveBlockId();
+  const setActiveBlockId = useSetActiveBlock();
 
   const controls = [] as DocEditorBlockControl[];
   if (showUpDownControls) {
@@ -64,9 +73,7 @@ const DocEditorBlock = ({
     id: `manage-block-${blockId}`,
     label: 'Manage',
     icon: <SettingsIcon sx={{ fontSize: 16 }} />,
-    onClick: () => {
-      /* Implement manage logic here */
-    },
+    onClick: onManageBlock || (() => {}),
   });
   if (showUpDownControls) {
     controls.push({
@@ -90,7 +97,7 @@ const DocEditorBlock = ({
 
       if (isClickInside && !focus) {
         setFocus(true);
-        setActiveBlockId(blockId);
+        setActiveBlockId({ id: blockId, blockType, loroContainerId, loroDoc });
         onFocusChange?.(true);
       } else if (!isClickInside && focus) {
         setFocus(false);

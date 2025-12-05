@@ -1,0 +1,62 @@
+{
+  "common": {
+    "save": "Save",
+    "apply": "Apply",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "manage": "Manage",
+    "edit": "Edit",
+    "create": "Create",
+    "update": "Update",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "close": "Close"
+  },
+  "navigation": {
+    "home": "Home",
+    "documents": "Documents",
+    "statements": "Statements",
+    "users": "Users",
+    "groups": "Groups",
+    "settings": "Settings",
+    "profile": "Profile",
+    "logout": "Logout"
+  },
+  "permissions": {
+    "view": "View",
+    "edit": "Edit",
+    "approve": "Approve",
+    "manage": "Manage",
+    "add-remove": "Add/Remove",
+    "delete": "Delete",
+    "sections": {
+      "document": "Document Permissions",
+      "language": "Language Permissions"
+    }
+  },
+  "editor": {
+    "toolbar": {
+      "addLanguage": "Add",
+      "removeLanguage": "Remove",
+      "manageLanguage": "Manage",
+      "addLanguageTooltip": "Add new language",
+      "removeLanguageTooltip": "Remove selected language",
+      "manageLanguageTooltip": "Manage selected language",
+      "manageDocument": "Manage Document",
+      "manageDocumentTooltip": "Manage permissions  and settings for this document",
+      "removeLanguageConfirm": "Are you sure you want to remove the {{language}} language?"
+    },
+    "manageStmtModal": {
+      "title": "Manage {{documentName}}"
+    },
+    "manageStmtLangModal": {
+      "title": "Manage {{language}}"
+    }
+  }
+}

@@ -5,7 +5,7 @@ import { useContentLanguages } from '../../../../ui/hooks/useContentLanguages/us
 import { useOrganization } from '../../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
 import { useColabDoc } from '../../../context/ColabDocContext/ColabDocProvider';
 import { LoroDocType } from 'loro-prosemirror';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ContainerID, LoroMap } from 'loro-crdt';
 import DocEditorBlock from '../DocEditorBlock';
 import {
@@ -15,6 +15,9 @@ import {
   StmtElementHeaderWrapper,
   TypographyReadOnly,
 } from './StatementElementBlockStyle';
+import { StmtLoroDoc } from '../../../data/ColabDoc';
+import { useDialogs } from '../../../../ui/hooks/useDialogs/useDialogs';
+import ManageStmtLangModal from '../../ManageStmtLangModal/ManageStmtLangModel';
 
 export type StatementElementBlockProps = {
   bp: StatementElementBlockBP;
@@ -30,6 +33,9 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
   // Get the configured languages
   const { languages } = useContentLanguages(organization?.id);
 
+  // Get the dialogs hook
+  const dialogs = useDialogs();
+
   // Get the language
   const language = languages.find((l) => l.code === bp.langCode);
 
@@ -37,10 +43,11 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
   const ephStoreMgr = colabDoc?.ephStoreMgr;
 
   // Get the LoroDoc
-  const loroDoc = colabDoc?.loroDoc;
+  const loroDoc = colabDoc?.loroDoc as StmtLoroDoc | undefined;
 
   // The reference to the text element container id
-  const textElementContainerIdRef = useRef<ContainerID | null>(null);
+  const [textElementContainerId, setTextElementContainerId] =
+    useState<ContainerID | null>(null);
 
   // State to track focus and hover
   const [focus, setFocus] = useState(false);
@@ -74,8 +81,15 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
           bp.containerId,
       );
     }
-    textElementContainerIdRef.current = textElementContainer.id;
+    setTextElementContainerId(textElementContainer.id);
   }, [loroDoc]);
+
+  const handleManageElement = () => {
+    dialogs.open(ManageStmtLangModal, {
+      contentLanguage: language!,
+      loroDoc: loroDoc!,
+    });
+  };
 
   if (!loroDoc || !ephStoreMgr) {
     return <div>Loading...</div>;
@@ -84,9 +98,13 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
       <>
         <DocEditorBlock
           blockId={bp.id}
+          blockType={'StatementElementBlock'}
+          loroContainerId={bp.containerId}
+          loroDoc={loroDoc}
           onFocusChange={handleFocusChange}
           onHoverChange={handleHoverChange}
           showUpDownControls={true}
+          onManageBlock={handleManageElement}
         >
           <Stack direction="column" spacing={0.5}>
             <Stack direction="row" spacing={1} flex={1}>
@@ -99,12 +117,12 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
                 <StmtElementHeaderRight></StmtElementHeaderRight>
               </StmtElementHeaderWrapper>
             </Stack>
-            {textElementContainerIdRef.current != null && (
+            {textElementContainerId != null && (
               <ColabTextEditorOutline showOutlines={showOutlines}>
                 <ColabTextEditor
-                  loro={loroDoc as LoroDocType}
+                  loro={loroDoc as any as LoroDocType}
                   ephStoreMgr={ephStoreMgr}
-                  containerId={textElementContainerIdRef.current}
+                  containerId={textElementContainerId}
                 />
               </ColabTextEditorOutline>
             )}

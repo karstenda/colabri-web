@@ -7,6 +7,7 @@ import StatementElementBlock from '../StatementElementBlock/StatementElementBloc
 import { Stack } from '@mui/material';
 import { useContentLanguages } from '../../../../ui/hooks/useContentLanguages/useContentLanguage';
 import { useOrganization } from '../../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
+import { StmtLoroDoc } from '../../../data/ColabDoc';
 
 export type StatementBlockProps = {
   bp: StatementBlockBP;
@@ -17,7 +18,7 @@ const StatementBlock = ({ bp }: StatementBlockProps) => {
   const { colabDoc } = useColabDoc();
 
   // Get the LoroDoc
-  const loroDoc = colabDoc?.loroDoc;
+  const loroDoc = colabDoc?.loroDoc as StmtLoroDoc | undefined;
 
   // Get the current organization
   const organization = useOrganization();

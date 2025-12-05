@@ -13,36 +13,21 @@ import {
 } from '../../../ui/components/LanguageSelector/LanguageSelector';
 import { useOrganization } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
 import type { OrgContentLanguage } from '../../../api/ColabriAPI';
+import { DialogProps } from '../../../ui/hooks/useDialogs/useDialogs';
 
-interface AddLanguageModalProps {
-  /**
-   * Whether the modal is open
-   */
-  open: boolean;
-
-  /**
-   * Callback when the modal is closed
-   */
-  onClose: () => void;
-
-  /**
-   * Languages that are already added to the document
-   */
+export interface AddLanguageModalPayload {
   existingLanguages: OrgContentLanguage[];
-
-  /**
-   * Callback when languages are added
-   * @param languages - The newly selected languages to add
-   */
-  onAdd: (languages: OrgContentLanguage[]) => void;
 }
+
+export interface AddLanguageModalProps
+  extends DialogProps<AddLanguageModalPayload, OrgContentLanguage[]> {}
 
 export const AddLanguageModal: React.FC<AddLanguageModalProps> = ({
   open,
   onClose,
-  existingLanguages,
-  onAdd,
+  payload,
 }) => {
+  const { existingLanguages } = payload;
   const organization = useOrganization();
   const [selectedLanguages, setSelectedLanguages] = useState<LanguageOption[]>(
     [],
@@ -60,15 +45,14 @@ export const AddLanguageModal: React.FC<AddLanguageModalProps> = ({
 
   const handleAdd = () => {
     if (selectedLanguages.length > 0) {
-      onAdd(selectedLanguages as OrgContentLanguage[]);
+      onClose(selectedLanguages as OrgContentLanguage[]);
       setSelectedLanguages([]);
-      onClose();
     }
   };
 
   const handleCancel = () => {
+    onClose([]);
     setSelectedLanguages([]);
-    onClose();
   };
 
   const handleChange = (

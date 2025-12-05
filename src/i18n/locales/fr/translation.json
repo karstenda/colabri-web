@@ -1,0 +1,51 @@
+{
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "update": "Mettre à jour",
+    "search": "Rechercher",
+    "loading": "Chargement...",
+    "error": "Une erreur s'est produite",
+    "success": "Succès",
+    "confirm": "Confirmer",
+    "back": "Retour",
+    "next": "Suivant",
+    "submit": "Soumettre",
+    "close": "Fermer"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "documents": "Documents",
+    "statements": "Déclarations",
+    "users": "Utilisateurs",
+    "groups": "Groupes",
+    "settings": "Paramètres",
+    "profile": "Profil",
+    "logout": "Déconnexion"
+  },
+  "permissions": {
+    "view": "Voir",
+    "edit": "Modifier",
+    "approve": "Approuver",
+    "manage": "Gérer",
+    "add-remove": "Ajouter/Supprimer",
+    "delete": "Supprimer",
+    "sections": {
+      "document": "Permissions de Document",
+      "language": "Permissions de Langue"
+    }
+  },
+  "editor": {
+    "toolbar": {
+      "addLanguage": "Ajouter",
+      "removeLanguage": "Supprimer",
+      "manageLanguage": "Gérer",
+      "addLanguageTooltip": "Ajouter une nouvelle langue",
+      "removeLanguageTooltip": "Supprimer la langue sélectionnée",
+      "manageLanguageTooltip": "Gérer la langue"
+    }
+  }
+}

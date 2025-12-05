@@ -1,7 +1,11 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { LoroWebsocketClient } from 'loro-websocket';
 import { LoroAdaptor, LoroEphemeralAdaptor } from 'loro-adaptors/loro';
-import { ConnectedColabDoc } from '../../data/ColabDoc';
+import {
+  ColabLoroDoc,
+  ConnectedColabDoc,
+  StmtLoroDoc,
+} from '../../data/ColabDoc';
 import {
   useOrgUserId,
   useOrganization,
@@ -116,7 +120,7 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
     });
 
     // Extract the loroDoc
-    const loroDoc = docAdaptor.getDoc();
+    const loroDoc = docAdaptor.getDoc() as StmtLoroDoc;
 
     // Generate a random color for the user
     const userColor = '#' + Math.floor(Math.random() * 16777215).toString(16);
@@ -135,7 +139,7 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
 
     const newConnectedDoc: ConnectedColabDoc = {
       ...(document as Document),
-      loroDoc: docAdaptor.getDoc(),
+      loroDoc: docAdaptor.getDoc() as ColabLoroDoc,
       ephStoreMgr: ephStoreMgr,
     };
 

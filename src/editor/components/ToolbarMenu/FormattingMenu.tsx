@@ -1,4 +1,4 @@
-import { Stack } from '@mui/material';
+import { Stack, useMediaQuery } from '@mui/material';
 import FormatItalicIcon from '@mui/icons-material/FormatItalic';
 import FormatBoldIcon from '@mui/icons-material/FormatBold';
 import FormattingMenuItem from './FormattingMenuItem';
@@ -19,6 +19,7 @@ export type FormattingMenuProps = {
 
 export default function FormattingMenu({ setup }: FormattingMenuProps) {
   const activeEditorView = useActiveEditorView();
+  const compactView = useMediaQuery('(max-width:800px)');
 
   // Apply a command to the active editor view
   const applyCommand = (command?: Command) => {
@@ -78,23 +79,27 @@ export default function FormattingMenu({ setup }: FormattingMenuProps) {
         disabled={setup?.underline?.disabled}
         onClick={applyUnderline}
       />
-      <ToolbarMenuDivider />
-      <FormattingMenuItem
-        key={'subscript'}
-        icon={<SubscriptIcon />}
-        label="Subscript"
-        active={setup?.subscript?.active}
-        disabled={setup?.subscript?.disabled}
-        onClick={applySubscript}
-      />
-      <FormattingMenuItem
-        key={'superscript'}
-        icon={<SuperscriptIcon />}
-        label="Superscript"
-        active={setup?.superscript?.active}
-        disabled={setup?.superscript?.disabled}
-        onClick={applySuperscript}
-      />
+      {!compactView && (
+        <>
+          <ToolbarMenuDivider />
+          <FormattingMenuItem
+            key={'subscript'}
+            icon={<SubscriptIcon />}
+            label="Subscript"
+            active={setup?.subscript?.active}
+            disabled={setup?.subscript?.disabled}
+            onClick={applySubscript}
+          />
+          <FormattingMenuItem
+            key={'superscript'}
+            icon={<SuperscriptIcon />}
+            label="Superscript"
+            active={setup?.superscript?.active}
+            disabled={setup?.superscript?.disabled}
+            onClick={applySuperscript}
+          />
+        </>
+      )}
       <ToolbarMenuDivider />
       <FormattingMenuItem
         key={'bullet_list'}

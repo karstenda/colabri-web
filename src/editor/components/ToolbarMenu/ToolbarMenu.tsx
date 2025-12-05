@@ -3,13 +3,19 @@ import { useActiveToolbarSetup } from '../../context/ColabDocEditorContext/Colab
 import UndoRedoMenu from './UndoRedoMenu';
 import { ToolbarMenuDivider } from './ToolbarMenuStyles';
 import StatementMenu from './StatementMenu';
+import { useMediaQuery } from '@mui/material';
 
 export default function ToolbarMenu() {
   const toolbarSetup = useActiveToolbarSetup();
+  const compactView = useMediaQuery('(max-width:800px)');
   return (
     <>
-      <UndoRedoMenu />
-      <ToolbarMenuDivider />
+      {!compactView && (
+        <>
+          <UndoRedoMenu />
+          <ToolbarMenuDivider />
+        </>
+      )}
       <FormattingMenu setup={toolbarSetup?.formatting || {}} />
       <StatementMenu />
     </>
