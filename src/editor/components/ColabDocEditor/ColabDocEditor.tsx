@@ -59,8 +59,8 @@ export default function ColabDocEditor() {
       return;
     }
 
-    // For now, just target english 'en' content
-    const loroDoc = colabDoc.loroDoc;
+    // Get the loroDoc
+    const loroDoc = colabDoc.getLoroDoc();
 
     // Get the content type from the properties
     const propertiesMap = loroDoc.getMap('properties') as LoroMap | undefined;
@@ -76,7 +76,7 @@ export default function ColabDocEditor() {
 
     // Store the correct references
     loroDocRef.current = loroDoc;
-    ephStoreMgrRef.current = colabDoc.ephStoreMgr;
+    ephStoreMgrRef.current = colabDoc.getEphStoreMgr();
 
     // Listen for changes in the LoroDoc
     const unsubscribe = loroDoc.subscribe(() => {
@@ -104,7 +104,7 @@ export default function ColabDocEditor() {
                   <Stack direction="row" spacing={1} alignItems="center">
                     <ColabriSvgIcon expanded={false} />
                     <Typography variant="h6" component="div">
-                      {colabDoc.name}
+                      {colabDoc.getDocName()}
                     </Typography>
                     <DocumentTypeLabel>Statement</DocumentTypeLabel>
                     {contentTypeRef.current && (

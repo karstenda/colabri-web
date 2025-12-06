@@ -9,13 +9,13 @@ import { OrgContentLanguage } from '../../../api/ColabriAPI';
 import { useDialogs } from '../../../ui/hooks/useDialogs/useDialogs';
 import { useActiveBlock } from '../../context/ColabDocEditorContext/ColabDocEditorProvider';
 import { StmtLoroDoc } from '../../data/ColabDoc';
-import StatementDocController from '../../data/StatementDocController';
 import { Permission } from '../../../ui/data/Permission';
 import { useTranslation } from 'react-i18next';
 import ManageStmtLangModal, {
   ManageStmtLangModalPayload,
 } from '../ManageStmtLangModal/ManageStmtLangModel';
 import { LoroMap } from 'loro-crdt';
+import { ConnectedStmtDoc } from '../../data/ConnectedColabDoc';
 
 export type StatementMenuProps = {};
 
@@ -25,6 +25,11 @@ export default function StatementMenu({}: StatementMenuProps) {
 
   // Get the document
   const { colabDoc } = useColabDoc();
+  if (!(colabDoc instanceof ConnectedStmtDoc)) {
+    throw new Error(
+      'StatementMenu can only be used with connected statement docs.',
+    );
+  }
 
   // Get the current organization
   const organization = useOrganization();
@@ -45,7 +50,8 @@ export default function StatementMenu({}: StatementMenuProps) {
   const showMenuRef = useRef<boolean>(false);
   const disabled = useRef<boolean>(true);
 
-  const loroDoc = colabDoc?.loroDoc;
+  // Get the loroDoc
+  const loroDoc = colabDoc.getLoroDoc();
 
   // When the colabDoc is loaded.
   useEffect(() => {
@@ -118,9 +124,7 @@ export default function StatementMenu({}: StatementMenuProps) {
     // If a new ACL map was returned, update the document
     if (newStmtElementAclMaps) {
       // Create the StatementDocController
-      const stmtDocController = new StatementDocController(
-        loroDoc as StmtLoroDoc,
-      );
+      const stmtDocController = colabDoc.getDocController();
 
       // Patch the document ACL map with the new ACLs
       stmtDocController.patchStmtElementAclMap(
@@ -154,9 +158,7 @@ export default function StatementMenu({}: StatementMenuProps) {
     });
 
     // Create the StatementDocController
-    const stmtDocController = new StatementDocController(
-      loroDoc as StmtLoroDoc,
-    );
+    const stmtDocController = colabDoc.getDocController();
     // Iterate over the languages and add them
     constentLanguages.forEach((lang) => {
       stmtDocController.addLanguage(lang.code);
@@ -193,9 +195,7 @@ export default function StatementMenu({}: StatementMenuProps) {
     }
 
     // Create the StatementDocController
-    const stmtDocController = new StatementDocController(
-      loroDoc as StmtLoroDoc,
-    );
+    const stmtDocController = colabDoc.getDocController();
     // Remove the language
     stmtDocController.removeLanguage(contentLanguage.code);
     stmtDocController.commit();

@@ -15,9 +15,9 @@ import {
   StmtElementHeaderWrapper,
   TypographyReadOnly,
 } from './StatementElementBlockStyle';
-import { StmtLoroDoc } from '../../../data/ColabDoc';
 import { useDialogs } from '../../../../ui/hooks/useDialogs/useDialogs';
 import ManageStmtLangModal from '../../ManageStmtLangModal/ManageStmtLangModel';
+import { ConnectedStmtDoc } from '../../../data/ConnectedColabDoc';
 
 export type StatementElementBlockProps = {
   bp: StatementElementBlockBP;
@@ -26,6 +26,11 @@ export type StatementElementBlockProps = {
 const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
   // Get the current ColabDoc
   const { colabDoc } = useColabDoc();
+  if (!(colabDoc instanceof ConnectedStmtDoc)) {
+    throw new Error(
+      'StatementElementBlock can only be used with connected statement docs.',
+    );
+  }
 
   // Get the current organization
   const organization = useOrganization();
@@ -40,10 +45,10 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
   const language = languages.find((l) => l.code === bp.langCode);
 
   // Get the ephemeral store manager
-  const ephStoreMgr = colabDoc?.ephStoreMgr;
+  const ephStoreMgr = colabDoc?.getEphStoreMgr();
 
   // Get the LoroDoc
-  const loroDoc = colabDoc?.loroDoc as StmtLoroDoc | undefined;
+  const loroDoc = colabDoc?.getLoroDoc();
 
   // The reference to the text element container id
   const [textElementContainerId, setTextElementContainerId] =

@@ -1,11 +1,8 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { LoroWebsocketClient } from 'loro-websocket';
 import { LoroAdaptor, LoroEphemeralAdaptor } from 'loro-adaptors/loro';
-import {
-  ColabLoroDoc,
-  ConnectedColabDoc,
-  StmtLoroDoc,
-} from '../../data/ColabDoc';
+import { ColabLoroDoc, StmtLoroDoc } from '../../data/ColabDoc';
+import { ConnectedColabDoc } from '../../data/ConnectedColabDoc';
 import {
   useOrgUserId,
   useOrganization,
@@ -18,11 +15,13 @@ import { CrdtType } from 'loro-protocol';
 import { useDocument } from '../../../ui/hooks/useDocuments/useDocuments';
 import {
   ColabModelType,
-  Document,
   Organization,
+  StatementDocument,
 } from '../../../api/ColabriAPI';
 import ColabEphemeralStoreManager from '../../components/ColabDocEditor/EphemeralStoreManager';
 import { getUserDisplayName, UserProfile } from '../../../ui/data/User';
+import StatementDocController from '../../controllers/StatementDocController';
+import { ConnectedStmtDoc } from '../../data/ConnectedColabDoc';
 
 export type ColabDocProviderProps = {
   docId: string;
@@ -47,9 +46,8 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
   const disconnectFnRef = useRef<(() => void) | null>(null);
 
   // The connected doc state.
-  const [connectedDoc, setConnectedDoc] = useState<ConnectedColabDoc | null>(
-    null,
-  );
+  const [connectedDoc, setConnectedDoc] =
+    useState<ConnectedColabDoc<ColabLoroDoc> | null>(null);
 
   // Load initial document (via message or REST)
   useEffect(() => {
@@ -120,7 +118,7 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
     });
 
     // Extract the loroDoc
-    const loroDoc = docAdaptor.getDoc() as StmtLoroDoc;
+    const loroDoc = docAdaptor.getDoc() as ColabLoroDoc;
 
     // Generate a random color for the user
     const userColor = '#' + Math.floor(Math.random() * 16777215).toString(16);
@@ -137,11 +135,24 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
       },
     );
 
-    const newConnectedDoc: ConnectedColabDoc = {
-      ...(document as Document),
-      loroDoc: docAdaptor.getDoc() as ColabLoroDoc,
-      ephStoreMgr: ephStoreMgr,
-    };
+    // Figure out what kind of document this.
+    const loroDocProperties = loroDoc.getMap('properties');
+    const docType = loroDocProperties.get('type');
+
+    // Create the appropriate connected document
+    let newConnectedDoc: ConnectedColabDoc<ColabLoroDoc>;
+    if (docType === ColabModelType.ColabModelStatementType) {
+      newConnectedDoc = new ConnectedStmtDoc(
+        loroDoc as StmtLoroDoc,
+        new StatementDocController(loroDoc as StmtLoroDoc),
+        ephStoreMgr,
+        document as StatementDocument,
+      );
+    }
+    // An unsupported document type for now
+    else {
+      throw new Error('Unsupported document type: ' + docType);
+    }
 
     // Start broadcasting the user presence of this user
     const cancelBcUserPresence = ephStoreMgr.broadcastUserPresence();

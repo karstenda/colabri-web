@@ -1,18 +1,10 @@
 import { LoroDoc, LoroList, LoroMap } from 'loro-crdt';
-import { ColabModelType, StatementDocument } from '../../api/ColabriAPI';
-import ColabEphemeralStoreManager from '../components/ColabDocEditor/EphemeralStoreManager';
+import { ColabModelType } from '../../api/ColabriAPI';
 import { Permission } from '../../ui/data/Permission';
 
 export type ColabDocType =
   | ColabModelType.ColabModelStatementType
   | ColabModelType.ColabModelSheetType;
-
-export type UnconnectedColabDoc = StatementDocument;
-
-export type ConnectedColabDoc = Omit<UnconnectedColabDoc, 'statement'> & {
-  loroDoc: ColabLoroDoc;
-  ephStoreMgr: ColabEphemeralStoreManager;
-};
 
 export type ColabLoroDoc = StmtLoroDoc | SheetLoroDoc;
 
