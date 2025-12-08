@@ -7,6 +7,8 @@ import AppTheme from '../shared-theme/AppTheme';
 import {
   sidebarCustomizations,
   formInputCustomizations,
+  datePickersCustomizations,
+  dataGridCustomizations,
 } from './theme/customizations';
 import OnboardPage from './pages/OnboardPage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -163,6 +165,8 @@ const router = createHashRouter([
 const themeComponents = {
   ...sidebarCustomizations,
   ...formInputCustomizations,
+  ...datePickersCustomizations,
+  ...dataGridCustomizations,
 };
 
 export default function App(props: { disableCustomTheme?: boolean }) {
