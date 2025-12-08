@@ -5,8 +5,6 @@ import NotificationsProvider from './hooks/useNotifications/NotificationsProvide
 import DialogsProvider from './hooks/useDialogs/DialogsProvider';
 import AppTheme from '../shared-theme/AppTheme';
 import {
-  dataGridCustomizations,
-  datePickersCustomizations,
   sidebarCustomizations,
   formInputCustomizations,
 } from './theme/customizations';
@@ -163,8 +161,6 @@ const router = createHashRouter([
 ]);
 
 const themeComponents = {
-  ...dataGridCustomizations,
-  ...datePickersCustomizations,
   ...sidebarCustomizations,
   ...formInputCustomizations,
 };

@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Api } from '../../../api/ColabriAPI';
-import { ResolvedPrpl } from '../../context/PrplsContext/ResolvedPrplsContext';
+import { ResolvedPrpl } from '../../../api/ColabriAPI';
 
 // Create a singleton API client instance
 const apiClient = new Api({

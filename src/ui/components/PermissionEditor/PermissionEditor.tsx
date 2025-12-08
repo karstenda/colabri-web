@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import ResolvedPrplsProvider from '../../context/PrplsContext/ResolvedPrplsProvider';
 import PermissionTable from './PermissionTable';
-import { Assignee, AssigneeSelector } from '../AssigneeSelector';
+import { AssigneeSelector } from '../AssigneeSelector';
 import { useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';
 import { Permission } from '../../data/Permission';
 import { toResolvedPrpl } from '../../data/Common';
 import { ResolvedPrpl } from '../../../api/ColabriAPI';
 import { PermissionEditorDivider } from './PermissionEditorStyles';
+import { Assignee } from '../../data/Common';
 
 type PermissionEditorProps = {
   helperText?: string;

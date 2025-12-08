@@ -1,10 +1,29 @@
 import { LoroDoc, LoroList, LoroMap } from 'loro-crdt';
-import { ColabModelType } from '../../api/ColabriAPI';
+import {
+  ColabModelType,
+  DocumentStream,
+  StatementDocument,
+} from '../../api/ColabriAPI';
 import { Permission } from '../../ui/data/Permission';
 
 export type ColabDocType =
   | ColabModelType.ColabModelStatementType
   | ColabModelType.ColabModelSheetType;
+
+export type ColabDoc =
+  | StatementDocument
+  | {
+      acls: Record<string, string[]>;
+      createdAt: string;
+      createdBy: string;
+      id: string;
+      name: string;
+      owner: string;
+      streams: Record<string, DocumentStream[]>;
+      type: string;
+      updatedAt: string;
+      updatedBy: string;
+    };
 
 export type ColabLoroDoc = StmtLoroDoc | SheetLoroDoc;
 

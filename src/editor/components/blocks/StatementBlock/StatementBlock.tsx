@@ -7,7 +7,7 @@ import StatementElementBlock from '../StatementElementBlock/StatementElementBloc
 import { Stack } from '@mui/material';
 import { useContentLanguages } from '../../../../ui/hooks/useContentLanguages/useContentLanguage';
 import { useOrganization } from '../../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
-import { StmtLoroDoc } from '../../../data/ColabDoc';
+import { ConnectedStmtDoc } from '../../../data/ConnectedColabDoc';
 
 export type StatementBlockProps = {
   bp: StatementBlockBP;
@@ -16,9 +16,14 @@ export type StatementBlockProps = {
 const StatementBlock = ({ bp }: StatementBlockProps) => {
   // Get the current ColabDoc
   const { colabDoc } = useColabDoc();
+  if (!(colabDoc instanceof ConnectedStmtDoc)) {
+    throw new Error(
+      'StatementElementBlock can only be used with connected statement docs.',
+    );
+  }
 
   // Get the LoroDoc
-  const loroDoc = colabDoc?.loroDoc as StmtLoroDoc | undefined;
+  const loroDoc = colabDoc?.getLoroDoc();
 
   // Get the current organization
   const organization = useOrganization();

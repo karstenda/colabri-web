@@ -6,6 +6,7 @@ import { ConnectedColabDoc } from '../../data/ConnectedColabDoc';
 import {
   useOrgUserId,
   useOrganization,
+  usePrpls,
   useUserProfile,
 } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
 
@@ -33,6 +34,7 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
   const org = useOrganization();
   const userId = useOrgUserId();
   const userProfile = useUserProfile();
+  const authPrpls = usePrpls();
 
   // Fetch the targeted document
   const { document } = useDocument(
@@ -144,7 +146,7 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
     if (docType === ColabModelType.ColabModelStatementType) {
       newConnectedDoc = new ConnectedStmtDoc(
         loroDoc as StmtLoroDoc,
-        new StatementDocController(loroDoc as StmtLoroDoc),
+        new StatementDocController(loroDoc as StmtLoroDoc, new Set(authPrpls)),
         ephStoreMgr,
         document as StatementDocument,
       );

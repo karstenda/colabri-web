@@ -5,8 +5,9 @@ import ColabDocController from './ColabDocController';
 
 class StatementDocController extends ColabDocController<StmtLoroDoc> {
   // Constructor
-  constructor(loroDoc: StmtLoroDoc) {
-    super(loroDoc);
+  // Loro document, set of authorized principals of the current user
+  constructor(loroDoc: StmtLoroDoc, authPrpls?: Set<string>) {
+    super(loroDoc, authPrpls);
   }
 
   /**

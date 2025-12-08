@@ -3,6 +3,7 @@ import { Organization, Group } from '../../../api/ColabriAPI';
 
 const UserOrganizationContext = React.createContext<{
   organization: Organization | null;
+  prpls: string[];
   orgUserId: string | null;
   orgGroups: Group[] | null;
   userProfile: {

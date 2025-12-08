@@ -3,7 +3,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import ShieldIcon from '@mui/icons-material/Shield';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import UserAvatar from '../UserAvatar/UserAvatar';
-import { Assignee } from '../AssigneeSelector';
+import { Assignee } from '../../data/Common';
 import { User } from '../../../api/ColabriAPI';
 import { ResolvedPrplOption } from '../../context/PrplsContext/ResolvedPrplsProvider';
 import { useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';

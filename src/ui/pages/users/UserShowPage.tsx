@@ -16,22 +16,19 @@ import dayjs from 'dayjs';
 import { useDialogs } from '../../hooks/useDialogs/useDialogs';
 import useNotifications from '../../hooks/useNotifications/useNotifications';
 import {
-    useDeleteUser,
-    useUser,
-    useUserGroups,
+  useDeleteUser,
+  useUser,
+  useUserGroups,
 } from '../../hooks/useUsers/useUsers';
 import PageContainer from '../../components/MainLayout/PageContainer';
 import { useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';
 import { styled } from '@mui/material/styles';
 import { AssigneeChip } from '../../components/AssigneeChip';
 
-
 // Create styled Paper component (with border)
-const StyledPaper = styled(Paper)(
-  ({ theme }) => ({
-    border: `1px solid ${(theme.vars || theme).palette.divider}`,
-  })
-);
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  border: `1px solid ${(theme.vars || theme).palette.divider}`,
+}));
 
 export default function UserShowPage() {
   const { userId } = useParams();
@@ -42,14 +39,29 @@ export default function UserShowPage() {
 
   const organization = useOrganization();
 
-  const {user, isLoading: isUserLoading, error: userError} = useUser(organization?.id || '', userId || '', organization !== undefined && userId !== undefined);
+  const {
+    user,
+    isLoading: isUserLoading,
+    error: userError,
+  } = useUser(
+    organization?.id || '',
+    userId || '',
+    organization !== undefined && userId !== undefined,
+  );
 
-  const { userGroups, isLoading: isUserGroupsLoading, error: userGroupsError } = useUserGroups(organization?.id || '', userId || '', organization !== undefined && userId !== undefined);
+  const {
+    userGroups,
+    isLoading: isUserGroupsLoading,
+    error: userGroupsError,
+  } = useUserGroups(
+    organization?.id || '',
+    userId || '',
+    organization !== undefined && userId !== undefined,
+  );
 
   const isLoading = isUserLoading || isUserGroupsLoading;
 
   const { deleteUser } = useDeleteUser(organization?.id || '');
-
 
   const handleUserEdit = React.useCallback(() => {
     navigate(`/org/${organization?.id}/users/${userId}/edit`);
@@ -71,9 +83,6 @@ export default function UserShowPage() {
     );
 
     if (confirmed) {
-
-
-
       try {
         await deleteUser(userId as string);
 
@@ -83,7 +92,6 @@ export default function UserShowPage() {
           severity: 'success',
           autoHideDuration: 3000,
         });
-        
       } catch (deleteError) {
         notifications.show(
           `Failed to delete user. Reason:' ${(deleteError as Error).message}`,
@@ -180,15 +188,21 @@ export default function UserShowPage() {
             <StyledPaper sx={{ px: 2, py: 1 }}>
               <Typography variant="overline">Groups</Typography>
               {userGroups?.length > 0 ? (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, paddingTop: '10px', paddingBottom: '10px' }}>
-                    {userGroups.map((group) => (
-                        <AssigneeChip
-                            key={`group-${group.id}`}
-                            assignee={{...group, type: 'group'}}
-                            variant="outlined"
-                            size="small"
-                        />
-                    ))}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: 0.5,
+                    paddingTop: '10px',
+                    paddingBottom: '10px',
+                  }}
+                >
+                  {userGroups.map((group) => (
+                    <AssigneeChip
+                      key={`group-${group.id}`}
+                      assignee={{ ...group, type: 'group' }}
+                    />
+                  ))}
                 </Box>
               ) : (
                 <Typography variant="body1" sx={{ mb: 1 }}>
@@ -242,7 +256,7 @@ export default function UserShowPage() {
     <PageContainer
       title={pageTitle}
       breadcrumbs={[
-        { title: 'Users', path: '/org/'+organization?.id+'/users' },
+        { title: 'Users', path: '/org/' + organization?.id + '/users' },
         { title: pageTitle },
       ]}
     >

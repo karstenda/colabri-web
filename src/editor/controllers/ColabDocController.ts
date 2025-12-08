@@ -5,8 +5,12 @@ import { AclLoroMap, ColabLoroDoc } from '../data/ColabDoc';
 export default class ColabDocController<T extends ColabLoroDoc> {
   protected loroDoc: T;
 
-  constructor(loroDoc: T) {
+  // The set of authorized principals of the current user
+  protected authPrpls: Set<string>;
+
+  constructor(loroDoc: T, authPrpls?: Set<string>) {
     this.loroDoc = loroDoc;
+    this.authPrpls = authPrpls ?? new Set<string>();
   }
 
   /**
