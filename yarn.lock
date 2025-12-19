@@ -2713,7 +2713,14 @@ loose-envify@^1.4.0:
   dependencies:
     js-tokens "^3.0.0 || ^4.0.0"
 
-loro-adaptors@0.4.1, loro-adaptors@^0.4.1:
+loro-adaptors@0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/loro-adaptors/-/loro-adaptors-0.6.0.tgz#5becf058e8419296b888a47f113179c54d5db5ba"
+  integrity sha512-HepuEGV7T1HGUbjkcZSEEA2Z3dy5LmryUa3VUFnhTpUk+VzVUdvWYrvN4SlzeMS/t6Jg+qhCKNWX2OEfvzW5mQ==
+  dependencies:
+    loro-protocol "0.3.0"
+
+loro-adaptors@^0.4.1:
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/loro-adaptors/-/loro-adaptors-0.4.1.tgz#fec71e1c2a2bea9424302d88295d7f1fdf6d87e2"
   integrity sha512-YNXLlTho7DOPqASL9S1b6FegeYie5U5dhPcBL3xxINyTDa1ZpMSYMbdLKCRYyuupSRXM0OF0xO+CHSxRBPIfIA==
@@ -2732,19 +2739,24 @@ loro-prosemirror@0.4.1:
   dependencies:
     lib0 "^0.2.42"
 
-loro-protocol@0.2.0, loro-protocol@^0.2.0:
+loro-protocol@0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/loro-protocol/-/loro-protocol-0.2.0.tgz#34123e29939bb6824aab2c924e8146b831eb57d5"
   integrity sha512-16FCgPj8A1ZCK8T97O9NWpZHbwJmPbq0WNhE+Nh0IDPxKRNYOi6XbPVfEsnnoe7gZW7X4OEdWERXm1O0W3vhwQ==
 
-loro-websocket@^0.4.1:
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/loro-websocket/-/loro-websocket-0.4.1.tgz#d7cfc551ce05b44889df53adc5d629c8adef40e5"
-  integrity sha512-qGEdsHmcZvokEotzVNYpsITt6B0RvqiMnFDS9cMhMFD8jlEUl0Twognex4xqGzrjSuuzoUcQUhvDD+p09D9Eqg==
+loro-protocol@0.3.0, loro-protocol@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/loro-protocol/-/loro-protocol-0.3.0.tgz#fdc48efcfa02c5eb7655fcffb53a4a943a95e629"
+  integrity sha512-j28FzDwOVHk95asjQEk8yse7hfYHnStdusYcQBphWRwzA8wzE5iMHQpnDyog1O6kmJQ6W/iC8yDisHpxH0wUAg==
+
+loro-websocket@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/loro-websocket/-/loro-websocket-0.6.0.tgz#02ea9bdada15c31b31137c00b32afdd343ef8a7d"
+  integrity sha512-sdyVrOb6QjoFYBmOBjyyFPkBkAPu9QSd9AJdJu8NLsGcL5lCzSum8/tB0Wz9zjNJlkPJRzgI7yZPFetm7qhWcA==
   dependencies:
     "@types/ws" "^8.18.1"
-    loro-adaptors "0.4.1"
-    loro-protocol "0.2.0"
+    loro-adaptors "0.6.0"
+    loro-protocol "0.3.0"
     ws "^8.18.3"
 
 lru-cache@^5.1.1:

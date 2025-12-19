@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
+import { getDocServiceConnUrl } from '../../../utils/UrlUtils';
 import { LoroWebsocketClient } from 'loro-websocket';
 import { LoroAdaptor, LoroEphemeralAdaptor } from 'loro-adaptors/loro';
 import { ColabLoroDoc, StmtLoroDoc } from '../../data/ColabDoc';
@@ -8,6 +9,7 @@ import {
   useOrganization,
   usePrpls,
   useUserProfile,
+  useUserUid,
 } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
 
 import ColabDocContext, { ColabDocContextType } from './ColabDocContext';
@@ -33,6 +35,7 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
   // Fetch the user and organization
   const org = useOrganization();
   const userId = useOrgUserId();
+  const userUid = useUserUid();
   const userProfile = useUserProfile();
   const authPrpls = usePrpls();
 
@@ -57,6 +60,7 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
       org === null ||
       document === undefined ||
       docId === undefined ||
+      userUid === null ||
       userId === null ||
       userProfile === null
     ) {
@@ -70,7 +74,7 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
     // Check if we're NOT currently connected, then connect once
     if (!connected.current) {
       connected.current = true;
-      connect(docId, org, userId, userProfile).then((disconnectFn) => {
+      connect(docId, userUid, org, userId, userProfile).then((disconnectFn) => {
         disconnectFnRef.current = disconnectFn;
       });
     }
@@ -89,19 +93,25 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
   // The function to connect.
   const connect = async function (
     docId: string,
+    userUid: string,
     org: Organization,
     userId: string,
     userProfile: UserProfile,
   ): Promise<() => void> {
+    // Generate the url to the doc service based on the current url.
+    const docServiceUrl = getDocServiceConnUrl();
+
     // Create the client
-    const client = new LoroWebsocketClient({ url: 'ws://localhost:9001' });
+    const client = new LoroWebsocketClient({
+      url: docServiceUrl + '/' + org.id,
+    });
 
     // Connect to the server
     await client.waitConnected();
     console.log('Client connected!');
 
     // Generate the room IDs
-    const roomId = org?.id + '/' + docId;
+    const roomId = docId;
 
     // Join rooms
     // --- Room 1: A Loro Document (%LOR) ---

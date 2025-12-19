@@ -24,6 +24,11 @@ export const useOrgUserId = () => {
   return orgUserId;
 };
 
+export const useUserUid = () => {
+  const { orgUserId } = useUserOrganizationContext();
+  return orgUserId;
+};
+
 export const useOrgGroups = () => {
   const { orgGroups } = useUserOrganizationContext();
   return orgGroups;
@@ -63,10 +68,12 @@ const UserOrganizationProvider: React.FC<{ children: React.ReactNode }> = ({
   const orgGroups = userOrganization ? userOrganization.userGroups : null;
   const userProfile = userAuth?.profile || null;
   const prpls = userAuth?.prpls || [];
+  const userUid = userAuth?.uid || null;
 
   return (
     <UserOrganizationContext.Provider
       value={{
+        userUid,
         organization,
         orgUserId,
         orgGroups,
