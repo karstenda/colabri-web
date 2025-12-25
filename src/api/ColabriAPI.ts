@@ -90,6 +90,15 @@ export interface AttributeValueOnly {
   value: any;
 }
 
+export interface CheckOrganizationNameRequest {
+  name: string;
+  recaptchaToken: string;
+}
+
+export interface CheckOrganizationNameResponse {
+  available?: boolean;
+}
+
 export interface ColabComment {
   author: string;
   state: ColabCommentState;
@@ -159,6 +168,14 @@ export interface CreateStatementDocRequest {
   /** @example "OatKind-Choc-Sheet" */
   name: string;
   statement: ColabStatementModel;
+}
+
+export interface CreateTrialOrganizationRequest {
+  name: string;
+  ownerEmail: string;
+  ownerFirstName: string;
+  ownerLastName: string;
+  recaptchaToken: string;
 }
 
 export interface CreateUserRequest {
@@ -732,6 +749,49 @@ export class Api<
         path: `/prpls/resolve`,
         method: "POST",
         body: prpls,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+  };
+  trials = {
+    /**
+     * @description This endpoint will create a new organization on the platform. Only cloud admins are allowed to create organizations.
+     *
+     * @tags trials
+     * @name PostTrial
+     * @summary Create a new trial organization
+     * @request POST:/trials
+     */
+    postTrial: (
+      organization: CreateTrialOrganizationRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<Organization, HTTPError>({
+        path: `/trials`,
+        method: "POST",
+        body: organization,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Verifies that an organization name has not been taken yet. Requires passing a valid reCAPTCHA token.
+     *
+     * @tags trials
+     * @name PostTrialsCheckName
+     * @summary Check whether an organization name is available
+     * @request POST:/trials/check-name
+     */
+    postTrialsCheckName: (
+      request: CheckOrganizationNameRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<CheckOrganizationNameResponse, HTTPError>({
+        path: `/trials/check-name`,
+        method: "POST",
+        body: request,
         type: ContentType.Json,
         format: "json",
         ...params,

@@ -4,8 +4,9 @@ import {
   Value,
   ContainerID,
 } from 'loro-crdt';
+import { CursorEphemeralStore } from 'loro-prosemirror';
 
-type CursorEphemeralPayload = {
+export type CursorEphemeralPayload = {
   anchor: Uint8Array | null;
   focus: Uint8Array | null;
   user: {
@@ -98,7 +99,7 @@ export default class EphemeralStoreManager {
    */
   public bindCursorStore(
     containerID: ContainerID,
-    cursorStore: EphemeralStore,
+    cursorStore: CursorEphemeralStore,
   ): () => void {
     // Sync initial state from ephemeral store to cursor store
     const containerPrefix = `cursor/${containerID.toString()}/`;

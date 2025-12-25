@@ -13,11 +13,23 @@ type UserAuth = {
   profile: UserProfile;
 };
 
+type UserAuthError = {
+  code: number;
+  status: string;
+  error: string;
+};
+
 export const useUserAuth = () => {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery<UserAuth, UserAuthError>({
     queryKey: ['/auth/me'],
-    queryFn: () => fetch('/auth/me').then((res) => res.json()),
-    select: (data) => data as UserAuth,
+    queryFn: async () => {
+      const response = await fetch('/auth/me');
+      const payload = await response.json();
+      if (!response.ok) {
+        throw payload;
+      }
+      return payload as UserAuth;
+    },
   });
-  return { userAuth: data, isLoading };
+  return { userAuth: data, isLoading, error };
 };

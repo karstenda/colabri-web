@@ -25,11 +25,6 @@ import { useOrganization } from '../../context/UserOrganizationContext/UserOrgan
 import { styled } from '@mui/material/styles';
 import { AssigneeChip } from '../../components/AssigneeChip';
 
-// Create styled Paper component (with border)
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  border: `1px solid ${(theme.vars || theme).palette.divider}`,
-}));
-
 export default function UserShowPage() {
   const { userId } = useParams();
   const navigate = useNavigate();
@@ -145,47 +140,47 @@ export default function UserShowPage() {
       <Box sx={{ flexGrow: 1, width: '100%' }}>
         <Grid container spacing={2} sx={{ width: '100%' }}>
           <Grid size={{ xs: 12, sm: 12 }}>
-            <StyledPaper sx={{ px: 2, py: 1 }}>
+            <Paper sx={{ px: 2, py: 1 }}>
               <Typography variant="overline">Email</Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
                 {user.email}
               </Typography>
-            </StyledPaper>
+            </Paper>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
-            <StyledPaper sx={{ px: 2, py: 1 }}>
+            <Paper sx={{ px: 2, py: 1 }}>
               <Typography variant="overline">First Name</Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
                 {user.firstName}
               </Typography>
-            </StyledPaper>
+            </Paper>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
-            <StyledPaper sx={{ px: 2, py: 1 }}>
+            <Paper sx={{ px: 2, py: 1 }}>
               <Typography variant="overline">Last Name</Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
                 {user.lastName}
               </Typography>
-            </StyledPaper>
+            </Paper>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
-            <StyledPaper sx={{ px: 2, py: 1 }}>
+            <Paper sx={{ px: 2, py: 1 }}>
               <Typography variant="overline">Created date</Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
                 {dayjs(user.createdAt).format('MMMM D, YYYY')}
               </Typography>
-            </StyledPaper>
+            </Paper>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
-            <StyledPaper sx={{ px: 2, py: 1 }}>
+            <Paper sx={{ px: 2, py: 1 }}>
               <Typography variant="overline">Disabled</Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
                 {user.disabled ? 'Yes' : 'No'}
               </Typography>
-            </StyledPaper>
+            </Paper>
           </Grid>
           <Grid size={{ xs: 12, sm: 12 }}>
-            <StyledPaper sx={{ px: 2, py: 1 }}>
+            <Paper sx={{ px: 2, py: 1 }}>
               <Typography variant="overline">Groups</Typography>
               {userGroups?.length > 0 ? (
                 <Box
@@ -209,7 +204,7 @@ export default function UserShowPage() {
                   No groups assigned
                 </Typography>
               )}
-            </StyledPaper>
+            </Paper>
           </Grid>
         </Grid>
         <Divider sx={{ my: 3 }} />

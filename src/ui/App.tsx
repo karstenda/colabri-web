@@ -10,7 +10,8 @@ import {
   datePickersCustomizations,
   dataGridCustomizations,
 } from './theme/customizations';
-import OnboardPage from './pages/OnboardPage';
+import LandingPage from './pages/landing/LandingPage';
+import TrialPage from './pages/trial/TrialPage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { UserOrganizationProvider } from './context/UserOrganizationContext/UserOrganizationProvider';
 import OrgUserProtectedRoute from './routes/OrgUserProtectedRoute';
@@ -30,12 +31,10 @@ import ColabDocEditorPage from './pages/editor/ColabDocEditorPage';
 import LanguageListPage from './pages/languages/LanguageListPage';
 import StatementListPage from './pages/statements/StatementListPage';
 import StatementCreatePage from './pages/statements/StatementCreatePage';
+import PrivacyPolicyPage from './pages/legal/PrivacyPolicyPage';
+import TermsAndConditionsPage from './pages/legal/TermsAndConditionsPage';
 
 const router = createHashRouter([
-  {
-    path: '/onboard',
-    Component: OnboardPage,
-  },
   {
     path: 'org/:orgId/docs/:docId',
     Component: () => (
@@ -155,10 +154,54 @@ const router = createHashRouter([
       },
     ],
   },
+  {
+    path: '/trial',
+    Component: () => (
+      <UserOrganizationProvider>
+        <NotificationsProvider>
+          <DialogsProvider>
+            <TrialPage />
+          </DialogsProvider>
+        </NotificationsProvider>
+      </UserOrganizationProvider>
+    ),
+  },
+  {
+    path: '/privacy-policy',
+    Component: () => (
+      <UserOrganizationProvider>
+        <NotificationsProvider>
+          <DialogsProvider>
+            <PrivacyPolicyPage />
+          </DialogsProvider>
+        </NotificationsProvider>
+      </UserOrganizationProvider>
+    ),
+  },
+  {
+    path: '/terms-and-conditions',
+    Component: () => (
+      <UserOrganizationProvider>
+        <NotificationsProvider>
+          <DialogsProvider>
+            <TermsAndConditionsPage />
+          </DialogsProvider>
+        </NotificationsProvider>
+      </UserOrganizationProvider>
+    ),
+  },
   // Fallback route for the example routes in dashboard sidebar items
   {
     path: '*',
-    Component: OnboardPage,
+    Component: () => (
+      <UserOrganizationProvider>
+        <NotificationsProvider>
+          <DialogsProvider>
+            <LandingPage />
+          </DialogsProvider>
+        </NotificationsProvider>
+      </UserOrganizationProvider>
+    ),
   },
 ]);
 

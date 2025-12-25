@@ -15,22 +15,11 @@ import { useNavigate, useParams } from 'react-router';
 import dayjs from 'dayjs';
 import { useDialogs } from '../../hooks/useDialogs/useDialogs';
 import useNotifications from '../../hooks/useNotifications/useNotifications';
-import {
-  useDeleteGroup,
-  useGroup,
-} from '../../hooks/useGroups/useGroups';
+import { useDeleteGroup, useGroup } from '../../hooks/useGroups/useGroups';
 import PageContainer from '../../components/MainLayout/PageContainer';
 import { useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';
 import MembersGrid from '../../components/MembersGrid/MembersGrid';
 import { User } from '../../../api/ColabriAPI';
-import { styled } from '@mui/material/styles';
-
-// Create styled Paper component (with border)
-const StyledPaper = styled(Paper)(
-  ({ theme }) => ({
-    border: `1px solid ${(theme.vars || theme).palette.divider}`,
-  })
-);
 
 export default function GroupShowPage() {
   const { groupId } = useParams();
@@ -45,7 +34,7 @@ export default function GroupShowPage() {
   const { group, isLoading, error } = useGroup(
     organization?.id || '',
     groupId || '',
-    organization !== undefined && groupId !== undefined
+    organization !== undefined && groupId !== undefined,
   );
 
   const { deleteGroup } = useDeleteGroup(organization?.id || '');
@@ -89,7 +78,15 @@ export default function GroupShowPage() {
         );
       }
     }
-  }, [group, dialogs, groupId, deleteGroup, navigate, organization, notifications]);
+  }, [
+    group,
+    dialogs,
+    groupId,
+    deleteGroup,
+    navigate,
+    organization,
+    notifications,
+  ]);
 
   const handleBack = React.useCallback(() => {
     navigate(`/org/${organization?.id}/groups`);
@@ -125,43 +122,39 @@ export default function GroupShowPage() {
       <Box sx={{ flexGrow: 1, width: '100%' }}>
         <Grid container spacing={2} sx={{ width: '100%' }}>
           <Grid size={{ xs: 12, sm: 6 }}>
-            <StyledPaper sx={{ px: 2, py: 1 }}>
+            <Paper sx={{ px: 2, py: 1 }}>
               <Typography variant="overline">Name</Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
                 {group.name}
               </Typography>
-            </StyledPaper>
+            </Paper>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
-            <StyledPaper sx={{ px: 2, py: 1 }}>
+            <Paper sx={{ px: 2, py: 1 }}>
               <Typography variant="overline">System Group</Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
-                {group.system ? (
-                  'Yes'
-                ) : (
-                  'No'
-                )}
+                {group.system ? 'Yes' : 'No'}
               </Typography>
-            </StyledPaper>
+            </Paper>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
-            <StyledPaper sx={{ px: 2, py: 1 }}>
+            <Paper sx={{ px: 2, py: 1 }}>
               <Typography variant="overline">Description</Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
                 {group.description || 'No description'}
               </Typography>
-            </StyledPaper>
+            </Paper>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
-            <StyledPaper sx={{ px: 2, py: 1 }}>
+            <Paper sx={{ px: 2, py: 1 }}>
               <Typography variant="overline">Created date</Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
                 {dayjs(group.createdAt).format('MMMM D, YYYY')}
               </Typography>
-            </StyledPaper>
+            </Paper>
           </Grid>
           <Grid size={{ xs: 12, sm: 12 }}>
-            <MembersGrid 
+            <MembersGrid
               group={group}
               handleClick={(member: User) => {
                 navigate(`/org/${organization?.id}/users/${member.id}`);
@@ -180,35 +173,32 @@ export default function GroupShowPage() {
             Back
           </Button>
           <Stack direction="row" spacing={2}>
-            {!group.system && <Button
-              variant="contained"
-              startIcon={<EditIcon />}
-              onClick={handleGroupEdit}
-              disabled={group.system}
-            >
-              Edit
-            </Button>}
-            {!group.system && <Button
-              variant="contained"
-              color="error"
-              startIcon={<DeleteIcon />}
-              onClick={handleGroupDelete}
-              disabled={group.system}
-            >
-              Delete
-            </Button>}
+            {!group.system && (
+              <Button
+                variant="contained"
+                startIcon={<EditIcon />}
+                onClick={handleGroupEdit}
+                disabled={group.system}
+              >
+                Edit
+              </Button>
+            )}
+            {!group.system && (
+              <Button
+                variant="contained"
+                color="error"
+                startIcon={<DeleteIcon />}
+                onClick={handleGroupDelete}
+                disabled={group.system}
+              >
+                Delete
+              </Button>
+            )}
           </Stack>
         </Stack>
       </Box>
     ) : null;
-  }, [
-    isLoading,
-    error,
-    group,
-    handleBack,
-    handleGroupDelete,
-    handleGroupEdit,
-  ]);
+  }, [isLoading, error, group, handleBack, handleGroupDelete, handleGroupEdit]);
 
   const pageTitle = `${group ? group.name : ''}`;
 

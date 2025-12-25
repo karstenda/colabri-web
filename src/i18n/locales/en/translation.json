@@ -1,6 +1,7 @@
 {
   "common": {
     "save": "Save",
+    "saving": "Saving...",
     "apply": "Apply",
     "cancel": "Cancel",
     "delete": "Delete",
@@ -16,7 +17,11 @@
     "back": "Back",
     "next": "Next",
     "submit": "Submit",
-    "close": "Close"
+    "close": "Close",
+    "companyName": "Company Name",
+    "email": "Email",
+    "firstName": "First Name",
+    "lastName": "Last Name"
   },
   "navigation": {
     "home": "Home",
@@ -38,6 +43,35 @@
     "sections": {
       "document": "Document Permissions",
       "language": "Language Permissions"
+    }
+  },
+  "onboarding": {
+    "loginPromptTitle": "Welcome to Colabri",
+    "loginPrompt": "You're currently not authenticated, please log in to continue.",
+    "loginButton": "Log In",
+    "errorPromptTitle": "Oops! Something went wrong.",
+    "errorDefaultMsg": "An unexpected error occurred. Please try again later.",
+    "orgPickerPromptTitle": "Pick Organization",
+    "orgPickerPrompt": "You're part of multiple organizations, please pick the organization that you currently want to access.",
+    "noOrgsPromptTitle": "You don't have access to any organization. You can create one by starting a Trial or buying a subscription."
+  },
+  "trial": {
+    "createTrialTitle": "Create Trial",
+    "createTrialTermsAcceptance": "By creating a trial, I confirm that I have read and agree to the Colabri <1>Terms of Service</1> and <2>Privacy Policy</2>.",
+    "termsRequired": "You must accept the terms and conditions",
+    "createSuccess": "Trial organization created successfully",
+    "createError": "Failed to create trial: {{error}}",
+    "trialCreatedTitle": "Trial Created",
+    "trialCreatedMessage": "Your trial has been successfully created! Please check your inbox to verify your email address and set your password. Once that’s done, you’re all set to start exploring Colabri. We hope you enjoy it!",
+    "recaptchaError": "reCAPTCHA verification failed. Please try again.",
+    "validation": {
+      "companyNameRequired": "Company Name is required",
+      "companyNameLength": "Company Name must be at least 2 characters long",
+      "nameTaken": "There is already an organization with this name",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Invalid email address",
+      "firstNameRequired": "First Name is required",
+      "lastNameRequired": "Last Name is required"
     }
   },
   "editor": {
