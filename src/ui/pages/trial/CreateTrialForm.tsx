@@ -17,6 +17,7 @@ import { Checkbox, Link } from '@mui/material';
 import { Api, OrganizationStatus } from '../../../api/ColabriAPI';
 import { validate, CreateTrialFormEntries } from './CreateTrialFormValidate';
 import useNotifications from '../../hooks/useNotifications/useNotifications';
+import { useUserAuth } from '../../hooks/useUserAuth/useUserAuth';
 
 const apiClient = new Api({
   baseUrl: '/api/v1',
@@ -40,6 +41,7 @@ const CreateTrialFormContent: React.FC<CreateTrialFormProps> = ({
   onSuccess,
 }) => {
   const { t } = useTranslation();
+  const { isLoading, userAuth, error } = useUserAuth();
   const theme = useTheme();
   const notifications = useNotifications();
   const { executeRecaptcha } = useGoogleReCaptcha();
@@ -49,6 +51,21 @@ const CreateTrialFormContent: React.FC<CreateTrialFormProps> = ({
     Partial<Record<keyof ExtendedFormValues, string>>
   >({});
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  // Ref to track if user profile is fixed
+  const isFixedUserProfileRef = React.useRef(false);
+
+  useEffect(() => {
+    if (!isLoading && userAuth) {
+      setFormValues((prevValues) => ({
+        ...prevValues,
+        ownerEmail: userAuth.profile.email,
+        ownerFirstName: userAuth.profile.firstName,
+        ownerLastName: userAuth.profile.lastName,
+      }));
+      isFixedUserProfileRef.current = true;
+    }
+  }, [isLoading, userAuth]);
 
   const handleTextFieldChange = (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -221,7 +238,7 @@ const CreateTrialFormContent: React.FC<CreateTrialFormProps> = ({
                 error={!!formErrors.ownerEmail}
                 helperText={formErrors.ownerEmail ?? ' '}
                 fullWidth
-                disabled={isSubmitting}
+                disabled={isSubmitting || isFixedUserProfileRef.current}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
@@ -233,7 +250,7 @@ const CreateTrialFormContent: React.FC<CreateTrialFormProps> = ({
                 error={!!formErrors.ownerFirstName}
                 helperText={formErrors.ownerFirstName ?? ' '}
                 fullWidth
-                disabled={isSubmitting}
+                disabled={isSubmitting || isFixedUserProfileRef.current}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
@@ -245,7 +262,7 @@ const CreateTrialFormContent: React.FC<CreateTrialFormProps> = ({
                 error={!!formErrors.ownerLastName}
                 helperText={formErrors.ownerLastName ?? ' '}
                 fullWidth
-                disabled={isSubmitting}
+                disabled={isSubmitting || isFixedUserProfileRef.current}
               />
             </Grid>
             <Grid

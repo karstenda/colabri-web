@@ -37,13 +37,19 @@ const LandingPage: React.FC = () => {
     }
   }, [needsOrgRedirect, orgs, navigate]);
 
+  // Redirect to trial if the user has no organizations
+  React.useEffect(() => {
+    if (needsTrial) {
+      navigate(`/trial`, { replace: true });
+    }
+  }, [needsTrial]);
+
   return (
     <MainFrame>
       {isLoading && <CircularProgress size="3rem" />}
       {needsLogin && <LoginPrompt />}
       {needsError && <ErrorPrompt msg={error?.error} />}
       {needsOrgPick && <OrgPicker orgs={orgs} />}
-      {needsTrial && <ErrorPrompt msg={t('onboarding.noOrgsPromptTitle')} />}
     </MainFrame>
   );
 };

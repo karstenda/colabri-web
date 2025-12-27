@@ -52,8 +52,7 @@
     "errorPromptTitle": "Oops! Something went wrong.",
     "errorDefaultMsg": "An unexpected error occurred. Please try again later.",
     "orgPickerPromptTitle": "Pick Organization",
-    "orgPickerPrompt": "You're part of multiple organizations, please pick the organization that you currently want to access.",
-    "noOrgsPromptTitle": "You don't have access to any organization. You can create one by starting a Trial or buying a subscription."
+    "orgPickerPrompt": "You're part of multiple organizations, please pick the organization that you currently want to access."
   },
   "trial": {
     "createTrialTitle": "Create Trial",
