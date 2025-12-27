@@ -11,6 +11,7 @@ import {
   useUserProfile,
   useUserUid,
 } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
+import { Document } from '../../../api/ColabriAPI';
 
 import ColabDocContext, { ColabDocContextType } from './ColabDocContext';
 
@@ -74,9 +75,11 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
     // Check if we're NOT currently connected, then connect once
     if (!connected.current) {
       connected.current = true;
-      connect(docId, userUid, org, userId, userProfile).then((disconnectFn) => {
-        disconnectFnRef.current = disconnectFn;
-      });
+      connect(docId, document, userUid, org, userId, userProfile).then(
+        (disconnectFn) => {
+          disconnectFnRef.current = disconnectFn;
+        },
+      );
     }
   }, [document, userId, userProfile]);
 
@@ -93,6 +96,7 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
   // The function to connect.
   const connect = async function (
     docId: string,
+    document: Document,
     userUid: string,
     org: Organization,
     userId: string,
@@ -156,7 +160,12 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
     if (docType === ColabModelType.ColabModelStatementType) {
       newConnectedDoc = new ConnectedStmtDoc(
         loroDoc as StmtLoroDoc,
-        new StatementDocController(loroDoc as StmtLoroDoc, new Set(authPrpls)),
+        new StatementDocController(
+          loroDoc as StmtLoroDoc,
+          org.id,
+          document.owner,
+          new Set(authPrpls),
+        ),
         ephStoreMgr,
         document as StatementDocument,
       );

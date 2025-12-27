@@ -5,7 +5,6 @@ import TextField from '@mui/material/TextField';
 import { Organization } from '../../../../api/ColabriAPI';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@mui/material/styles';
-import ColabriSvgIcon from '../../../components/MainLayout/icons/ColabriSvgIcon';
 import Typography from '@mui/material/Typography';
 import { Stack } from '@mui/material';
 import { useNavigate } from 'react-router';
@@ -68,7 +67,7 @@ const OrgPicker = ({
         justifyContent: 'center', // Centers horizontally
         alignItems: 'center', // Centers vertically
         padding: theme.spacing(2),
-        minWidth: 400,
+        minWidth: 350,
         maxWidth: 500,
       }}
     >

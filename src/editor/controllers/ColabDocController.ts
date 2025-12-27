@@ -1,14 +1,29 @@
-import { LoroList } from 'loro-crdt';
+import { LoroEventBatch, LoroList } from 'loro-crdt';
 import { Permission } from '../../ui/data/Permission';
 import { AclLoroMap, ColabLoroDoc } from '../data/ColabDoc';
+import { pathStartsWith } from '../util/LoroPathUtil';
 
 export default class ColabDocController<T extends ColabLoroDoc> {
+  // The actual lorodoc
   protected loroDoc: T;
+
+  // The prpl of the owner
+  protected owner: string;
+
+  // The ID of the organization
+  protected orgId: string;
 
   // The set of authorized principals of the current user
   protected authPrpls: Set<string>;
 
-  constructor(loroDoc: T, authPrpls?: Set<string>) {
+  constructor(
+    loroDoc: T,
+    orgId: string,
+    owner: string,
+    authPrpls?: Set<string>,
+  ) {
+    this.orgId = orgId;
+    this.owner = owner;
     this.loroDoc = loroDoc;
     this.authPrpls = authPrpls ?? new Set<string>();
   }
@@ -95,6 +110,63 @@ export default class ColabDocController<T extends ColabLoroDoc> {
         permissionList.push(prpl);
       });
     });
+  }
+
+  /**
+   * Subscribe to document ACL changes
+   *
+   * @param callback
+   * @returns
+   */
+  public subscribeToDocAclChanges(callback: (event: LoroEventBatch) => void) {
+    return this.loroDoc.subscribe((event: LoroEventBatch) => {
+      // Iterate over the events
+      for (const ev of event.events) {
+        if (pathStartsWith(ev.path, ['acl'])) {
+          callback(event);
+          break;
+        }
+      }
+    });
+  }
+
+  /**
+   * Whether the current user can manage the document
+   *
+   * @returns
+   */
+  public canManageDoc(): boolean {
+    // Check if the current user is the owner.
+    if (this.authPrpls.has(this.owner)) {
+      return true;
+    }
+    // Check if the current user is a cloud admin.
+    if (this.authPrpls.has('r/Colabri-CloudAdmin')) {
+      return true;
+    }
+    // Check if the current user is an org admin.
+    if (this.authPrpls.has(this.orgId + '/f/admin')) {
+      return true;
+    }
+    // Check if the current user has ACLs that give him manage permission.
+    const aclMap = this.getDocAclMap();
+    const managePrpls = aclMap[Permission.Manage] || [];
+    return managePrpls.some((prpl) => this.authPrpls.has(prpl));
+  }
+
+  /**
+   * Whether the current user can add/remove to and from document
+   */
+  public canAddRemoveDoc(): boolean {
+    // If you can manage the document, you can add/remove
+    if (this.canManageDoc()) {
+      return true;
+    }
+
+    // Otherwise, check if the current user has specific add/remove ACLs
+    const aclMap = this.getDocAclMap();
+    const addRemovePrpls = aclMap[Permission.AddRemove] || [];
+    return addRemovePrpls.some((prpl) => this.authPrpls.has(prpl));
   }
 
   /**

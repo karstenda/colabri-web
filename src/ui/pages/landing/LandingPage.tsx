@@ -15,7 +15,7 @@ const LandingPage: React.FC = () => {
   const { t } = useTranslation();
 
   // Figure out what to show
-  const needsLogin = !isLoading && error?.code === 401;
+  const needsLogin = error?.code === 401;
   const needsError = !isLoading && error && error?.code !== 401;
   const needsOrgPick = !isLoading && userAuth && userAuth?.orgs?.length > 1;
   const needsOrgRedirect =

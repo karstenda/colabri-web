@@ -20,7 +20,7 @@ const DocEditorBlockControls = ({
   controls,
   show,
 }: DocEditorBlockControlsProps) => {
-  if (!show) {
+  if (!show || controls.length === 0) {
     return <></>;
   } else {
     return (

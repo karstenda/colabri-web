@@ -34,6 +34,7 @@ export type ColabTextEditorProps = {
   loro: LoroDocType;
   ephStoreMgr: ColabEphemeralStoreManager;
   containerId: ContainerID;
+  canEdit?: boolean;
   onFocus?: () => void;
   onBlur?: () => void;
 };
@@ -42,6 +43,7 @@ export default function ColabTextEditor({
   loro,
   ephStoreMgr,
   containerId,
+  canEdit = true,
   onFocus,
   onBlur,
 }: ColabTextEditorProps) {
@@ -73,6 +75,9 @@ export default function ColabTextEditor({
   const ephemeralCursorStoreRef = useRef<CursorEphemeralStore>(
     new CursorEphemeralStore(loro.peerIdStr),
   );
+
+  // Reference to the user presence cache
+  const userPresenceCache = useRef<Record<string, any>>({});
 
   // Define the toolbar setup for this editor
   const toolbarSetup = {
@@ -137,6 +142,7 @@ export default function ColabTextEditor({
     // Initialize the editor view
     const editorView = new EditorView(editorDom.current, {
       state: EditorState.create({ doc, schema: mySchema, plugins: allPlugins }),
+      editable: () => canEdit,
     });
     editorRef.current = editorView;
 
@@ -149,15 +155,30 @@ export default function ColabTextEditor({
     };
   }, [ephStoreMgr, containerId]);
 
+  // Update the editable state when canEdit changes
+  useEffect(() => {
+    if (editorRef.current) {
+      editorRef.current.setProps({
+        editable: () => canEdit,
+      });
+    }
+  }, [canEdit]);
+
   // Function to create the cursor DOM element
   const createCursor = (peerId: string) => {
     let userPresence = ephStoreMgr.getUserPresence(peerId);
     if (!userPresence) {
-      userPresence = {
-        name: peerId,
-        color: '#' + Math.floor(Math.random() * 16777215).toString(16),
-        id: '',
-      };
+      if (userPresenceCache.current[peerId]) {
+        userPresence = userPresenceCache.current[peerId];
+      } else {
+        userPresence = {
+          name: peerId,
+          color: '#' + Math.floor(Math.random() * 16777215).toString(16),
+          id: '',
+        };
+      }
+    } else {
+      userPresenceCache.current[peerId] = userPresence;
     }
     const cursor = document.createElement('span');
     cursor.classList.add('ProseMirror-loro-cursor');

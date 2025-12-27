@@ -119,6 +119,7 @@ export default function StatementForm(props: StatementFormProps) {
         },
         content: {
           en: {
+            state: 'draft',
             textElement: {
               nodeName: 'doc',
               children: [
@@ -130,9 +131,10 @@ export default function StatementForm(props: StatementFormProps) {
               ],
               attributes: {},
             },
+            acls: {},
           },
         },
-        acl: {},
+        acls: {},
       } as ColabStatementModel;
 
       onFieldChange('statement', newStatement);

@@ -91,6 +91,10 @@
     },
     "manageStmtLangModal": {
       "title": "Manage {{language}}"
+    },
+    "statementBlock": {
+      "noLanguagesConfigured": "No languages configured.",
+      "noLanguagesAvailable": "No languages available."
     }
   }
 }

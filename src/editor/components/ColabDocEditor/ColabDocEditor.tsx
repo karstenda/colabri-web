@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useColabDoc } from '../../context/ColabDocContext/ColabDocProvider';
 import { LoroMap } from 'loro-crdt';
 import ColabEphemeralStoreManager from './EphemeralStoreManager';
@@ -15,11 +15,18 @@ import {
   EditorWrapper,
   DocumentTypeLabel,
   EditorContentBlockTrack,
+  DocNameHeader,
 } from './ColabDocEditorStyles';
 import ColabriSvgIcon from '../../../ui/components/MainLayout/icons/ColabriSvgIcon';
 import ProfileMenu from '../../../ui/components/ProfileMenu/ProfileMenu';
 import ThemeSwitcher from '../../../ui/components/ThemeSwitcher/ThemeSwitcher';
-import { Stack, Typography, useMediaQuery } from '@mui/material';
+import {
+  Box,
+  CircularProgress,
+  Stack,
+  Typography,
+  useMediaQuery,
+} from '@mui/material';
 import ColabDocEditorProvider from '../../context/ColabDocEditorContext/ColabDocEditorProvider';
 import ToolbarMenu from '../ToolbarMenu/ToolbarMenu';
 import StatementBlock from '../blocks/StatementBlock/StatementBlock';
@@ -52,6 +59,9 @@ export default function ColabDocEditor() {
   // Reference to the content type
   const contentTypeRef = useRef<ContentType | null>(null);
 
+  // State to track whether the user can manage the document
+  const [canManage, setCanManage] = useState<boolean>(false);
+
   // Initialize version display and set up subscription
   useEffect(() => {
     // Make sure we have the loroDoc and update function
@@ -61,6 +71,7 @@ export default function ColabDocEditor() {
 
     // Get the loroDoc
     const loroDoc = colabDoc.getLoroDoc();
+    const controller = colabDoc.getDocController();
 
     // Get the content type from the properties
     const propertiesMap = loroDoc.getMap('properties') as LoroMap | undefined;
@@ -78,21 +89,30 @@ export default function ColabDocEditor() {
     loroDocRef.current = loroDoc;
     ephStoreMgrRef.current = colabDoc.getEphStoreMgr();
 
-    // Listen for changes in the LoroDoc
-    const unsubscribe = loroDoc.subscribe(() => {
-      // TODO
-    });
+    // Initial check if the user can manage the document
+    setCanManage(controller.canManageDoc());
 
-    // Cleanup function
-    return () => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
-    };
+    // Listen for ACL changes in the LoroDoc
+    return controller.subscribeToDocAclChanges(() => {
+      // Check if the user can manage the document
+      setCanManage(controller.canManageDoc());
+    });
   }, [colabDoc]);
 
   if (colabDoc == null) {
-    return <div>Loading document...</div>;
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          width: '100%',
+          height: '100%',
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
   } else {
     return (
       <>
@@ -103,10 +123,12 @@ export default function ColabDocEditor() {
                 <EditorTopHeaderLeftStack>
                   <Stack direction="row" spacing={1} alignItems="center">
                     <ColabriSvgIcon expanded={false} />
-                    <Typography variant="h6" component="div">
+                    <DocNameHeader variant="h6">
                       {colabDoc.getDocName()}
-                    </Typography>
-                    <DocumentTypeLabel>Statement</DocumentTypeLabel>
+                    </DocNameHeader>
+                    {!compactView && (
+                      <DocumentTypeLabel>Statement</DocumentTypeLabel>
+                    )}
                     {contentTypeRef.current && (
                       <DocumentTypeLabel>
                         {contentTypeRef.current?.name}
@@ -115,7 +137,7 @@ export default function ColabDocEditor() {
                   </Stack>
                 </EditorTopHeaderLeftStack>
                 <EditorTopHeaderRightStack>
-                  <ManageDocButton />
+                  {canManage && <ManageDocButton />}
                   {!compactView && <ThemeSwitcher />}
                   <ProfileMenu />
                 </EditorTopHeaderRightStack>

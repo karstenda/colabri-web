@@ -1,6 +1,7 @@
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import { gray } from '../../../shared-theme/themePrimitives';
+import { Typography, TypographyProps } from '@mui/material';
 
 export const EditorWrapper = styled(Box)(({ theme }) => ({
   backgroundColor: (theme.vars || theme).palette.background.default,
@@ -59,6 +60,7 @@ export const EditorTopHeaderRightStack = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'row',
   alignItems: 'center',
+  minWidth: '0px',
   gap: theme.spacing(1),
 }));
 
@@ -90,6 +92,16 @@ export const EditorContentRightColumn = styled(Box)(({}) => ({
   flexGrow: 1,
 }));
 
+const TypographyDocName = (
+  props: Omit<TypographyProps<'div'>, 'component'>,
+) => <Typography {...props} component="div" />;
+export const DocNameHeader = styled(TypographyDocName)(({ theme }) => ({
+  maxWidth: '200px',
+  textWrap: 'nowrap',
+  textOverflow: 'ellipsis',
+  overflow: 'hidden',
+}));
+
 export const DocumentTypeLabel = styled(Box)(({ theme }) => ({
   backgroundColor: (theme.vars || theme).palette.grey[200],
   color: (theme.vars || theme).palette.text.secondary,
@@ -97,6 +109,10 @@ export const DocumentTypeLabel = styled(Box)(({ theme }) => ({
   borderRadius: '4px',
   fontSize: '0.75rem',
   fontWeight: 500,
+  maxWidth: '100px',
+  textWrap: 'nowrap',
+  textOverflow: 'ellipsis',
+  overflow: 'hidden',
 }));
 
 export const EditorContentBlock = styled(Box)(({ theme }) => ({

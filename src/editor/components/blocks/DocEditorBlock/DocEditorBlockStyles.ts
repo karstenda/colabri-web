@@ -21,3 +21,21 @@ export const ControlButton = styled(IconButton)(({}) => ({
   height: '28px',
   width: '28px',
 }));
+
+export const StyledDocEditorBlock = styled(Box, {
+  shouldForwardProp: (prop) =>
+    prop !== 'hasFocus' && prop !== 'isHovered' && prop !== 'readOnly',
+})<{ hasFocus?: boolean; isHovered?: boolean; readOnly: boolean }>(
+  ({ theme, hasFocus, readOnly }) => ({
+    backgroundColor: !readOnly
+      ? (theme.vars || theme).palette.background.default
+      : (theme.vars || theme).palette.background.paper,
+    border: `1px solid ${
+      hasFocus ? theme.palette.primary.main : theme.palette.divider
+    }`,
+    padding: theme.spacing(2),
+    borderRadius: '6px',
+    transition: 'all 0.2s ease-in-out',
+    position: 'relative',
+  }),
+);

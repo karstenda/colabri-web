@@ -40,6 +40,13 @@ export enum ColabModelType {
   ColabModelSheetType = "colab-sheet",
 }
 
+export enum ColabContentState {
+  ColabContentStateDraft = "draft",
+  ColabContentStatePending = "pending",
+  ColabContentStateApproved = "approved",
+  ColabContentStateRejected = "rejected",
+}
+
 export enum ColabCommentType {
   ColabCommentUserType = "user",
 }
@@ -113,8 +120,9 @@ export interface ColabModelProperties {
 }
 
 export interface ColabStatementElement {
-  acls?: Record<string, string[]>;
+  acls: Record<string, string[]>;
   comments?: ColabComment[];
+  state: ColabContentState;
   textElement: TextElement;
 }
 
@@ -238,15 +246,15 @@ export interface OrgContentLanguage {
 }
 
 export interface Organization {
-  createdAt?: string;
-  createdBy?: string;
+  createdAt: string;
+  createdBy: string;
   expiryDate?: string;
-  id?: string;
-  name?: string;
-  owner?: string;
-  status?: OrganizationStatus;
-  updatedAt?: string;
-  updatedBy?: string;
+  id: string;
+  name: string;
+  owner: string;
+  status: OrganizationStatus;
+  updatedAt: string;
+  updatedBy: string;
 }
 
 export interface PlatformContentLanguage {

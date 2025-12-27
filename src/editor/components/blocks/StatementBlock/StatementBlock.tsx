@@ -4,16 +4,19 @@ import { useColabDoc } from '../../../context/ColabDocContext/ColabDocProvider';
 import { StatementElementBlockBP } from '../StatementElementBlock/StatementElementBlockBP';
 import { LoroDoc, LoroEventBatch, LoroMap } from 'loro-crdt';
 import StatementElementBlock from '../StatementElementBlock/StatementElementBlock';
-import { Stack } from '@mui/material';
+import { Alert, Box, CircularProgress, Skeleton, Stack } from '@mui/material';
 import { useContentLanguages } from '../../../../ui/hooks/useContentLanguages/useContentLanguage';
 import { useOrganization } from '../../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
 import { ConnectedStmtDoc } from '../../../data/ConnectedColabDoc';
+import { useTranslation } from 'react-i18next';
 
 export type StatementBlockProps = {
   bp: StatementBlockBP;
 };
 
 const StatementBlock = ({ bp }: StatementBlockProps) => {
+  const { t } = useTranslation();
+
   // Get the current ColabDoc
   const { colabDoc } = useColabDoc();
   if (!(colabDoc instanceof ConnectedStmtDoc)) {
@@ -38,7 +41,13 @@ const StatementBlock = ({ bp }: StatementBlockProps) => {
 
   useEffect(() => {
     // Ensure we have the LoroDoc
-    if (!loroDoc || languages.length === 0) {
+    if (!loroDoc || !languages) {
+      return;
+    }
+
+    // If there are no languages, set empty array
+    if (languages.length === 0) {
+      setStmtElementsBPs([]);
       return;
     }
 
@@ -109,10 +118,25 @@ const StatementBlock = ({ bp }: StatementBlockProps) => {
   return (
     <>
       <Stack spacing={2}>
-        {smtmElementsBPs == null && <div>Loading ...</div>}
-        {smtmElementsBPs != null && smtmElementsBPs.length === 0 && (
-          <div>No languages available.</div>
+        {smtmElementsBPs == null && (
+          <Skeleton variant="rounded" width="100%" height={100} />
         )}
+        {languages.length === 0 && (
+          <Box>
+            <Alert severity="info">
+              {t('editor.statementBlock.noLanguagesConfigured')}
+            </Alert>
+          </Box>
+        )}
+        {languages.length > 0 &&
+          smtmElementsBPs != null &&
+          smtmElementsBPs.length === 0 && (
+            <Box>
+              <Alert severity="info">
+                {t('editor.statementBlock.noLanguagesAvailable')}
+              </Alert>
+            </Box>
+          )}
         {smtmElementsBPs != null &&
           smtmElementsBPs.map((smtElementBP) => (
             <StatementElementBlock

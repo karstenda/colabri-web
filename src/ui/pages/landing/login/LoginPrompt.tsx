@@ -21,7 +21,7 @@ const LoginPrompt: React.FC = () => {
         justifyContent: 'center', // Centers horizontally
         alignItems: 'center', // Centers vertically
         padding: theme.spacing(2),
-        minWidth: 400,
+        minWidth: 350,
       }}
     >
       <Stack spacing={2} alignItems="center">

@@ -9,25 +9,17 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { ContainerID, LoroDoc } from 'loro-crdt';
-
-const StyledDocEditorBlock = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'hasFocus' && prop !== 'isHovered',
-})<{ hasFocus?: boolean; isHovered?: boolean }>(({ theme, hasFocus }) => ({
-  backgroundColor: (theme.vars || theme).palette.background.default,
-  border: `1px solid ${
-    hasFocus ? theme.palette.primary.main : theme.palette.divider
-  }`,
-  padding: theme.spacing(2),
-  borderRadius: '6px',
-  transition: 'all 0.2s ease-in-out',
-  position: 'relative',
-}));
+import ColabDocController from '../../../controllers/ColabDocController';
+import { ColabLoroDoc } from '../../../data/ColabDoc';
+import { StyledDocEditorBlock } from './DocEditorBlockStyles';
 
 export type DocEditorBlockProps = BoxProps & {
   blockId: string;
   blockType: string;
   loroContainerId?: ContainerID;
   loroDoc?: LoroDoc;
+  controller?: ColabDocController<ColabLoroDoc>;
+  readOnly?: boolean;
   onFocusChange?: (hasFocus: boolean) => void;
   onHoverChange?: (isHovered: boolean) => void;
   showUpDownControls?: boolean;
@@ -40,6 +32,8 @@ const DocEditorBlock = ({
   blockType,
   loroContainerId,
   loroDoc,
+  controller,
+  readOnly = false,
   onFocusChange,
   onHoverChange,
   showUpDownControls,
@@ -58,8 +52,12 @@ const DocEditorBlock = ({
   // Set the active block ID when this block gains focus
   const setActiveBlockId = useSetActiveBlock();
 
+  // State to track whether the user can manage or add/remove languages
+  const [canManage, setCanManage] = useState<boolean>(false);
+  const [canAddRemove, setCanAddRemove] = useState<boolean>(false);
+
   const controls = [] as DocEditorBlockControl[];
-  if (showUpDownControls) {
+  if (showUpDownControls && canAddRemove) {
     controls.push({
       id: `move-up-block-${blockId}`,
       label: 'Move Up',
@@ -69,13 +67,15 @@ const DocEditorBlock = ({
       },
     });
   }
-  controls.push({
-    id: `manage-block-${blockId}`,
-    label: 'Manage',
-    icon: <SettingsIcon sx={{ fontSize: 16 }} />,
-    onClick: onManageBlock || (() => {}),
-  });
-  if (showUpDownControls) {
+  if (canManage) {
+    controls.push({
+      id: `manage-block-${blockId}`,
+      label: 'Manage',
+      icon: <SettingsIcon sx={{ fontSize: 16 }} />,
+      onClick: onManageBlock || (() => {}),
+    });
+  }
+  if (showUpDownControls && canAddRemove) {
     controls.push({
       id: `move-down-block-${blockId}`,
       label: 'Move Down',
@@ -85,6 +85,24 @@ const DocEditorBlock = ({
       },
     });
   }
+
+  // The loaded
+  useEffect(() => {
+    if (!loroDoc || !controller) {
+      return;
+    }
+
+    // Initial check if the user can manage and add/remove the document
+    setCanManage(controller.canManageDoc());
+    setCanAddRemove(controller.canAddRemoveDoc());
+
+    // Subscribe to ACL changes in the LoroDoc
+    return controller.subscribeToDocAclChanges(() => {
+      // On any ACL change, update the canEdit state
+      setCanManage(controller.canManageDoc());
+      setCanAddRemove(controller.canAddRemoveDoc());
+    });
+  }, [loroDoc, controller]);
 
   // Track focus state with click events
   useEffect(() => {
@@ -128,6 +146,7 @@ const DocEditorBlock = ({
       ref={editorContentBlockRef}
       hasFocus={focus}
       isHovered={isHovered}
+      readOnly={readOnly}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       {...boxProps}

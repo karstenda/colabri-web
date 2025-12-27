@@ -1,7 +1,7 @@
 import { Stack, Tooltip } from '@mui/material';
 import { ToolbarButton, ToolbarMenuDivider } from './ToolbarMenuStyles';
 import { useColabDoc } from '../../context/ColabDocContext/ColabDocProvider';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AddLanguageModal, AddLanguageModalPayload } from '../AddLanguageModal';
 import { useContentLanguages } from '../../../ui/hooks/useContentLanguages/useContentLanguage';
 import { useOrganization } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
@@ -50,8 +50,13 @@ export default function StatementMenu({}: StatementMenuProps) {
   const showMenuRef = useRef<boolean>(false);
   const disabled = useRef<boolean>(true);
 
+  // State to track whether the user can add/remove languages or manage the statement
+  const [canAddRemove, setCanAddRemove] = useState<boolean>(false);
+  const [canManage, setCanManage] = useState<boolean>(false);
+
   // Get the loroDoc
   const loroDoc = colabDoc.getLoroDoc();
+  const controller = colabDoc.getDocController();
 
   // When the colabDoc is loaded.
   useEffect(() => {
@@ -66,7 +71,17 @@ export default function StatementMenu({}: StatementMenuProps) {
       showMenuRef.current = true;
       disabled.current = false;
     }
-  }, [colabDoc, loroDoc]);
+
+    // Check permissions
+    setCanAddRemove(controller.canAddRemoveDoc());
+    setCanManage(controller.canManageDoc());
+    // Subscribe to ACL changes in the loroDoc
+    controller.subscribeToDocAclChanges(() => {
+      // On any ACL change, update the canEdit state
+      setCanAddRemove(controller.canAddRemoveDoc());
+      setCanManage(controller.canManageDoc());
+    });
+  }, [colabDoc, controller, loroDoc]);
 
   /**
    * Get the focussed language
@@ -206,38 +221,47 @@ export default function StatementMenu({}: StatementMenuProps) {
   } else {
     return (
       <Stack direction="row" spacing={'2px'}>
-        <ToolbarMenuDivider />
-        <Tooltip title={t('editor.toolbar.addLanguageTooltip')}>
-          <span>
-            <ToolbarButton
-              disabled={disabled.current}
-              onClick={handleAddLanguageClicked}
-            >
-              {t('editor.toolbar.addLanguage')}
-            </ToolbarButton>
-          </span>
-        </Tooltip>
-        <Tooltip title={t('editor.toolbar.removeLanguageTooltip')}>
-          <span>
-            <ToolbarButton
-              disabled={disabled.current || !isStatementElementBlockFocused}
-              onMouseDown={handleRemoveLanguageClicked}
-            >
-              {t('editor.toolbar.removeLanguage')}
-            </ToolbarButton>
-          </span>
-        </Tooltip>
-        <ToolbarMenuDivider />
-        <Tooltip title={t('editor.toolbar.manageLanguageTooltip')}>
-          <span>
-            <ToolbarButton
-              disabled={disabled.current || !isStatementElementBlockFocused}
-              onMouseDown={handleManageStatementElementClicked}
-            >
-              {t('editor.toolbar.manageLanguage')}
-            </ToolbarButton>
-          </span>
-        </Tooltip>
+        {canAddRemove && (
+          <>
+            <ToolbarMenuDivider />
+            <Tooltip title={t('editor.toolbar.addLanguageTooltip')}>
+              <span>
+                <ToolbarButton
+                  disabled={disabled.current}
+                  onClick={handleAddLanguageClicked}
+                >
+                  {t('editor.toolbar.addLanguage')}
+                </ToolbarButton>
+              </span>
+            </Tooltip>
+            <Tooltip title={t('editor.toolbar.removeLanguageTooltip')}>
+              <span>
+                <ToolbarButton
+                  disabled={disabled.current || !isStatementElementBlockFocused}
+                  onMouseDown={handleRemoveLanguageClicked}
+                >
+                  {t('editor.toolbar.removeLanguage')}
+                </ToolbarButton>
+              </span>
+            </Tooltip>
+          </>
+        )}
+
+        {canManage && (
+          <>
+            <ToolbarMenuDivider />
+            <Tooltip title={t('editor.toolbar.manageLanguageTooltip')}>
+              <span>
+                <ToolbarButton
+                  disabled={disabled.current || !isStatementElementBlockFocused}
+                  onMouseDown={handleManageStatementElementClicked}
+                >
+                  {t('editor.toolbar.manageLanguage')}
+                </ToolbarButton>
+              </span>
+            </Tooltip>
+          </>
+        )}
       </Stack>
     );
   }

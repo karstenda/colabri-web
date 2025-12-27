@@ -7,6 +7,7 @@ import ManageStmtModal, {
 import { Permission } from '../../../ui/data/Permission';
 import { StmtLoroDoc } from '../../data/ColabDoc';
 import { useDialogs } from '../../../ui/hooks/useDialogs/useDialogs';
+import { Box } from '@mui/material';
 
 export type ManageDocButtonProps = {
   onClick?: () => void;
@@ -60,8 +61,19 @@ const ManageDocButton: React.FC<ManageDocButtonProps> = ({ onClick }) => {
       size="small"
       variant="contained"
       onClick={handleManageStatementClicked}
+      sx={{ height: '26px' }}
     >
-      {t('editor.toolbar.manageDocument')}
+      <Box
+        sx={{
+          minWidth: '100px',
+          whiteSpace: 'nowrap',
+          textWrap: 'nowrap',
+          textOverflow: 'ellipsis',
+          overflow: 'hidden',
+        }}
+      >
+        {t('editor.toolbar.manageDocument')}
+      </Box>
     </Button>
   );
 };

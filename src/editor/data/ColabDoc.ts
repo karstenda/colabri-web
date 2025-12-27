@@ -1,5 +1,6 @@
 import { LoroDoc, LoroList, LoroMap } from 'loro-crdt';
 import {
+  ColabContentState,
   ColabModelType,
   DocumentStream,
   StatementDocument,
@@ -30,7 +31,7 @@ export type ColabLoroDoc = StmtLoroDoc | SheetLoroDoc;
 export type StmtLoroDoc = LoroDoc<{
   properties: StmtDocPropertiesLoro;
   content: LoroMap<Record<string, StmtElementLoro>>;
-  acl?: AclLoroMap;
+  acl: AclLoroMap;
 }>;
 
 export type SheetLoroDoc = LoroDoc<{
@@ -47,8 +48,9 @@ export type StmtDocPropertiesLoro = LoroMap<{
 }>;
 
 export type StmtElementLoro = LoroMap<{
+  state: ColabContentState;
   textElement: textElementLoro;
-  acl?: AclLoroMap;
+  acl: AclLoroMap;
 }>;
 
 export type textElementLoro = LoroMap<{

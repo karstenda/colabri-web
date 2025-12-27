@@ -16,8 +16,11 @@ import {
   TypographyReadOnly,
 } from './StatementElementBlockStyle';
 import { useDialogs } from '../../../../ui/hooks/useDialogs/useDialogs';
-import ManageStmtLangModal from '../../ManageStmtLangModal/ManageStmtLangModel';
+import ManageStmtLangModal, {
+  ManageStmtLangModalPayload,
+} from '../../ManageStmtLangModal/ManageStmtLangModel';
 import { ConnectedStmtDoc } from '../../../data/ConnectedColabDoc';
+import { Permission } from '../../../../ui/data/Permission';
 
 export type StatementElementBlockProps = {
   bp: StatementElementBlockBP;
@@ -50,14 +53,56 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
   // Get the LoroDoc
   const loroDoc = colabDoc?.getLoroDoc();
 
+  // Get the controller
+  const controller = colabDoc?.getDocController();
+
   // The reference to the text element container id
-  const [textElementContainerId, setTextElementContainerId] =
-    useState<ContainerID | null>(null);
+  let textElementContainerId: ContainerID | null = null;
+  if (loroDoc) {
+    const container = loroDoc.getContainerById(bp.containerId) as LoroMap;
+    if (container) {
+      const textElementContainer = container.get('textElement') as LoroMap;
+      if (textElementContainer) {
+        textElementContainerId = textElementContainer.id;
+      } else {
+        console.log(
+          "Could not find 'textElement' inside StatementElement with id: " +
+            bp.containerId,
+        );
+      }
+    } else {
+      console.log('Could not find StatementElement with id: ' + bp.containerId);
+    }
+  }
+
+  // State to track whether the user can edit this statement element
+  const [canEdit, setCanEdit] = useState<boolean>(
+    controller ? controller.canEditStatementElement(bp.langCode) : false,
+  );
+
+  // State to track whether the user can approve this statement element
+  const [canApprove, setCanApprove] = useState<boolean>(
+    controller ? controller.canApproveStatementElement(bp.langCode) : false,
+  );
 
   // State to track focus and hover
   const [focus, setFocus] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const showOutlines = focus || isHovered;
+  const showOutlines = (focus || isHovered) && canEdit;
+
+  useEffect(() => {
+    if (controller && bp.langCode && loroDoc) {
+      // Update the canEdit state
+      setCanEdit(controller.canEditStatementElement(bp.langCode));
+      setCanApprove(controller.canApproveStatementElement(bp.langCode));
+      // Subscribe to ACL changes in the loroDoc
+      controller.subscribeToStatementElementAclChanges(bp.langCode, () => {
+        // On any ACL change, update the canEdit state
+        setCanEdit(controller.canEditStatementElement(bp.langCode));
+        setCanApprove(controller.canApproveStatementElement(bp.langCode));
+      });
+    }
+  }, [loroDoc, controller, bp.langCode]);
 
   // Handle focus change from DocEditorBlock
   const handleFocusChange = (hasFocus: boolean) => {
@@ -67,33 +112,34 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
     setIsHovered(isHovered);
   };
 
-  // Load the textElment
-  useEffect(() => {
-    // Ensure we have the LoroDoc
-    if (!loroDoc) {
+  const handleManageElement = async () => {
+    if (!loroDoc || !language) {
       return;
     }
 
-    // Get the textElementContainer
-    const container = loroDoc.getContainerById(bp.containerId) as LoroMap;
-    if (!container) {
-      console.log('Could not find StatementElement with id: ' + bp.containerId);
-    }
-    const textElementContainer = container?.get('textElement') as LoroMap;
-    if (!textElementContainer) {
-      console.log(
-        "Could not find 'textElement' inside StatementElement with id: " +
-          bp.containerId,
-      );
-    }
-    setTextElementContainerId(textElementContainer.id);
-  }, [loroDoc]);
-
-  const handleManageElement = () => {
-    dialogs.open(ManageStmtLangModal, {
-      contentLanguage: language!,
+    // Open the modal to manage the statement element
+    const newStmtElementAclMaps = await dialogs.open<
+      ManageStmtLangModalPayload,
+      Record<Permission, string[]> | undefined
+    >(ManageStmtLangModal, {
       loroDoc: loroDoc!,
+      contentLanguage: language!,
     });
+
+    // If a new ACL map was returned, update the document
+    if (newStmtElementAclMaps) {
+      // Create the StatementDocController
+      const stmtDocController = colabDoc.getDocController();
+
+      // Patch the document ACL map with the new ACLs
+      stmtDocController.patchStmtElementAclMap(
+        language.code,
+        newStmtElementAclMaps,
+      );
+
+      // Commit the changes
+      stmtDocController.commit();
+    }
   };
 
   if (!loroDoc || !ephStoreMgr) {
@@ -106,10 +152,12 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
           blockType={'StatementElementBlock'}
           loroContainerId={bp.containerId}
           loroDoc={loroDoc}
+          controller={controller}
           onFocusChange={handleFocusChange}
           onHoverChange={handleHoverChange}
-          showUpDownControls={true}
+          showUpDownControls={false}
           onManageBlock={handleManageElement}
+          readOnly={!canEdit}
         >
           <Stack direction="column" spacing={0.5}>
             <Stack direction="row" spacing={1} flex={1}>
@@ -128,6 +176,7 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
                   loro={loroDoc as any as LoroDocType}
                   ephStoreMgr={ephStoreMgr}
                   containerId={textElementContainerId}
+                  canEdit={canEdit}
                 />
               </ColabTextEditorOutline>
             )}
