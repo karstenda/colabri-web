@@ -11,7 +11,7 @@ import {
   GridColDef,
   GridFilterModel,
   GridSortModel,
-  gridClasses
+  gridClasses,
 } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -24,32 +24,36 @@ import useNotifications from '../../hooks/useNotifications/useNotifications';
 import { OrgContentLanguage } from '../../../api/ColabriAPI';
 import PageContainer from '../../components/MainLayout/PageContainer';
 import { useUserOrganizationContext } from '../../context/UserOrganizationContext/UserOrganizationProvider';
-import { useContentLanguages, useRemoveContentLanguages, useAddContentLanguage } from '../../hooks/useContentLanguages/useContentLanguage';
+import {
+  useContentLanguages,
+  useRemoveContentLanguages,
+  useAddContentLanguage,
+} from '../../hooks/useContentLanguages/useContentLanguage';
 import { AddLanguageModal, AddLanguageModalPayload } from './AddLanguageModal';
 import { Avatar, useTheme } from '@mui/material';
 
 export default function LanguageListPage() {
-
-  const theme =  useTheme();
+  const theme = useTheme();
 
   const dialogs = useDialogs();
   const notifications = useNotifications();
   const { organization } = useUserOrganizationContext();
 
-  const [filterModel, setFilterModel] = React.useState<GridFilterModel>({ items: [] });
+  const [filterModel, setFilterModel] = React.useState<GridFilterModel>({
+    items: [],
+  });
   const [sortModel, setSortModel] = React.useState<GridSortModel>([]);
 
-  const { removeContentLanguages, isPending: isDeletePending } = useRemoveContentLanguages(organization?.id || '');
-  const { addContentLanguage, isPending: isAddPending } = useAddContentLanguage(organization?.id || '');
+  const { removeContentLanguages, isPending: isDeletePending } =
+    useRemoveContentLanguages(organization?.id || '');
+  const { addContentLanguage, isPending: isAddPending } = useAddContentLanguage(
+    organization?.id || '',
+  );
 
   // Use React Query hook for fetching languages
-  const { 
-    languages, 
-    isLoading, 
-    error,
-    refetch 
-  } = useContentLanguages(organization?.id || '');
-
+  const { languages, isLoading, error, refetch } = useContentLanguages(
+    organization?.id || '',
+  );
 
   const handleRefresh = React.useCallback(() => {
     if (!isLoading) {
@@ -60,34 +64,40 @@ export default function LanguageListPage() {
   const handleCreateClick = React.useCallback(async () => {
     if (!organization?.id) return;
 
-    const languageCodes = await dialogs.open<AddLanguageModalPayload, string[]>(AddLanguageModal, {
-      orgId: organization.id,
-    });
+    const languageCodes = await dialogs.open<AddLanguageModalPayload, string[]>(
+      AddLanguageModal,
+      {
+        orgId: organization.id,
+      },
+    );
 
     if (languageCodes && languageCodes.length > 0) {
       try {
         await addContentLanguage(languageCodes);
-        
+
         notifications.show(
-          `${languageCodes.length} language${languageCodes.length > 1 ? 's' : ''} added successfully.`,
+          `${languageCodes.length} language${
+            languageCodes.length > 1 ? 's' : ''
+          } added successfully.`,
           {
             severity: 'success',
             autoHideDuration: 3000,
-          }
+          },
         );
       } catch (addError) {
         notifications.show(
-          `Failed to add language${languageCodes.length > 1 ? 's' : ''}. Reason: ${(addError as Error).message}`,
+          `Failed to add language${
+            languageCodes.length > 1 ? 's' : ''
+          }. Reason: ${(addError as Error).message}`,
           {
             severity: 'error',
             autoHideDuration: 3000,
-          }
+          },
         );
       }
     }
   }, [organization?.id, dialogs, addContentLanguage, notifications]);
-  
-  
+
   const handleRowDelete = React.useCallback(
     (language: OrgContentLanguage) => async () => {
       const confirmed = await dialogs.confirm(
@@ -110,7 +120,9 @@ export default function LanguageListPage() {
           });
         } catch (deleteError) {
           notifications.show(
-            `Failed to delete language. Reason: ${(deleteError as Error).message}`,
+            `Failed to delete language. Reason: ${
+              (deleteError as Error).message
+            }`,
             {
               severity: 'error',
               autoHideDuration: 3000,
@@ -124,22 +136,24 @@ export default function LanguageListPage() {
 
   const columns = React.useMemo<GridColDef[]>(
     () => [
-      { 
+      {
         field: 'Icon',
         headerName: '',
-        width: 50, 
+        width: 50,
         renderCell: () => (
-        <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+          <div
+            style={{ display: 'flex', alignItems: 'center', height: '100%' }}
+          >
             <Avatar
-              sx={{ 
-                width: 35, 
-                height: 35, 
-                bgcolor: theme.palette.grey[400]
+              sx={{
+                width: 35,
+                height: 35,
+                bgcolor: theme.palette.grey[400],
               }}
             >
               <LanguageIcon sx={{ fontSize: 20 }} />
             </Avatar>
-        </div>
+          </div>
         ),
         sortable: false,
         filterable: false,
@@ -149,7 +163,14 @@ export default function LanguageListPage() {
       },
       { field: 'name', headerName: 'Name', width: 250 },
       { field: 'code', headerName: 'Code', width: 150 },
-      { field: 'defaultFont', headerName: 'Default Font', width: 150 },
+      {
+        field: 'defaultFont',
+        headerName: 'Default Font',
+        width: 150,
+        renderCell: (params) => (
+          <span>{params.row.defaultFont.join(', ')}</span>
+        ),
+      },
       {
         field: 'textDirection',
         headerName: 'Text Direction',
@@ -158,13 +179,29 @@ export default function LanguageListPage() {
         renderCell: (params) => {
           const textDirection = params.row.textDirection;
           if (textDirection === 'ltr') {
-            return (<div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
-              <FormatTextdirectionLToRIcon />
-            </div>);
+            return (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  height: '100%',
+                }}
+              >
+                <FormatTextdirectionLToRIcon />
+              </div>
+            );
           } else {
-            return (<div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
-              <FormatTextdirectionRToLIcon />
-            </div>);
+            return (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  height: '100%',
+                }}
+              >
+                <FormatTextdirectionRToLIcon />
+              </div>
+            );
           }
         },
       },
@@ -197,7 +234,11 @@ export default function LanguageListPage() {
         <Stack direction="row" alignItems="center" spacing={1}>
           <Tooltip title="Reload data" placement="right" enterDelay={1000}>
             <div>
-              <IconButton size="small" aria-label="refresh" onClick={handleRefresh}>
+              <IconButton
+                size="small"
+                aria-label="refresh"
+                onClick={handleRefresh}
+              >
                 <RefreshIcon />
               </IconButton>
             </div>

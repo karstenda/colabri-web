@@ -36,7 +36,7 @@ export type ColabTextEditorProps = {
   containerId: ContainerID;
   canEdit?: boolean;
   txtDir?: 'ltr' | 'rtl';
-  fontFamily?: string[];
+  customFonts?: string[];
   onFocus?: () => void;
   onBlur?: () => void;
 };
@@ -47,7 +47,7 @@ export default function ColabTextEditor({
   containerId,
   canEdit = true,
   txtDir = 'ltr',
-  fontFamily,
+  customFonts,
   onFocus,
   onBlur,
 }: ColabTextEditorProps) {
@@ -145,8 +145,15 @@ export default function ColabTextEditor({
 
     // Generate the custom editor attributes
     const attributes = {};
+    // Check if we need a text direction attribute
     if (txtDir === 'rtl') {
       Object.assign(attributes, { dir: 'rtl' });
+    }
+    // Check if we need a custom font families
+    if (customFonts && customFonts.length > 0) {
+      Object.assign(attributes, {
+        style: `font-family: ${customFonts.join(', ')};`,
+      });
     }
 
     // Initialize the editor view

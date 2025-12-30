@@ -23,6 +23,7 @@ import { ConnectedStmtDoc } from '../../../data/ConnectedColabDoc';
 import { Permission } from '../../../../ui/data/Permission';
 import ApprovalDropdown from '../../ApprovalDropdown/ApprovalDropdown';
 import { ColabApprovalState } from '../../../../api/ColabriAPI';
+import { useGoogleFonts } from '../../../../ui/hooks/useFonts/useFonts';
 
 export type StatementElementBlockProps = {
   bp: StatementElementBlockBP;
@@ -48,6 +49,23 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
 
   // Get the language
   const language = languages.find((l) => l.code === bp.langCode);
+
+  // Get the list of custom fonts
+  const customFonts = [] as string[];
+  if (language?.defaultFont) {
+    for (const font of language.defaultFont) {
+      // Ignore Noto Sans as it's already loaded
+      if (font === 'Noto Sans') {
+        continue;
+      }
+      if (!customFonts.includes(font)) {
+        customFonts.push(font);
+      }
+    }
+  }
+
+  // Get the fonts for the language
+  useGoogleFonts(customFonts);
 
   // Get the ephemeral store manager
   const ephStoreMgr = colabDoc?.getEphStoreMgr();
@@ -196,6 +214,7 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
                   containerId={textElementContainerId}
                   canEdit={canEdit}
                   txtDir={language?.textDirection}
+                  customFonts={customFonts}
                 />
               </ColabTextEditorOutline>
             )}
