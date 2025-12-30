@@ -93,14 +93,14 @@ const DocEditorBlock = ({
     }
 
     // Initial check if the user can manage and add/remove the document
-    setCanManage(controller.canManageDoc());
-    setCanAddRemove(controller.canAddRemoveDoc());
+    setCanManage(controller.hasManagePermission());
+    setCanAddRemove(controller.hasAddRemovePermission());
 
     // Subscribe to ACL changes in the LoroDoc
     return controller.subscribeToDocAclChanges(() => {
       // On any ACL change, update the canEdit state
-      setCanManage(controller.canManageDoc());
-      setCanAddRemove(controller.canAddRemoveDoc());
+      setCanManage(controller.hasManagePermission());
+      setCanAddRemove(controller.hasAddRemovePermission());
     });
   }, [loroDoc, controller]);
 

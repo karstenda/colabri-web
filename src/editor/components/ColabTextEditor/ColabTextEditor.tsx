@@ -35,6 +35,8 @@ export type ColabTextEditorProps = {
   ephStoreMgr: ColabEphemeralStoreManager;
   containerId: ContainerID;
   canEdit?: boolean;
+  txtDir?: 'ltr' | 'rtl';
+  fontFamily?: string[];
   onFocus?: () => void;
   onBlur?: () => void;
 };
@@ -44,6 +46,8 @@ export default function ColabTextEditor({
   ephStoreMgr,
   containerId,
   canEdit = true,
+  txtDir = 'ltr',
+  fontFamily,
   onFocus,
   onBlur,
 }: ColabTextEditorProps) {
@@ -139,10 +143,17 @@ export default function ColabTextEditor({
       keymap(baseKeymap),
     ];
 
+    // Generate the custom editor attributes
+    const attributes = {};
+    if (txtDir === 'rtl') {
+      Object.assign(attributes, { dir: 'rtl' });
+    }
+
     // Initialize the editor view
     const editorView = new EditorView(editorDom.current, {
       state: EditorState.create({ doc, schema: mySchema, plugins: allPlugins }),
       editable: () => canEdit,
+      attributes: attributes,
     });
     editorRef.current = editorView;
 

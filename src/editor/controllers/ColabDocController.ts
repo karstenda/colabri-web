@@ -16,15 +16,20 @@ export default class ColabDocController<T extends ColabLoroDoc> {
   // The set of authorized principals of the current user
   protected authPrpls: Set<string>;
 
+  // The user id of the current user in the current organization
+  protected userId: string;
+
   constructor(
     loroDoc: T,
     orgId: string,
     owner: string,
+    userId: string,
     authPrpls?: Set<string>,
   ) {
     this.orgId = orgId;
     this.owner = owner;
     this.loroDoc = loroDoc;
+    this.userId = userId;
     this.authPrpls = authPrpls ?? new Set<string>();
   }
 
@@ -135,7 +140,7 @@ export default class ColabDocController<T extends ColabLoroDoc> {
    *
    * @returns
    */
-  public canManageDoc(): boolean {
+  public hasManagePermission(): boolean {
     // Check if the current user is the owner.
     if (this.authPrpls.has(this.owner)) {
       return true;
@@ -157,9 +162,9 @@ export default class ColabDocController<T extends ColabLoroDoc> {
   /**
    * Whether the current user can add/remove to and from document
    */
-  public canAddRemoveDoc(): boolean {
+  public hasAddRemovePermission(): boolean {
     // If you can manage the document, you can add/remove
-    if (this.canManageDoc()) {
+    if (this.hasManagePermission()) {
       return true;
     }
 

@@ -73,13 +73,13 @@ export default function StatementMenu({}: StatementMenuProps) {
     }
 
     // Check permissions
-    setCanAddRemove(controller.canAddRemoveDoc());
-    setCanManage(controller.canManageDoc());
+    setCanAddRemove(controller.hasAddRemovePermission());
+    setCanManage(controller.hasManagePermission());
     // Subscribe to ACL changes in the loroDoc
     controller.subscribeToDocAclChanges(() => {
       // On any ACL change, update the canEdit state
-      setCanAddRemove(controller.canAddRemoveDoc());
-      setCanManage(controller.canManageDoc());
+      setCanAddRemove(controller.hasAddRemovePermission());
+      setCanManage(controller.hasManagePermission());
     });
   }, [colabDoc, controller, loroDoc]);
 

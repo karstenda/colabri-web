@@ -164,6 +164,7 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
           loroDoc as StmtLoroDoc,
           org.id,
           document.owner,
+          userId,
           new Set(authPrpls),
         ),
         ephStoreMgr,

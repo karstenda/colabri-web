@@ -40,13 +40,6 @@ export enum ColabModelType {
   ColabModelSheetType = "colab-sheet",
 }
 
-export enum ColabContentState {
-  ColabContentStateDraft = "draft",
-  ColabContentStatePending = "pending",
-  ColabContentStateApproved = "approved",
-  ColabContentStateRejected = "rejected",
-}
-
 export enum ColabCommentType {
   ColabCommentUserType = "user",
 }
@@ -54,6 +47,18 @@ export enum ColabCommentType {
 export enum ColabCommentState {
   ColabCommentStateOpen = "open",
   ColabCommentStateResolved = "resolved",
+}
+
+export enum ColabApprovalType {
+  User = "user",
+  Group = "group",
+}
+
+export enum ColabApprovalState {
+  Approved = "approved",
+  Rejected = "rejected",
+  Pending = "pending",
+  Draft = "draft",
 }
 
 export enum AttributeType {
@@ -106,6 +111,11 @@ export interface CheckOrganizationNameResponse {
   available?: boolean;
 }
 
+export interface ColabApproval {
+  state: ColabApprovalState;
+  type: ColabApprovalType;
+}
+
 export interface ColabComment {
   author: string;
   state: ColabCommentState;
@@ -121,8 +131,8 @@ export interface ColabModelProperties {
 
 export interface ColabStatementElement {
   acls: Record<string, string[]>;
+  approvals?: ColabApproval[];
   comments?: ColabComment[];
-  state: ColabContentState;
   textElement: TextElement;
 }
 

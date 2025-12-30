@@ -119,7 +119,6 @@ export default function StatementForm(props: StatementFormProps) {
         },
         content: {
           en: {
-            state: 'draft',
             textElement: {
               nodeName: 'doc',
               children: [

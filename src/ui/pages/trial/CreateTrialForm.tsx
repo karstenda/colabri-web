@@ -14,7 +14,7 @@ import {
   useGoogleReCaptcha,
 } from 'react-google-recaptcha-v3';
 import { Checkbox, Link } from '@mui/material';
-import { Api, OrganizationStatus } from '../../../api/ColabriAPI';
+import { Api, Organization, OrganizationStatus } from '../../../api/ColabriAPI';
 import { validate, CreateTrialFormEntries } from './CreateTrialFormValidate';
 import useNotifications from '../../hooks/useNotifications/useNotifications';
 import { useUserAuth } from '../../hooks/useUserAuth/useUserAuth';
@@ -34,7 +34,7 @@ type ExtendedFormValues = CreateTrialFormEntries & {
 };
 
 export type CreateTrialFormProps = {
-  onSuccess?: () => void;
+  onSuccess?: (org: Organization, requiresValidation: boolean) => void;
 };
 
 const CreateTrialFormContent: React.FC<CreateTrialFormProps> = ({
@@ -170,7 +170,7 @@ const CreateTrialFormContent: React.FC<CreateTrialFormProps> = ({
         throw new Error('Recaptcha token not available');
       }
 
-      await apiClient.trials.postTrial({
+      const trialResp = await apiClient.trials.postTrial({
         name: formValues.name!,
         ownerEmail: formValues.ownerEmail!,
         ownerFirstName: formValues.ownerFirstName!,
@@ -186,7 +186,7 @@ const CreateTrialFormContent: React.FC<CreateTrialFormProps> = ({
       // Redirect and clear form
       setFormValues({});
       if (onSuccess) {
-        onSuccess();
+        onSuccess(trialResp.data, !isFixedUserProfileRef.current);
       }
     } catch (error) {
       notifications.show(
@@ -208,7 +208,7 @@ const CreateTrialFormContent: React.FC<CreateTrialFormProps> = ({
         justifyContent: 'center', // Centers horizontally
         alignItems: 'center', // Centers vertically
         padding: theme.spacing(2),
-        minWidth: 400,
+        minWidth: 350,
         maxWidth: 800,
       }}
     >

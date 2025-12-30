@@ -4,16 +4,22 @@ import MainFrame from '../../components/MainLayout/MainFrame';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import Link from '@mui/material/Link';
 import { useTheme } from '@mui/material/styles';
 import { useTranslation, Trans } from 'react-i18next';
+import { Organization } from '../../../api/ColabriAPI';
 
 const TrialPage: React.FC = () => {
   const { t } = useTranslation();
   const theme = useTheme();
   const [created, setCreated] = React.useState(false);
+  const [trialOrg, setTrialOrg] = React.useState<null | Organization>(null);
+  const [requiresValidation, setRequiresValidation] = React.useState(false);
 
-  const handleSuccess = () => {
+  const handleSuccess = (org: Organization, requiresValidation: boolean) => {
     setCreated(true);
+    setTrialOrg(org);
+    setRequiresValidation(requiresValidation);
   };
 
   return (
@@ -32,7 +38,25 @@ const TrialPage: React.FC = () => {
           <Stack spacing={2}>
             <Typography variant="h4">{t('trial.trialCreatedTitle')}</Typography>
             <Typography variant="body2">
-              {t('trial.trialCreatedMessage')}
+              <Trans
+                i18nKey={
+                  requiresValidation
+                    ? 'trial.trialRequiresValidationMessage'
+                    : 'trial.trialCreatedMessage'
+                }
+                components={{
+                  1: (
+                    <Link
+                      href={'#/org/' + trialOrg?.id}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      sx={{
+                        fontWeight: 'bold',
+                      }}
+                    />
+                  ),
+                }}
+              />
             </Typography>
           </Stack>
         </Paper>

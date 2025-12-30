@@ -1,6 +1,7 @@
 import { LoroDoc, LoroList, LoroMap } from 'loro-crdt';
 import {
-  ColabContentState,
+  ColabApprovalState,
+  ColabApprovalType,
   ColabModelType,
   DocumentStream,
   StatementDocument,
@@ -26,19 +27,24 @@ export type ColabDoc =
       updatedBy: string;
     };
 
-export type ColabLoroDoc = StmtLoroDoc | SheetLoroDoc;
-
-export type StmtLoroDoc = LoroDoc<{
+export type StmtDocSchema = {
   properties: StmtDocPropertiesLoro;
   content: LoroMap<Record<string, StmtElementLoro>>;
   acl: AclLoroMap;
-}>;
+};
 
-export type SheetLoroDoc = LoroDoc<{
+export type SheetDocSchema = {
   properties: StmtDocPropertiesLoro;
   content: LoroList<LoroMap>;
-  acl?: AclLoroMap;
-}>;
+  acl: AclLoroMap;
+  approvals: LoroMap<Record<string, ApprovalLoro>>;
+};
+
+export type ColabLoroDoc = LoroDoc<StmtDocSchema | SheetDocSchema>;
+
+export type StmtLoroDoc = LoroDoc<StmtDocSchema>;
+
+export type SheetLoroDoc = LoroDoc<SheetDocSchema>;
 
 export type AclLoroMap = LoroMap<Record<Permission, LoroList<string>>>;
 
@@ -48,9 +54,26 @@ export type StmtDocPropertiesLoro = LoroMap<{
 }>;
 
 export type StmtElementLoro = LoroMap<{
-  state: ColabContentState;
   textElement: textElementLoro;
   acl: AclLoroMap;
+  approvals: LoroMap<Record<string, UserApprovalLoro>>;
+}>;
+
+export type ApprovalLoro = GroupApprovalLoro | UserApprovalLoro;
+
+export type UserApprovalLoro = LoroMap<{
+  type: ColabApprovalType.User;
+  state: ColabApprovalState;
+  user: string;
+  date: Date;
+}>;
+
+export type GroupApprovalLoro = LoroMap<{
+  type: ColabApprovalType.Group;
+  state: ColabApprovalState;
+  group: string;
+  onOfGroup: boolean;
+  approvals: LoroMap<Record<string, UserApprovalLoro>>;
 }>;
 
 export type textElementLoro = LoroMap<{

@@ -61,7 +61,10 @@ const ManageDocButton: React.FC<ManageDocButtonProps> = ({ onClick }) => {
       size="small"
       variant="contained"
       onClick={handleManageStatementClicked}
-      sx={{ height: '26px' }}
+      sx={{
+        padding: '6px',
+        height: '26px',
+      }}
     >
       <Box
         sx={{

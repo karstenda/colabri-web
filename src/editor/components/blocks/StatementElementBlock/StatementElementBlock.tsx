@@ -21,6 +21,8 @@ import ManageStmtLangModal, {
 } from '../../ManageStmtLangModal/ManageStmtLangModel';
 import { ConnectedStmtDoc } from '../../../data/ConnectedColabDoc';
 import { Permission } from '../../../../ui/data/Permission';
+import ApprovalDropdown from '../../ApprovalDropdown/ApprovalDropdown';
+import { ColabApprovalState } from '../../../../api/ColabriAPI';
 
 export type StatementElementBlockProps = {
   bp: StatementElementBlockBP;
@@ -80,11 +82,6 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
     controller ? controller.canEditStatementElement(bp.langCode) : false,
   );
 
-  // State to track whether the user can approve this statement element
-  const [canApprove, setCanApprove] = useState<boolean>(
-    controller ? controller.canApproveStatementElement(bp.langCode) : false,
-  );
-
   // State to track focus and hover
   const [focus, setFocus] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -94,13 +91,29 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
     if (controller && bp.langCode && loroDoc) {
       // Update the canEdit state
       setCanEdit(controller.canEditStatementElement(bp.langCode));
-      setCanApprove(controller.canApproveStatementElement(bp.langCode));
       // Subscribe to ACL changes in the loroDoc
-      controller.subscribeToStatementElementAclChanges(bp.langCode, () => {
-        // On any ACL change, update the canEdit state
-        setCanEdit(controller.canEditStatementElement(bp.langCode));
-        setCanApprove(controller.canApproveStatementElement(bp.langCode));
-      });
+      const aclUnsubscribe = controller.subscribeToStatementElementAclChanges(
+        bp.langCode,
+        () => {
+          // On any ACL change, update the canEdit state
+          setCanEdit(controller.canEditStatementElement(bp.langCode));
+        },
+      );
+      // Subscribe to approval changes in the loroDoc
+      const approvalUnsubscribe =
+        controller.subscribeToStatementElementApprovalChanges(
+          bp.langCode,
+          () => {
+            // On any approval change, update the canEdit state
+            setCanEdit(controller.canEditStatementElement(bp.langCode));
+          },
+        );
+
+      // Cleanup subscriptions on unmount
+      return () => {
+        aclUnsubscribe();
+        approvalUnsubscribe();
+      };
     }
   }, [loroDoc, controller, bp.langCode]);
 
@@ -167,7 +180,12 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
                     {language?.name}
                   </TypographyReadOnly>
                 </StmtElementHeaderLeft>
-                <StmtElementHeaderRight></StmtElementHeaderRight>
+                <StmtElementHeaderRight>
+                  <ApprovalDropdown
+                    controller={controller}
+                    langCode={bp.langCode}
+                  />
+                </StmtElementHeaderRight>
               </StmtElementHeaderWrapper>
             </Stack>
             {textElementContainerId != null && (
@@ -177,6 +195,7 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
                   ephStoreMgr={ephStoreMgr}
                   containerId={textElementContainerId}
                   canEdit={canEdit}
+                  txtDir={language?.textDirection}
                 />
               </ColabTextEditorOutline>
             )}

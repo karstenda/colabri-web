@@ -45,6 +45,19 @@
       "language": "Language Permissions"
     }
   },
+  "approval": {
+    "state": {
+      "draft": "Draft",
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "action": {
+      "doApprove": "Approve",
+      "doReject": "Reject",
+      "revertToDraft": "Revert to Draft"
+    }
+  },
   "onboarding": {
     "loginPromptTitle": "Welcome to Colabri",
     "loginPrompt": "You're currently not authenticated, please log in to continue.",
@@ -61,7 +74,8 @@
     "createSuccess": "Trial organization created successfully",
     "createError": "Failed to create trial: {{error}}",
     "trialCreatedTitle": "Trial Created",
-    "trialCreatedMessage": "Your trial has been successfully created! Please check your inbox to verify your email address and set your password. Once that’s done, you’re all set to start exploring Colabri. We hope you enjoy it!",
+    "trialRequiresValidationMessage": "Your trial has been successfully created! Please check your inbox to verify your email address and set your password. Once that’s done, you’re all set to start exploring your Colabri trial <1>here</1>. We hope you enjoy it!",
+    "trialCreatedMessage": "Your trial has been successfully created! You can access your new Colabri trial <1>here</1>. We hope you enjoy it!",
     "recaptchaError": "reCAPTCHA verification failed. Please try again.",
     "validation": {
       "companyNameRequired": "Company Name is required",

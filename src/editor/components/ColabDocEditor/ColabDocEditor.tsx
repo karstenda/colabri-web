@@ -90,12 +90,12 @@ export default function ColabDocEditor() {
     ephStoreMgrRef.current = colabDoc.getEphStoreMgr();
 
     // Initial check if the user can manage the document
-    setCanManage(controller.canManageDoc());
+    setCanManage(controller.hasManagePermission());
 
     // Listen for ACL changes in the LoroDoc
     return controller.subscribeToDocAclChanges(() => {
       // Check if the user can manage the document
-      setCanManage(controller.canManageDoc());
+      setCanManage(controller.hasManagePermission());
     });
   }, [colabDoc]);
 
