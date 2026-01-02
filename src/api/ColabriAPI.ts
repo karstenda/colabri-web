@@ -111,11 +111,6 @@ export interface CheckOrganizationNameResponse {
   available?: boolean;
 }
 
-export interface ColabApproval {
-  state: ColabApprovalState;
-  type: ColabApprovalType;
-}
-
 export interface ColabComment {
   author: string;
   state: ColabCommentState;
@@ -131,7 +126,7 @@ export interface ColabModelProperties {
 
 export interface ColabStatementElement {
   acls: Record<string, string[]>;
-  approvals?: ColabApproval[];
+  approvals: Record<string, ColabUserApproval>;
   comments?: ColabComment[];
   textElement: TextElement;
 }
@@ -140,6 +135,13 @@ export interface ColabStatementModel {
   acls?: Record<string, string[]>;
   content: Record<string, ColabStatementElement>;
   properties: ColabModelProperties;
+}
+
+export interface ColabUserApproval {
+  date?: string;
+  state: ColabApprovalState;
+  type: ColabApprovalType;
+  user: string;
 }
 
 export interface ContentType {
@@ -249,9 +251,13 @@ export interface HTTPError {
 
 export interface OrgContentLanguage {
   code: string;
+  countryCode: string;
   defaultFont: string[];
   id: string;
+  langCode: string;
   name: string;
+  spellCheck?: boolean;
+  spellCheckLangCode?: string;
   textDirection: ContentLanguageDirection;
 }
 
@@ -269,10 +275,13 @@ export interface Organization {
 
 export interface PlatformContentLanguage {
   code?: string;
+  countryCode?: string;
   defaultFont?: string[];
   endonym?: string;
+  langCode?: string;
   name?: string;
-  scope?: string;
+  spellCheck?: boolean;
+  spellCheckLangCode?: string;
   textDirection?: ContentLanguageDirection;
 }
 
@@ -286,6 +295,77 @@ export interface ResolvedPrpl {
   system?: string;
   type: ResolvedPrplType;
   user?: User;
+}
+
+export interface SpellCheckRequest {
+  data?: string;
+  language: string;
+  text?: string;
+}
+
+export interface SpellCheckResult {
+  language?: SpellLanguage;
+  matches?: SpellMatch[];
+  software?: SpellSoftware;
+}
+
+export interface SpellContext {
+  length?: number;
+  offset?: number;
+  text?: string;
+}
+
+export interface SpellDetectedLang {
+  code?: string;
+  name?: string;
+}
+
+export interface SpellLanguage {
+  code?: string;
+  detectedLanguage?: SpellDetectedLang;
+  name?: string;
+}
+
+export interface SpellMatch {
+  context?: SpellContext;
+  length?: number;
+  message?: string;
+  offset?: number;
+  replacements?: SpellReplacement[];
+  rule?: SpellRule;
+  sentence?: string;
+  shortMessage?: string;
+}
+
+export interface SpellReplacement {
+  value?: string;
+}
+
+export interface SpellRule {
+  category?: SpellRuleCategory;
+  description?: string;
+  id?: string;
+  issueType?: string;
+  subId?: string;
+  urls?: SpellRuleURL[];
+}
+
+export interface SpellRuleCategory {
+  id?: string;
+  name?: string;
+}
+
+export interface SpellRuleURL {
+  value?: string;
+}
+
+export interface SpellSoftware {
+  apiVersion?: number;
+  buildDate?: string;
+  name?: string;
+  premium?: boolean;
+  status?: string;
+  version?: string;
 }
 
 export interface StatementDocument {
@@ -1323,6 +1403,28 @@ export class Api<
         path: `/${orgId}/languages`,
         method: "DELETE",
         body: langIds,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description This endpoint will check the provided text for spelling errors. This endpoint only gets data but requires a POST request to potentially handle a very large amount of text.
+     *
+     * @tags spell
+     * @name PostSpellCheck
+     * @summary Checks spelling of the provided text
+     * @request POST:/{orgId}/spell/check
+     */
+    postSpellCheck: (
+      orgId: string,
+      spellcheck: SpellCheckRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<SpellCheckResult, HTTPError>({
+        path: `/${orgId}/spell/check`,
+        method: "POST",
+        body: spellcheck,
         type: ContentType.Json,
         format: "json",
         ...params,

@@ -212,6 +212,12 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
                   loro={loroDoc as any as LoroDocType}
                   ephStoreMgr={ephStoreMgr}
                   containerId={textElementContainerId}
+                  spellCheck={{
+                    enabled: true,
+                    supported: language?.spellCheck || false,
+                    orgId: organization?.id || '',
+                    langCode: language?.spellCheckLangCode,
+                  }}
                   canEdit={canEdit}
                   txtDir={language?.textDirection}
                   customFonts={customFonts}

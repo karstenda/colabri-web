@@ -131,6 +131,7 @@ export default function StatementForm(props: StatementFormProps) {
               attributes: {},
             },
             acls: {},
+            approvals: {},
           },
         },
         acls: {},

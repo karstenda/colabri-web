@@ -31,8 +31,10 @@ import {
 } from '../../hooks/useContentLanguages/useContentLanguage';
 import { AddLanguageModal, AddLanguageModalPayload } from './AddLanguageModal';
 import { Avatar, useTheme } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 export default function LanguageListPage() {
+  const { t } = useTranslation();
   const theme = useTheme();
 
   const dialogs = useDialogs();
@@ -76,9 +78,7 @@ export default function LanguageListPage() {
         await addContentLanguage(languageCodes);
 
         notifications.show(
-          `${languageCodes.length} language${
-            languageCodes.length > 1 ? 's' : ''
-          } added successfully.`,
+          t('languages.messages.addedSuccess', { count: languageCodes.length }),
           {
             severity: 'success',
             autoHideDuration: 3000,
@@ -86,9 +86,10 @@ export default function LanguageListPage() {
         );
       } catch (addError) {
         notifications.show(
-          `Failed to add language${
-            languageCodes.length > 1 ? 's' : ''
-          }. Reason: ${(addError as Error).message}`,
+          t('languages.messages.addedError', {
+            count: languageCodes.length,
+            error: (addError as Error).message,
+          }),
           {
             severity: 'error',
             autoHideDuration: 3000,
@@ -101,12 +102,12 @@ export default function LanguageListPage() {
   const handleRowDelete = React.useCallback(
     (language: OrgContentLanguage) => async () => {
       const confirmed = await dialogs.confirm(
-        `Do you wish to remove ${language.name}?`,
+        t('languages.messages.deleteConfirm', { name: language.name }),
         {
-          title: `Delete language?`,
+          title: t('languages.messages.deleteConfirmTitle'),
           severity: 'error',
-          okText: 'Delete',
-          cancelText: 'Cancel',
+          okText: t('common.delete'),
+          cancelText: t('common.cancel'),
         },
       );
 
@@ -114,15 +115,15 @@ export default function LanguageListPage() {
         try {
           await removeContentLanguages([language.id]);
 
-          notifications.show('Language deleted successfully.', {
+          notifications.show(t('languages.messages.deleteSuccess'), {
             severity: 'success',
             autoHideDuration: 3000,
           });
         } catch (deleteError) {
           notifications.show(
-            `Failed to delete language. Reason: ${
-              (deleteError as Error).message
-            }`,
+            t('languages.messages.deleteError', {
+              error: (deleteError as Error).message,
+            }),
             {
               severity: 'error',
               autoHideDuration: 3000,
@@ -131,7 +132,7 @@ export default function LanguageListPage() {
         }
       }
     },
-    [dialogs, notifications],
+    [dialogs, notifications, t, removeContentLanguages],
   );
 
   const columns = React.useMemo<GridColDef[]>(
@@ -161,11 +162,23 @@ export default function LanguageListPage() {
         resizable: false,
         disableReorder: true,
       },
-      { field: 'name', headerName: 'Name', width: 250 },
-      { field: 'code', headerName: 'Code', width: 150 },
+      { field: 'name', headerName: t('languages.columns.name'), width: 250 },
+      { field: 'code', headerName: t('languages.columns.code'), width: 150 },
+      {
+        field: 'spellCheck',
+        headerName: t('languages.columns.spellCheck'),
+        width: 150,
+        renderCell: (params) => (
+          <span>
+            {params.row.spellCheck
+              ? t('languages.spellCheck.supported')
+              : t('languages.spellCheck.notSupported')}
+          </span>
+        ),
+      },
       {
         field: 'defaultFont',
-        headerName: 'Default Font',
+        headerName: t('languages.columns.defaultFont'),
         width: 150,
         renderCell: (params) => (
           <span>{params.row.defaultFont.join(', ')}</span>
@@ -173,7 +186,7 @@ export default function LanguageListPage() {
       },
       {
         field: 'textDirection',
-        headerName: 'Text Direction',
+        headerName: t('languages.columns.textDirection'),
         type: 'string',
         width: 100,
         renderCell: (params) => {
@@ -215,16 +228,16 @@ export default function LanguageListPage() {
           <GridActionsCellItem
             key="delete-item"
             icon={<DeleteIcon />}
-            label="Delete"
+            label={t('common.delete')}
             onClick={handleRowDelete(row)}
           />,
         ],
       },
     ],
-    [handleRowDelete],
+    [handleRowDelete, t, theme.palette.grey],
   );
 
-  const pageTitle = 'Languages';
+  const pageTitle = t('languages.title');
 
   return (
     <PageContainer
@@ -232,7 +245,11 @@ export default function LanguageListPage() {
       breadcrumbs={[{ title: pageTitle }]}
       actions={
         <Stack direction="row" alignItems="center" spacing={1}>
-          <Tooltip title="Reload data" placement="right" enterDelay={1000}>
+          <Tooltip
+            title={t('common.refresh')}
+            placement="right"
+            enterDelay={1000}
+          >
             <div>
               <IconButton
                 size="small"
@@ -248,7 +265,7 @@ export default function LanguageListPage() {
             onClick={handleCreateClick}
             startIcon={<AddIcon />}
           >
-            Add Language
+            {t('languages.addLanguage')}
           </Button>
         </Stack>
       }

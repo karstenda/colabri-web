@@ -385,3 +385,84 @@ img.ProseMirror-separator {
   padding-right: 2px;
   white-space: nowrap;
 }
+
+.spelling-error {
+  background-color: #fdd;
+  text-decoration: underline wavy #ff0000;
+  animation: spellingErrorFadeIn 0.5s ease forwards;
+}
+
+.spelling-warning {
+  background-color: #fed;
+  text-decoration: underline wavy #ff9900;
+  animation: spellingWarningFadeIn 0.5s ease forwards;
+}
+
+@keyframes spellingErrorFadeIn {
+  0% {
+    background-color: transparent;
+    text-decoration-color: transparent;
+  }
+
+  to {
+    background-color: #fdd;
+    text-decoration-color: #ff0000;
+  }
+}
+
+@keyframes spellingWarningFadeIn {
+  0% {
+    background-color: transparent;
+    text-decoration-color: transparent;
+  }
+
+  to {
+    background-color: #fed;
+    text-decoration-color: #ff9900;
+  }
+}
+
+.spelling-error:hover,
+.spelling-warning:hover {
+  background-color: #fcc;
+  transition: background-color 0.3s ease;
+}
+
+.ColabTextEditor.dark .spelling-error {
+  background-color: rgba(255, 0, 0, 0.2);
+  text-decoration-color: #ff5555;
+  animation-name: spellingErrorFadeInDark;
+}
+
+.ColabTextEditor.dark .spelling-warning {
+  background-color: rgba(255, 165, 0, 0.2);
+  text-decoration-color: #ffb74d;
+  animation-name: spellingWarningFadeInDark;
+}
+
+@keyframes spellingErrorFadeInDark {
+  0% {
+    background-color: transparent;
+    text-decoration-color: transparent;
+  }
+  to {
+    background-color: rgba(255, 0, 0, 0.2);
+    text-decoration-color: #ff5555;
+  }
+}
+
+@keyframes spellingWarningFadeInDark {
+  0% {
+    background-color: transparent;
+    text-decoration-color: transparent;
+  }
+  to {
+    background-color: rgba(255, 165, 0, 0.2);
+    text-decoration-color: #ffb74d;
+  }
+}
+
+.ColabTextEditor.dark .spelling-error:hover,
+.ColabTextEditor.dark .spelling-warning:hover {
+  background-color: rgba(255, 0, 0, 0.3);
+}

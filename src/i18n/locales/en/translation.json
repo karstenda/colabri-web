@@ -21,7 +21,8 @@
     "companyName": "Company Name",
     "email": "Email",
     "firstName": "First Name",
-    "lastName": "Last Name"
+    "lastName": "Last Name",
+    "refresh": "Refresh"
   },
   "navigation": {
     "home": "Home",
@@ -109,5 +110,44 @@
       "noLanguagesConfigured": "No languages configured.",
       "noLanguagesAvailable": "No languages available."
     }
+  },
+  "languages": {
+    "title": "Languages",
+    "addLanguage": "Add Language",
+    "columns": {
+      "name": "Name",
+      "code": "Code",
+      "spellCheck": "Spell Check",
+      "defaultFont": "Default Font",
+      "textDirection": "Text Direction"
+    },
+    "spellCheck": {
+      "supported": "Supported",
+      "notSupported": "Not Supported"
+    },
+    "messages": {
+      "addedSuccess": "{{count}} language(s) added successfully.",
+      "addedError": "Failed to add language(s). Reason: {{error}}",
+      "deleteConfirm": "Do you wish to remove {{name}}?",
+      "deleteConfirmTitle": "Delete language?",
+      "deleteSuccess": "Language deleted successfully.",
+      "deleteError": "Failed to delete language. Reason: {{error}}"
+    },
+    "addModal": {
+      "title": "Add Languages",
+      "description": "Select languages to add to this organization.",
+      "selectLabel": "Languages",
+      "selectPlaceholder": "Select languages to add...",
+      "submit": "Add Languages"
+    },
+    "selector": {
+      "label": "Select Language",
+      "moreResults": "Type to see more results...",
+      "noOptions": "No languages found"
+    }
+  },
+  "spellcheck": {
+    "noReplacements": "No replacements available",
+    "ignore": "Ignore"
   }
 }

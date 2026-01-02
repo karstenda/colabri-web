@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   CursorEphemeralStore,
   LoroEphemeralCursorPlugin,
@@ -17,14 +17,19 @@ import { DOMParser } from 'prosemirror-model';
 import { statementTextSchema } from './StatementTextSchema';
 import './editor.css';
 import ColabEphemeralStoreManager from '../ColabDocEditor/EphemeralStoreManager';
-import ToolbarPlugin from './plugins/ToolbarPlugin';
+import ToolbarPlugin from './plugins/toolbar/ToolbarPlugin';
 import {
   useSetActiveToolbar,
   useSetToolbarSetup,
 } from '../../context/ColabDocEditorContext/ColabDocEditorProvider';
 import { createFormattingSetup } from '../ToolbarMenu/FormattingMenuSetup';
 import { useColorScheme } from '@mui/material/styles';
-import FocusPlugin from './plugins/FocusPlugin';
+import FocusPlugin from './plugins/focus/FocusPlugin';
+import SpellCheckPlugin from './plugins/spellcheck/SpellCheckPlugin';
+import {
+  SpellCheckSuggestionBox,
+  SpellCheckSuggestionBoxProps,
+} from './plugins/spellcheck/SpellCheckSuggestionBox';
 
 // Load the document according to the statement text schema
 const mySchema = statementTextSchema;
@@ -34,6 +39,12 @@ export type ColabTextEditorProps = {
   loro: LoroDocType;
   ephStoreMgr: ColabEphemeralStoreManager;
   containerId: ContainerID;
+  spellCheck: {
+    enabled: boolean;
+    supported: boolean;
+    orgId: string;
+    langCode?: string;
+  };
   canEdit?: boolean;
   txtDir?: 'ltr' | 'rtl';
   customFonts?: string[];
@@ -45,6 +56,7 @@ export default function ColabTextEditor({
   loro,
   ephStoreMgr,
   containerId,
+  spellCheck,
   canEdit = true,
   txtDir = 'ltr',
   customFonts,
@@ -53,6 +65,9 @@ export default function ColabTextEditor({
 }: ColabTextEditorProps) {
   // Get the color scheme
   const { mode } = useColorScheme();
+
+  const [spellCheckSuggestionBox, setSpellCheckSuggestionBox] =
+    useState<SpellCheckSuggestionBoxProps | null>(null);
 
   // Generate a unique editor ID based on the container ID
   const editorId = 'editor:' + containerId;
@@ -142,6 +157,15 @@ export default function ColabTextEditor({
       }),
       keymap(baseKeymap),
     ];
+    if (spellCheck.enabled && spellCheck.supported) {
+      allPlugins.push(
+        SpellCheckPlugin({
+          orgId: spellCheck.orgId,
+          langCode: spellCheck.langCode,
+          setSuggestionBox: setSpellCheckSuggestionBox,
+        }),
+      );
+    }
 
     // Generate the custom editor attributes
     const attributes = {};
@@ -154,6 +178,14 @@ export default function ColabTextEditor({
       Object.assign(attributes, {
         style: `font-family: ${customFonts.join(', ')};`,
       });
+    }
+    // Wether we need to enable the browsers default spell checking
+    if (spellCheck.enabled) {
+      if (spellCheck.supported) {
+        Object.assign(attributes, { spellcheck: 'false' });
+      } else {
+        Object.assign(attributes, { spellcheck: 'true' });
+      }
     }
 
     // Initialize the editor view
@@ -218,5 +250,15 @@ export default function ColabTextEditor({
     className += ' dark';
   }
 
-  return <div id={'editor'} className={className} ref={editorDom} />;
+  return (
+    <>
+      <div id={'editor'} className={className} ref={editorDom} />
+      {spellCheckSuggestionBox && (
+        <SpellCheckSuggestionBox
+          {...spellCheckSuggestionBox}
+          readOnly={!canEdit}
+        />
+      )}
+    </>
+  );
 }

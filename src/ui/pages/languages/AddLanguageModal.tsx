@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogTitle,
@@ -16,10 +17,14 @@ export interface AddLanguageModalPayload {
   orgId: string;
 }
 
-export interface AddLanguageModalProps extends DialogProps<AddLanguageModalPayload, string[]> {}
+export interface AddLanguageModalProps
+  extends DialogProps<AddLanguageModalPayload, string[]> {}
 
 export function AddLanguageModal({ open, onClose }: AddLanguageModalProps) {
-  const [selectedLanguages, setSelectedLanguages] = React.useState<PlatformContentLanguage[]>([]);
+  const { t } = useTranslation();
+  const [selectedLanguages, setSelectedLanguages] = React.useState<
+    PlatformContentLanguage[]
+  >([]);
   const [loading, setLoading] = React.useState(false);
 
   const handleCancel = async () => {
@@ -31,7 +36,7 @@ export function AddLanguageModal({ open, onClose }: AddLanguageModalProps) {
     try {
       // Extract language codes from selected languages
       const languageCodes = selectedLanguages
-        .map(lang => lang.code)
+        .map((lang) => lang.code)
         .filter((code): code is string => !!code);
       await onClose(languageCodes);
     } finally {
@@ -39,11 +44,19 @@ export function AddLanguageModal({ open, onClose }: AddLanguageModalProps) {
     }
   };
 
-  const handleSelectionChange = (value: string | string[] | PlatformContentLanguage | PlatformContentLanguage[] | null) => {
+  const handleSelectionChange = (
+    value:
+      | string
+      | string[]
+      | PlatformContentLanguage
+      | PlatformContentLanguage[]
+      | null,
+  ) => {
     if (Array.isArray(value)) {
       // Filter to ensure we only have PlatformContentLanguage objects
-      const languages = value.filter((v): v is PlatformContentLanguage => 
-        typeof v === 'object' && v !== null && 'code' in v
+      const languages = value.filter(
+        (v): v is PlatformContentLanguage =>
+          typeof v === 'object' && v !== null && 'code' in v,
       );
       setSelectedLanguages(languages);
     } else {
@@ -54,46 +67,36 @@ export function AddLanguageModal({ open, onClose }: AddLanguageModalProps) {
   const isConfirmDisabled = selectedLanguages.length === 0;
 
   return (
-    <Dialog 
-      open={open} 
-      onClose={handleCancel}
-      maxWidth="sm"
-      fullWidth
-    >
-      <DialogTitle>
-        Add Languages
-      </DialogTitle>
-      
+    <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
+      <DialogTitle>{t('languages.addModal.title')}</DialogTitle>
+
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
           <Typography variant="body2" color="text.secondary">
-            Select languages to add to this organization.
+            {t('languages.addModal.description')}
           </Typography>
-          
+
           <LanguageSelector
             scope="platform"
             multiple
             value={selectedLanguages}
             onChange={handleSelectionChange}
-            label="Languages"
-            placeholder="Select languages to add..."
+            label={t('languages.addModal.selectLabel')}
+            placeholder={t('languages.addModal.selectPlaceholder')}
           />
         </Stack>
       </DialogContent>
-      
+
       <DialogActions>
-        <Button 
-          onClick={handleCancel}
-          disabled={loading}
-        >
-          Cancel
+        <Button onClick={handleCancel} disabled={loading}>
+          {t('common.cancel')}
         </Button>
-        <Button 
+        <Button
           onClick={handleConfirm}
           variant="contained"
           disabled={loading || isConfirmDisabled}
         >
-          Add Languages
+          {t('languages.addModal.submit')}
         </Button>
       </DialogActions>
     </Dialog>

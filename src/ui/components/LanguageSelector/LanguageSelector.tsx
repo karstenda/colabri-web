@@ -8,7 +8,9 @@ import {
   CircularProgress,
   Avatar,
 } from '@mui/material';
+import { createFilterOptions } from '@mui/material/Autocomplete';
 import LanguageIcon from '@mui/icons-material/Language';
+import { useTranslation } from 'react-i18next';
 import {
   usePlatformContentLanguages,
   useContentLanguages,
@@ -20,6 +22,13 @@ import type {
 import LanguageChip from '../LanguageChip/LanguageChip';
 
 export type LanguageOption = OrgContentLanguage | PlatformContentLanguage;
+
+const filter = createFilterOptions<LanguageOption>();
+
+const MORE_RESULTS_OPTION: PlatformContentLanguage = {
+  code: 'MORE_RESULTS',
+  name: 'Type to see more results...',
+};
 
 interface LanguageSelectorProps {
   /**
@@ -95,7 +104,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   multiple = false,
   value = multiple ? [] : null,
   onChange,
-  label = 'Select Language',
+  label,
   placeholder,
   disabled = false,
   required = false,
@@ -104,6 +113,9 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   filterOptions,
 }) => {
   const theme = useTheme();
+  const { t } = useTranslation();
+
+  const inputLabel = label ?? t('languages.selector.label');
 
   // Fetch languages based on scope
   const { languages: platformLanguages, isLoading: isPlatformLoading } =
@@ -124,6 +136,9 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
 
   // Get language name for display
   const getLanguageName = (option: LanguageOption): string => {
+    if (option.code === MORE_RESULTS_OPTION.code) {
+      return '';
+    }
     if ('endonym' in option && option.endonym) {
       return `${option.name} (${option.endonym})`;
     }
@@ -166,9 +181,16 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
 
     if (multiple) {
       const languages = Array.isArray(newValue) ? newValue : [];
-      onChange(languages);
+      const validLanguages = languages.filter(
+        (l) => l.code !== MORE_RESULTS_OPTION.code,
+      );
+      onChange(validLanguages);
     } else {
-      onChange(newValue as LanguageOption | null);
+      const val = newValue as LanguageOption | null;
+      if (val && val.code === MORE_RESULTS_OPTION.code) {
+        return;
+      }
+      onChange(val);
     }
   };
 
@@ -178,10 +200,18 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
       value={selectedValue}
       onChange={handleChange}
       options={languages}
+      filterOptions={(options, params) => {
+        const filtered = filter(options, params);
+        if (filtered.length > 50) {
+          return [...filtered.slice(0, 50), MORE_RESULTS_OPTION];
+        }
+        return filtered;
+      }}
       getOptionLabel={getLanguageName}
-      isOptionEqualToValue={(option, value) =>
-        getLanguageCode(option) === getLanguageCode(value)
-      }
+      isOptionEqualToValue={(option, value) => {
+        if (option.code === MORE_RESULTS_OPTION.code) return false;
+        return getLanguageCode(option) === getLanguageCode(value);
+      }}
       loading={isLoading}
       disabled={disabled}
       sx={{
@@ -202,7 +232,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
       renderInput={(params) => (
         <TextField
           {...params}
-          label={label}
+          label={inputLabel}
           placeholder={placeholder}
           required={required}
           error={error}
@@ -223,6 +253,24 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
         />
       )}
       renderOption={(props, option) => {
+        if (option.code === MORE_RESULTS_OPTION.code) {
+          return (
+            <Box
+              component="li"
+              {...props}
+              sx={{
+                justifyContent: 'center',
+                color: 'text.secondary',
+                fontStyle: 'italic',
+                pointerEvents: 'none',
+              }}
+            >
+              <Typography variant="body2">
+                {t('languages.selector.moreResults')}
+              </Typography>
+            </Box>
+          );
+        }
         return (
           <Box
             component="li"
@@ -271,7 +319,9 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
         const singleValue = Array.isArray(selected) ? selected[0] : selected;
         return getLanguageName(singleValue);
       }}
-      noOptionsText={isLoading ? 'Loading...' : 'No languages found'}
+      noOptionsText={
+        isLoading ? t('common.loading') : t('languages.selector.noOptions')
+      }
     />
   );
 };
