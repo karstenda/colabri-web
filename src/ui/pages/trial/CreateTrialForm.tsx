@@ -319,7 +319,7 @@ const CreateTrialFormContent: React.FC<CreateTrialFormProps> = ({
                 onClick={handleSubmit}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? t('common.saving') : t('common.save')}
+                {isSubmitting ? t('common.creating') : t('common.create')}
               </Button>
             </Grid>
           </Grid>

@@ -5,6 +5,11 @@ import {
 } from 'prosemirror-proofread';
 import { Api } from '../../../../../api/ColabriAPI';
 import { SpellCheckSuggestionBoxProps } from './SpellCheckSuggestionBox';
+import {
+  getCachedSpellCheckResult,
+  setCachedSpellCheckResult,
+  SpellCheckCachePayload,
+} from './SpellCheckCache';
 
 export type SpellCheckPluginProps = {
   orgId: string;
@@ -22,6 +27,17 @@ const apiClient = new Api({
   },
 });
 
+const normalizeMatches = (payload: any): SpellCheckCachePayload => ({
+  ...payload,
+  matches: (payload?.matches || []).map((match: any): any => ({
+    ...match,
+    message: match?.message || '',
+    offset: match?.offset || 0,
+    length: match?.length || 0,
+    type: { typeName: match?.rule?.issueType || 'spelling' },
+  })),
+});
+
 const SpellCheckPlugin = ({
   orgId,
   langCode = 'auto',
@@ -37,23 +53,22 @@ const SpellCheckPlugin = ({
    * @returns
    */
   const generateProofreadErrors = async (input: string) => {
-    if (!input) return { matches: [] };
+    const trimmedInput = input?.trim();
+    if (!trimmedInput) return { matches: [] };
+
+    const cached = getCachedSpellCheckResult(langCode, trimmedInput);
+    if (cached) {
+      return cached;
+    }
 
     try {
       const response = await apiClient.orgId.postSpellCheck(orgId, {
         language: langCode,
-        text: input,
+        text: trimmedInput,
       });
-      return {
-        ...response.data,
-        matches: (response.data.matches || []).map((match): any => ({
-          ...match,
-          message: match.message || '',
-          offset: match.offset || 0,
-          length: match.length || 0,
-          type: { typeName: match.rule?.issueType || 'spelling' },
-        })),
-      };
+      const normalized = normalizeMatches(response.data || { matches: [] });
+      setCachedSpellCheckResult(langCode, trimmedInput, normalized);
+      return normalized;
     } catch (error) {
       console.error('Error:', error);
       return { matches: [] };

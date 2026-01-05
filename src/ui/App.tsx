@@ -1,4 +1,5 @@
 import CssBaseline from '@mui/material/CssBaseline';
+import { useState } from 'react';
 import { createHashRouter, RouterProvider } from 'react-router';
 import MainLayout from './components/MainLayout/MainLayout';
 import NotificationsProvider from './hooks/useNotifications/NotificationsProvider';
@@ -214,7 +215,7 @@ const themeComponents = {
 
 export default function App(props: { disableCustomTheme?: boolean }) {
   // Create a TanStack Query client
-  const queryClient = new QueryClient();
+  const [queryClient] = useState(() => new QueryClient());
 
   return (
     <QueryClientProvider client={queryClient}>

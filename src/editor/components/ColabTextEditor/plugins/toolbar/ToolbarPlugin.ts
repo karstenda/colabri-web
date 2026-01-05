@@ -1,7 +1,7 @@
 import { PluginKey, Plugin as ProseMirrorPlugin } from 'prosemirror-state';
-import { ToolbarSetup } from '../../ToolbarMenu/ToolbarSetup';
+import { ToolbarSetup } from '../../../ToolbarMenu/ToolbarSetup';
 import { EditorView } from 'prosemirror-view';
-import { FormattingSetup } from '../../ToolbarMenu/FormattingMenuSetup';
+import { FormattingSetup } from '../../../ToolbarMenu/FormattingMenuSetup';
 
 type ToolbarPluginProps = {
   toolbarId: string;

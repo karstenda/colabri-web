@@ -24,12 +24,24 @@ export const useUserAuth = () => {
     queryKey: ['/auth/me'],
     queryFn: async () => {
       const response = await fetch('/auth/me');
-      const payload = await response.json();
       if (!response.ok) {
+        let payload;
+        try {
+          payload = await response.json();
+        } catch (e) {
+          throw {
+            code: response.status,
+            status: response.statusText,
+            error: 'Request failed',
+          };
+        }
         throw payload;
+      } else {
+        const payload = await response.json();
+        return payload as UserAuth;
       }
-      return payload as UserAuth;
     },
+    retry: false,
   });
   return { userAuth: data, isLoading, error };
 };
