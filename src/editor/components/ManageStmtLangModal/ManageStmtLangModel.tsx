@@ -36,7 +36,7 @@ const ManageStmtLangModal = ({
   const { t } = useTranslation();
 
   // Extract the aclMap from the loroDoc
-  const docAclMap = loroDoc.getMap('acl');
+  const docAclMap = loroDoc.getMap('acls');
   let fixedAcls;
   if (!docAclMap) {
     fixedAcls = {};
@@ -48,7 +48,7 @@ const ManageStmtLangModal = ({
   const aclMap = loroDoc
     .getMap('content')
     ?.get(contentLanguage.code)
-    ?.get('acl');
+    ?.get('acls');
   let acls;
   if (!aclMap) {
     acls = {};

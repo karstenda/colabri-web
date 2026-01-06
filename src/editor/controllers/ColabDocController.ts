@@ -38,7 +38,7 @@ export default class ColabDocController<T extends ColabLoroDoc> {
    * @returns
    */
   public getDocAclMap(): Record<Permission, string[]> {
-    const aclMap = this.loroDoc.getMap('acl');
+    const aclMap = this.loroDoc.getMap('acls');
     return aclMap.toJSON();
   }
 
@@ -47,7 +47,7 @@ export default class ColabDocController<T extends ColabLoroDoc> {
    * @param newAcls
    */
   public patchDocAclMap(newAcls: Record<Permission, string[]>) {
-    const aclMap = this.loroDoc.getMap('acl') as AclLoroMap;
+    const aclMap = this.loroDoc.getMap('acls') as AclLoroMap;
     this.patchAclMap(aclMap, newAcls);
   }
 

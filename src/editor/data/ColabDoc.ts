@@ -30,13 +30,13 @@ export type ColabDoc =
 export type StmtDocSchema = {
   properties: StmtDocPropertiesLoro;
   content: LoroMap<Record<string, StmtElementLoro>>;
-  acl: AclLoroMap;
+  acls: AclLoroMap;
 };
 
 export type SheetDocSchema = {
   properties: StmtDocPropertiesLoro;
   content: LoroList<LoroMap>;
-  acl: AclLoroMap;
+  acls: AclLoroMap;
   approvals: LoroMap<Record<string, ApprovalLoro>>;
 };
 
@@ -55,7 +55,7 @@ export type StmtDocPropertiesLoro = LoroMap<{
 
 export type StmtElementLoro = LoroMap<{
   textElement: textElementLoro;
-  acl: AclLoroMap;
+  acls: AclLoroMap;
   approvals: LoroMap<Record<string, UserApprovalLoro>>;
 }>;
 

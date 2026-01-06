@@ -31,7 +31,7 @@ const ManageStmtModal = ({ open, payload, onClose }: ManageStmtModalProps) => {
   const { t } = useTranslation();
 
   // Extract the aclMap from the loroDoc
-  const docAclMap = loroDoc.getMap('acl');
+  const docAclMap = loroDoc.getMap('acls');
   let acls;
   if (!docAclMap) {
     acls = {};

@@ -38,7 +38,7 @@ class StatementDocController extends ColabDocController<StmtLoroDoc> {
       );
     }
     const aclMap = stmtElementMap.getOrCreateContainer(
-      'acl',
+      'acls',
       new LoroMap(),
     ) as AclLoroMap;
     if (!aclMap) {
@@ -63,7 +63,7 @@ class StatementDocController extends ColabDocController<StmtLoroDoc> {
         `Could not find statement element for language ${langCode}`,
       );
     }
-    const aclMap = stmtElementMap.get('acl');
+    const aclMap = stmtElementMap.get('acls');
     if (!aclMap) {
       return {} as Record<Permission, string[]>;
     }
