@@ -1,36 +1,25 @@
 import React from 'react';
 import { Chip, Avatar, useTheme } from '@mui/material';
-import LanguageIcon from '@mui/icons-material/Language';
-import { LanguageOption } from '../LanguageSelector/LanguageSelector';
+import FlagCircleIcon from '@mui/icons-material/FlagCircle';
+import { CountryOption } from '../CountrySelector/CountrySelector';
 
-export interface LanguageChipProps {
-  /**
-   * The language to display as a chip
-   */
-  language: LanguageOption;
-
-  /**
-   * Whether the chip is deletable (shows delete icon)
-   */
+export interface CountryChipProps {
+  country: CountryOption;
   onDelete?: (event: any) => void;
-
-  /**
-   * Additional props to pass to the Chip component
-   */
   chipProps?: React.ComponentProps<typeof Chip>;
 }
 
-export default function LanguageChip({
-  language,
+export default function CountryChip({
+  country,
   onDelete,
   chipProps,
-}: LanguageChipProps) {
+}: CountryChipProps) {
   const theme = useTheme();
 
   const { key, ...rest } = chipProps || {};
   return (
     <Chip
-      label={language.name}
+      label={country.name}
       key={key}
       sx={{
         '& .MuiChip-label': {
@@ -52,11 +41,11 @@ export default function LanguageChip({
             },
           }}
         >
-          <LanguageIcon fontSize="small" />
+          <FlagCircleIcon fontSize="small" />
         </Avatar>
       }
-      variant={'outlined'}
-      size={'small'}
+      variant="outlined"
+      size="small"
       onDelete={onDelete}
       {...rest}
     />

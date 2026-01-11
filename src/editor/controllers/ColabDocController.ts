@@ -127,7 +127,7 @@ export default class ColabDocController<T extends ColabLoroDoc> {
     return this.loroDoc.subscribe((event: LoroEventBatch) => {
       // Iterate over the events
       for (const ev of event.events) {
-        if (pathStartsWith(ev.path, ['acl'])) {
+        if (pathStartsWith(ev.path, ['acls'])) {
           callback(event);
           break;
         }

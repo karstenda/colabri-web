@@ -47,15 +47,16 @@ export default function AssigneeChip({
   chipProps,
 }: AssigneeChipProps) {
   const theme = useTheme();
-
+  const { key, ...rest } = chipProps || {};
   return (
     <Chip
+      key={key}
       label={getAssigneeDisplayName(assignee)}
       sx={{
         '& .MuiChip-label': {
           fontWeight: 'normal',
         },
-        ...chipProps?.sx,
+        ...rest?.sx,
       }}
       avatar={
         assignee.type === 'user' ? (
@@ -63,7 +64,7 @@ export default function AssigneeChip({
         ) : (
           <Avatar
             sx={{
-              marginLeft: 0,
+              marginLeft: '-1px !important',
               bgcolor: theme.palette.grey[400],
               width: 32,
               height: 32,
@@ -81,7 +82,7 @@ export default function AssigneeChip({
       variant={'outlined'}
       size={'small'}
       onDelete={onDelete}
-      {...chipProps}
+      {...rest}
     />
   );
 }

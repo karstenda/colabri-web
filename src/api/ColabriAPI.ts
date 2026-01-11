@@ -25,9 +25,22 @@ export enum OrganizationStatus {
   OrgStatusSubscriptionExpired = "subscription_expired",
 }
 
+export enum OrganizationSettingsKey {
+  OrganizationSettingsKeyShowQuickSetup = "SHOW_QUICK_SETUP",
+}
+
+export enum GPCScope {
+  GPCScopeSegment = "gpcSegment",
+  GPCScopeFamily = "gpcFamily",
+  GPCScopeClass = "gpcClass",
+  GPCScopeBrick = "gpcBrick",
+  GPCScopeAttribute = "gpcAttribute",
+  GPCScopeValue = "gpcValue",
+}
+
 export enum DocumentType {
-  DocumentTypeColabDoc = "colab-doc",
   DocumentTypeColabStatement = "colab-statement",
+  DocumentTypeColabSheet = "colab-sheet",
 }
 
 export enum ContentLanguageDirection {
@@ -158,7 +171,8 @@ export interface CreateAttributeRequest {
 }
 
 export interface CreateAttributeValueRequest {
-  attributeId: string;
+  attributeId?: string;
+  attributeName?: string;
   value: any;
 }
 
@@ -182,6 +196,11 @@ export interface CreateOrganizationRequest {
   ownerFirstName: string;
   ownerLastName: string;
   status: OrganizationStatus;
+}
+
+export interface CreateProductRequest {
+  attributeValues?: CreateAttributeValueRequest[];
+  name: string;
 }
 
 export interface CreateStatementDocRequest {
@@ -229,6 +248,13 @@ export interface DocumentStream {
   version: number;
 }
 
+export interface GPCNode {
+  code?: string;
+  description?: string;
+  parentNodes?: GPCNode[];
+  scope?: GPCScope;
+}
+
 export interface Group {
   createdAt: string;
   createdBy: string;
@@ -261,6 +287,25 @@ export interface OrgContentLanguage {
   textDirection: ContentLanguageDirection;
 }
 
+export interface OrgCountry {
+  code?: string;
+  continent?: string;
+  emoji?: string;
+  id?: string;
+  languages?: string[];
+  name?: string;
+}
+
+export interface OrgProduct {
+  attributeValues?: Record<string, AttributeValue>;
+  createdAt: string;
+  createdBy: string;
+  id: string;
+  name: string;
+  updatedAt: string;
+  updatedBy: string;
+}
+
 export interface Organization {
   createdAt: string;
   createdBy: string;
@@ -273,6 +318,18 @@ export interface Organization {
   updatedBy: string;
 }
 
+export interface OrganizationSetting {
+  created_at?: string;
+  created_by?: string;
+  id: string;
+  key: OrganizationSettingsKey;
+  org: string;
+  type: string;
+  updated_at?: string;
+  updated_by?: string;
+  value?: string;
+}
+
 export interface PlatformContentLanguage {
   code?: string;
   countryCode?: string;
@@ -283,6 +340,14 @@ export interface PlatformContentLanguage {
   spellCheck?: boolean;
   spellCheckLangCode?: string;
   textDirection?: ContentLanguageDirection;
+}
+
+export interface PlatformCountry {
+  code?: string;
+  continent?: string;
+  emoji?: string;
+  languages?: string[];
+  name?: string;
 }
 
 export interface RemoveGroupMembersRequest {
@@ -382,6 +447,10 @@ export interface StatementDocument {
   updatedBy: string;
 }
 
+export interface SyncColabDocResponse {
+  success: boolean;
+}
+
 export interface TextElement {
   attributes: Record<string, string>;
   children: TextElementChild[];
@@ -413,6 +482,15 @@ export interface UpdateOrganizationRequest {
   name?: string;
   owner?: string;
   status?: OrganizationStatus;
+}
+
+export interface UpdateOrganizationSettingRequest {
+  value?: string;
+}
+
+export interface UpdateProductRequest {
+  attributeValues?: CreateAttributeValueRequest[];
+  name?: string;
 }
 
 export interface UpdateUserRequest {
@@ -700,6 +778,71 @@ export class HttpClient<SecurityDataType = unknown> {
 export class Api<
   SecurityDataType extends unknown,
 > extends HttpClient<SecurityDataType> {
+  countries = {
+    /**
+     * @description Retrieve a list of all countries supported by the platform
+     *
+     * @tags countries
+     * @name GetCountries
+     * @summary List all available countries on the platform
+     * @request GET:/countries
+     */
+    getCountries: (params: RequestParams = {}) =>
+      this.request<PlatformCountry[], HTTPError>({
+        path: `/countries`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+  };
+  gpc = {
+    /**
+     * @description Retrieve the platform GPC tree nodes filtered by codes and query.
+     *
+     * @tags gpc
+     * @name GetGpc
+     * @summary List GS1 Global Product Classification (GPC) with optional filters
+     * @request GET:/gpc
+     */
+    getGpc: (
+      query: {
+        /** GPC Segment Code */
+        gpcSegmentCode?: string;
+        /** GPC Family Code */
+        gpcFamilyCode?: string;
+        /** GPC Class Code */
+        gpcClassCode?: string;
+        /** GPC Brick Code */
+        gpcBrickCode?: string;
+        /** GPC Attribute Code */
+        gpcAttributeCode?: string;
+        /** GPC Attribute Value Code */
+        gpcValueCode?: string;
+        /** Query Scope (gpcSegment, gpcFamily, gpcClass, gpcBrick, gpcAttribute, gpcValue) */
+        queryScope:
+          | "gpcSegment"
+          | "gpcFamily"
+          | "gpcClass"
+          | "gpcBrick"
+          | "gpcAttribute"
+          | "gpcValue";
+        /** Query Value (Description substring) */
+        queryValue?: string;
+        /** Max number of results (max 50, default 50) */
+        limit?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GPCNode[], HTTPError>({
+        path: `/gpc`,
+        method: "GET",
+        query: query,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+  };
   languages = {
     /**
      * @description Retrieve a list of all languages supported by the platform
@@ -997,6 +1140,67 @@ export class Api<
       }),
 
     /**
+     * @description Retrieve a list of all countries configured for a specific organization
+     *
+     * @tags countries
+     * @name GetCountries
+     * @summary List countries for an organization
+     * @request GET:/{orgId}/countries
+     */
+    getCountries: (orgId: string, params: RequestParams = {}) =>
+      this.request<OrgCountry[], HTTPError>({
+        path: `/${orgId}/countries`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Add new countries to be used within a specific organization
+     *
+     * @tags countries
+     * @name PostCountrie
+     * @summary Add countries for an organization
+     * @request POST:/{orgId}/countries
+     */
+    postCountrie: (
+      orgId: string,
+      countryCodes: string[],
+      params: RequestParams = {},
+    ) =>
+      this.request<OrgCountry[], HTTPError>({
+        path: `/${orgId}/countries`,
+        method: "POST",
+        body: countryCodes,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Remove countries from a specific organization by country ID
+     *
+     * @tags countries
+     * @name DeleteCountrie
+     * @summary Delete countries for an organization
+     * @request DELETE:/{orgId}/countries
+     */
+    deleteCountrie: (
+      orgId: string,
+      countryIds: string[],
+      params: RequestParams = {},
+    ) =>
+      this.request<OrgCountry[], HTTPError>({
+        path: `/${orgId}/countries`,
+        method: "DELETE",
+        body: countryIds,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Create a new document in the specified organization
      *
      * @tags documents
@@ -1120,6 +1324,27 @@ export class Api<
         path: `/${orgId}/documents/${docId}/attributes`,
         method: "PATCH",
         body: attributeValues,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description This endpoint will parse a ColabDoc and alters the appropiate database relations.
+     *
+     * @tags documents
+     * @name PostDocumentsSync
+     * @summary Synchronizes the state of a ColabDoc with the rest of the DB
+     * @request POST:/{orgId}/documents/{docId}/sync
+     */
+    postDocumentsSync: (
+      orgId: string,
+      docId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<SyncColabDocResponse, HTTPError>({
+        path: `/${orgId}/documents/${docId}/sync`,
+        method: "POST",
         type: ContentType.Json,
         format: "json",
         ...params,
@@ -1403,6 +1628,156 @@ export class Api<
         path: `/${orgId}/languages`,
         method: "DELETE",
         body: langIds,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description List all products in the specified organization
+     *
+     * @tags products
+     * @name GetProducts
+     * @summary List products
+     * @request GET:/{orgId}/products
+     */
+    getProducts: (orgId: string, params: RequestParams = {}) =>
+      this.request<OrgProduct[], HTTPError>({
+        path: `/${orgId}/products`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Create a new product in the specified organization
+     *
+     * @tags products
+     * @name PostProduct
+     * @summary Create a new product
+     * @request POST:/{orgId}/products
+     */
+    postProduct: (
+      orgId: string,
+      product: CreateProductRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<OrgProduct, HTTPError>({
+        path: `/${orgId}/products`,
+        method: "POST",
+        body: product,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get a product by ID in the specified organization
+     *
+     * @tags products
+     * @name GetProduct
+     * @summary Get a product
+     * @request GET:/{orgId}/products/{productId}
+     */
+    getProduct: (
+      orgId: string,
+      productId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<OrgProduct, HTTPError>({
+        path: `/${orgId}/products/${productId}`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update a product in the specified organization
+     *
+     * @tags products
+     * @name PutProduct
+     * @summary Update a product
+     * @request PUT:/{orgId}/products/{productId}
+     */
+    putProduct: (
+      orgId: string,
+      productId: string,
+      product: UpdateProductRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<OrgProduct, HTTPError>({
+        path: `/${orgId}/products/${productId}`,
+        method: "PUT",
+        body: product,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Delete a product in the specified organization
+     *
+     * @tags products
+     * @name DeleteProduct
+     * @summary Delete a product
+     * @request DELETE:/{orgId}/products/{productId}
+     */
+    deleteProduct: (
+      orgId: string,
+      productId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<OrgProduct, HTTPError>({
+        path: `/${orgId}/products/${productId}`,
+        method: "DELETE",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get a specific setting by key.
+     *
+     * @tags organization_settings
+     * @name GetSetting
+     * @summary Get an organization setting
+     * @request GET:/{orgId}/settings/{type}/{key}
+     */
+    getSetting: (
+      orgId: string,
+      type: "user-feature" | "app-feature" | "user-setting" | "app-setting",
+      key: "SHOW_QUICK_SETUP",
+      params: RequestParams = {},
+    ) =>
+      this.request<OrganizationSetting, HTTPError>({
+        path: `/${orgId}/settings/${type}/${key}`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Create or update a setting value. Only organization admins can set settings.
+     *
+     * @tags organization_settings
+     * @name PutSetting
+     * @summary Put an organization setting
+     * @request PUT:/{orgId}/settings/{type}/{key}
+     */
+    putSetting: (
+      orgId: string,
+      type: "user-feature" | "app-feature" | "user-setting" | "app-setting",
+      key: "SHOW_QUICK_SETUP",
+      setting: UpdateOrganizationSettingRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<OrganizationSetting, HTTPError>({
+        path: `/${orgId}/settings/${type}/${key}`,
+        method: "PUT",
+        body: setting,
         type: ContentType.Json,
         format: "json",
         ...params,

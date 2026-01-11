@@ -58,9 +58,11 @@ export const navigationCustomizations: Components<Theme> = {
   },
   MuiSelect: {
     defaultProps: {
-      IconComponent: React.forwardRef<SVGSVGElement, SvgIconProps>((props, ref) => (
-        <UnfoldMoreRoundedIcon fontSize="small" {...props} ref={ref} />
-      )),
+      IconComponent: React.forwardRef<SVGSVGElement, SvgIconProps>(
+        (props, ref) => (
+          <UnfoldMoreRoundedIcon fontSize="small" {...props} ref={ref} />
+        ),
+      ),
     },
     styleOverrides: {
       root: ({ theme }) => ({
@@ -86,7 +88,10 @@ export const navigationCustomizations: Components<Theme> = {
           borderRadius: (theme.vars || theme).shape.borderRadius,
           borderColor: gray[700],
           backgroundColor: (theme.vars || theme).palette.background.paper,
-          boxShadow: `inset 0 1px 0 1px ${alpha(gray[700], 0.15)}, inset 0 -1px 0 1px hsla(220, 0%, 0%, 0.7)`,
+          boxShadow: `inset 0 1px 0 1px ${alpha(
+            gray[700],
+            0.15,
+          )}, inset 0 -1px 0 1px hsla(220, 0%, 0%, 0.7)`,
           '&:hover': {
             borderColor: alpha(gray[700], 0.7),
             backgroundColor: (theme.vars || theme).palette.background.paper,
@@ -211,68 +216,6 @@ export const navigationCustomizations: Components<Theme> = {
             color: '#fff',
           },
         }),
-      }),
-    },
-  },
-  MuiStepConnector: {
-    styleOverrides: {
-      line: ({ theme }) => ({
-        borderTop: '1px solid',
-        borderColor: (theme.vars || theme).palette.divider,
-        flex: 1,
-        borderRadius: '99px',
-      }),
-    },
-  },
-  MuiStepIcon: {
-    styleOverrides: {
-      root: ({ theme }) => ({
-        color: 'transparent',
-        border: `1px solid ${gray[400]}`,
-        width: 12,
-        height: 12,
-        borderRadius: '50%',
-        '& text': {
-          display: 'none',
-        },
-        '&.Mui-active': {
-          border: 'none',
-          color: (theme.vars || theme).palette.primary.main,
-        },
-        '&.Mui-completed': {
-          border: 'none',
-          color: (theme.vars || theme).palette.success.main,
-        },
-        ...theme.applyStyles('dark', {
-          border: `1px solid ${gray[700]}`,
-          '&.Mui-active': {
-            border: 'none',
-            color: (theme.vars || theme).palette.primary.light,
-          },
-          '&.Mui-completed': {
-            border: 'none',
-            color: (theme.vars || theme).palette.success.light,
-          },
-        }),
-        variants: [
-          {
-            props: { completed: true },
-            style: {
-              width: 12,
-              height: 12,
-            },
-          },
-        ],
-      }),
-    },
-  },
-  MuiStepLabel: {
-    styleOverrides: {
-      label: ({ theme }) => ({
-        '&.Mui-completed': {
-          opacity: 0.6,
-          ...theme.applyStyles('dark', { opacity: 0.5 }),
-        },
       }),
     },
   },

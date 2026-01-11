@@ -11,11 +11,6 @@ const ErrorPrompt: React.FC<ErrorPromptProps> = ({ msg }) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
-  const onLoginClick = () => {
-    // Redirect to login page
-    window.location.href = '/auth/login';
-  };
-
   return (
     <Paper
       sx={{

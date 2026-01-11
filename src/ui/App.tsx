@@ -13,6 +13,7 @@ import {
 } from './theme/customizations';
 import LandingPage from './pages/landing/LandingPage';
 import TrialPage from './pages/trial/TrialPage';
+import AutoSetupPage from './pages/autosetup/AutoSetupPage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { UserOrganizationProvider } from './context/UserOrganizationContext/UserOrganizationProvider';
 import OrgUserProtectedRoute from './routes/OrgUserProtectedRoute';
@@ -30,6 +31,7 @@ import AttributeShowPage from './pages/attributes/AttributeShowPage';
 import AttributeEditPage from './pages/attributes/AttributeEditPage';
 import ColabDocEditorPage from './pages/editor/ColabDocEditorPage';
 import LanguageListPage from './pages/languages/LanguageListPage';
+import CountryListPage from './pages/countries/CountryListPage';
 import StatementListPage from './pages/statements/StatementListPage';
 import StatementCreatePage from './pages/statements/StatementCreatePage';
 import PrivacyPolicyPage from './pages/legal/PrivacyPolicyPage';
@@ -150,6 +152,10 @@ const router = createHashRouter([
         Component: LanguageListPage,
       },
       {
+        path: 'org/:orgId/config/countries/',
+        Component: CountryListPage,
+      },
+      {
         path: 'org/:orgId/*',
         Component: UserListPage,
       },
@@ -162,6 +168,18 @@ const router = createHashRouter([
         <NotificationsProvider>
           <DialogsProvider>
             <TrialPage />
+          </DialogsProvider>
+        </NotificationsProvider>
+      </UserOrganizationProvider>
+    ),
+  },
+  {
+    path: '/org/:orgId/autosetup',
+    Component: () => (
+      <UserOrganizationProvider>
+        <NotificationsProvider>
+          <DialogsProvider>
+            <AutoSetupPage />
           </DialogsProvider>
         </NotificationsProvider>
       </UserOrganizationProvider>

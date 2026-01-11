@@ -21,6 +21,7 @@
     "close": "Close",
     "companyName": "Company Name",
     "email": "Email",
+    "name": "Name",
     "firstName": "First Name",
     "lastName": "Last Name",
     "refresh": "Refresh"
@@ -89,6 +90,81 @@
       "lastNameRequired": "Last Name is required"
     }
   },
+  "autosetup": {
+    "title": "Quick Setup",
+    "intro": "This setup wizard will guide you through setting up an initial configuration for your organization. This is a quick and easy way to get started with Colabri. You can always modify your configuration later from within the admin section.",
+    "skipWarning": "Are you sure you want to skip this? You will need to configure your organization manually yourself.",
+    "skipSetup": "Skip Setup",
+    "startSetup": "Start Setup",
+    "noAdmin": "You need to be an organization admin to perform the setup.",
+    "step1": "Countries",
+    "step2": "Languages",
+    "step3": "Product",
+    "step4": "Sheet",
+    "steps": {
+      "countries": {
+        "title": "Select Countries",
+        "description": "Choose the countries you're operating in."
+      },
+      "languages": {
+        "title": "Select Languages",
+        "description": "Choose the languages you;re supporting."
+      },
+      "products": {
+        "title": "Create Example Product",
+        "description": "Specify a single product for which you want to manage the content in Colabri. Don't worry after the setup you can add more products.",
+        "placeholders": {
+          "name": "E.g.: Coca-Cola Zero Cherry - 12oz Sleek Cans",
+          "obhDivision": "E.g.: US Sparkling Flavors",
+          "obhBrand": "E.g.: Coca-Cola",
+          "obhSubbrand": "E.g.: Coca-Cola Zero",
+          "obhProduct": "E.g.: Coca-Cola Zero Cherry",
+          "obhVariant": "E.g.: Cherry",
+          "obhSize": "E.g.: 12oz Sleek Can",
+          "gpcSegment": "E.g.: 50000000 - Food/Beverage/Tobacco",
+          "gpcFamily": "E.g.: 50200000 - Beverages",
+          "gpcClass": "E.g.: 50202300 - Non Alcoholic Beverages - Ready to Drink",
+          "gpcBrick": "E.g.: 10000201 - Drinks Flavoured - Ready to Drink"
+        }
+      },
+      "sheets": {
+        "title": "Create Example Sheet",
+        "description": "Create a sample content sheet for the product you've just created."
+      },
+      "summary": {
+        "title": "Setup Complete",
+        "description": "Your example sheet was created successfully! You can now start using Colabri!",
+        "button": "Edit your product content sheet"
+      }
+    },
+    "stepError": "Error occurred while executing this step."
+  },
+  "product": {
+    "form": {
+      "gpcSectionTitle": "Global Product Classification",
+      "obhSectionTitle": "Product Brand Hierarchy"
+    }
+  },
+  "gpc": {
+    "name": {
+      "segment": "GPC Segment",
+      "family": "GPC Family",
+      "class": "GPC Class",
+      "brick": "GPC Brick",
+      "attribute": "GPC Attribute",
+      "value": "GPC Value"
+    }
+  },
+  "obh": {
+    "name": {
+      "division": "Division",
+      "brand": "Select Brand",
+      "subbrand": "Subbrand",
+      "product": "Product",
+      "variant": "Variant",
+      "size": "Size"
+    }
+  },
   "editor": {
     "toolbar": {
       "addLanguage": "Add",
@@ -145,6 +221,44 @@
       "label": "Select Language",
       "moreResults": "Type to see more results...",
       "noOptions": "No languages found"
+    }
+  },
+  "countries": {
+    "title": "Countries",
+    "addCountry": "Add Country",
+    "columns": {
+      "name": "Name",
+      "code": "Code",
+      "continent": "Continent",
+      "languages": "Languages"
+    },
+    "messages": {
+      "addedSuccess": "{{count}} country(ies) added successfully.",
+      "addedError": "Failed to add country(ies). Reason: {{error}}",
+      "deleteConfirm": "Do you wish to remove {{name}}?",
+      "deleteConfirmTitle": "Delete country?",
+      "deleteMissingId": "Unable to delete country: missing identifier.",
+      "deleteSuccess": "Country deleted successfully.",
+      "deleteError": "Failed to delete country. Reason: {{error}}"
+    },
+    "addModal": {
+      "title": "Add Countries",
+      "description": "Select countries to add to this organization.",
+      "selectLabel": "Countries",
+      "selectPlaceholder": "Select countries to add...",
+      "submit": "Add Countries"
+    },
+    "selector": {
+      "label": "Select Country",
+      "moreResults": "Type to see more results...",
+      "noOptions": "No countries found"
+    }
+  },
+  "products": {
+    "title": "Products",
+    "addProduct": "Add Product",
+    "form": {
+      "details": "Product Details"
     }
   },
   "spellcheck": {

@@ -9,96 +9,42 @@ import {
   Avatar,
 } from '@mui/material';
 import { createFilterOptions } from '@mui/material/Autocomplete';
-import LanguageIcon from '@mui/icons-material/Language';
+import FlagCircleIcon from '@mui/icons-material/FlagCircle';
 import { useTranslation } from 'react-i18next';
+import type { OrgCountry, PlatformCountry } from '../../../api/ColabriAPI';
 import {
-  usePlatformContentLanguages,
-  useContentLanguages,
-} from '../../hooks/useContentLanguages/useContentLanguage';
-import type {
-  OrgContentLanguage,
-  PlatformContentLanguage,
-} from '../../../api/ColabriAPI';
-import LanguageChip from '../LanguageChip/LanguageChip';
+  usePlatformCountries,
+  useCountries as useOrgCountries,
+} from '../../hooks/useCountries/useCountries';
+import CountryChip from '../CountryChip/CountryChip';
 
-export type LanguageOption = OrgContentLanguage | PlatformContentLanguage;
+export type CountryOption = OrgCountry | PlatformCountry;
 
-const filter = createFilterOptions<LanguageOption>();
+const filter = createFilterOptions<CountryOption>();
 
-const MORE_RESULTS_OPTION: PlatformContentLanguage = {
+const MORE_RESULTS_OPTION: PlatformCountry = {
   code: 'MORE_RESULTS',
   name: 'Type to see more results...',
 };
 
-interface LanguageSelectorProps {
-  /**
-   * The scope of languages to display
-   * - 'platform': All platform languages
-   * - 'organization': Organization-specific languages
-   */
+export interface CountrySelectorProps {
   scope: 'platform' | 'organization';
-
-  /**
-   * Organization ID (required when scope is 'organization')
-   */
   orgId?: string;
-
-  /**
-   * Whether to allow multiple language selection
-   */
   multiple?: boolean;
-
-  /**
-   * Current selected value(s)
-   * - Single value when multiple=false (string code or language object)
-   * - Array of values when multiple=true (string codes or language objects)
-   */
-  value?: string | string[] | LanguageOption | LanguageOption[] | null;
-
-  /**
-   * Callback when selection changes
-   */
+  value?: string | string[] | CountryOption | CountryOption[] | null;
   onChange?: (
-    value: string | string[] | LanguageOption | LanguageOption[] | null,
+    value: string | string[] | CountryOption | CountryOption[] | null,
   ) => void;
-
-  /**
-   * Label for the input field
-   */
   label?: string;
-
-  /**
-   * Placeholder text
-   */
   placeholder?: string;
-
-  /**
-   * Whether the field is disabled
-   */
   disabled?: boolean;
-
-  /**
-   * Whether the field is required
-   */
   required?: boolean;
-
-  /**
-   * Error state
-   */
   error?: boolean;
-
-  /**
-   * Helper text to display below the field
-   */
   helperText?: string;
-
-  /**
-   * Optional function to filter available options
-   */
-  filterOptions?: (options: LanguageOption[]) => LanguageOption[];
+  filterOptions?: (options: CountryOption[]) => CountryOption[];
 }
 
-export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
+export const CountrySelector: React.FC<CountrySelectorProps> = ({
   scope,
   orgId,
   multiple = false,
@@ -115,82 +61,64 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   const theme = useTheme();
   const { t } = useTranslation();
 
-  const inputLabel = label ?? t('languages.selector.label');
+  const inputLabel = label ?? t('countries.selector.label');
 
-  // Fetch languages based on scope
-  const { languages: platformLanguages, isLoading: isPlatformLoading } =
-    usePlatformContentLanguages(scope === 'platform');
+  const { countries: platformCountries, isLoading: isPlatformLoading } =
+    usePlatformCountries(scope === 'platform');
 
-  const { languages: orgLanguages, isLoading: isOrgLoading } =
-    useContentLanguages(orgId || '', scope === 'organization' && !!orgId);
+  const { countries: orgCountries, isLoading: isOrgLoading } = useOrgCountries(
+    orgId || '',
+    scope === 'organization' && !!orgId,
+  );
 
-  // Determine which languages to use
-  const allLanguages = scope === 'platform' ? platformLanguages : orgLanguages;
-  const languages = filterOptions ? filterOptions(allLanguages) : allLanguages;
+  const allCountries = scope === 'platform' ? platformCountries : orgCountries;
+  const countries = filterOptions ? filterOptions(allCountries) : allCountries;
   const isLoading = scope === 'platform' ? isPlatformLoading : isOrgLoading;
 
-  // Get language code from option
-  const getLanguageCode = (option: LanguageOption): string => {
-    return option.code || '';
-  };
+  const getCountryCode = (option: CountryOption): string => option.code || '';
 
-  // Get language name for display
-  const getLanguageName = (option: LanguageOption): string => {
-    if (option.code === MORE_RESULTS_OPTION.code) {
-      return '';
-    }
-    if ('endonym' in option && option.endonym) {
-      return `${option.name} (${option.endonym})`;
-    }
-    return option.name || '';
-  };
+  const getCountryName = (option: CountryOption): string => option.name || '';
 
-  // Find language by code
-  const findLanguageByCode = (code: string): LanguageOption | null => {
-    return languages.find((lang) => getLanguageCode(lang) === code) || null;
-  };
+  const findCountryByCode = (code: string): CountryOption | null =>
+    countries.find((country) => getCountryCode(country) === code) || null;
 
-  // Helper to convert string or object to LanguageOption
   const normalizeValue = (
-    val: string | LanguageOption,
-  ): LanguageOption | null => {
+    val: string | CountryOption,
+  ): CountryOption | null => {
     if (typeof val === 'string') {
-      return findLanguageByCode(val);
+      return findCountryByCode(val);
     }
     return val;
   };
 
-  // Convert value to internal format
   const selectedValue = React.useMemo(() => {
     if (multiple) {
       const values = Array.isArray(value) ? value : [];
-      return values.map(normalizeValue).filter(Boolean) as LanguageOption[];
-    } else {
-      if (!value) return null;
-      if (Array.isArray(value)) return null; // Invalid case
-      return normalizeValue(value);
+      return values.map(normalizeValue).filter(Boolean) as CountryOption[];
     }
-  }, [value, languages, multiple]);
+    if (!value) return null;
+    if (Array.isArray(value)) return null;
+    return normalizeValue(value);
+  }, [value, countries, multiple]);
 
-  // Handle change
   const handleChange = (
     _event: React.SyntheticEvent,
-    newValue: LanguageOption | LanguageOption[] | null,
+    newValue: CountryOption | CountryOption[] | null,
   ) => {
     if (!onChange) return;
 
     if (multiple) {
-      const languages = Array.isArray(newValue) ? newValue : [];
-      const validLanguages = languages.filter(
-        (l) => l.code !== MORE_RESULTS_OPTION.code,
+      const options = Array.isArray(newValue) ? newValue : [];
+      const validCountries = options.filter(
+        (country) => country.code !== MORE_RESULTS_OPTION.code,
       );
-      onChange(validLanguages);
+      onChange(validCountries);
     } else {
-      const val = newValue as LanguageOption | null;
-      if (val && val.code === MORE_RESULTS_OPTION.code) {
+      const country = newValue as CountryOption | null;
+      if (country && country.code === MORE_RESULTS_OPTION.code) {
         return;
       }
-      onChange(val);
+      onChange(country);
     }
   };
 
@@ -199,7 +127,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
       multiple={multiple}
       value={selectedValue}
       onChange={handleChange}
-      options={languages}
+      options={countries}
       filterOptions={(options, params) => {
         const filtered = filter(options, params);
         if (filtered.length > 50) {
@@ -207,10 +135,10 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
         }
         return filtered;
       }}
-      getOptionLabel={getLanguageName}
+      getOptionLabel={getCountryName}
       isOptionEqualToValue={(option, value) => {
         if (option.code === MORE_RESULTS_OPTION.code) return false;
-        return getLanguageCode(option) === getLanguageCode(value);
+        return getCountryCode(option) === getCountryCode(value);
       }}
       loading={isLoading}
       disabled={disabled}
@@ -262,13 +190,13 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
         />
       )}
       renderOption={(props, option) => {
-        const { key, ...otherProps } = props;
+        const { key, ...optionProps } = props;
         if (option.code === MORE_RESULTS_OPTION.code) {
           return (
             <Box
               component="li"
               key={key}
-              {...otherProps}
+              {...optionProps}
               sx={{
                 justifyContent: 'center',
                 color: 'text.secondary',
@@ -277,7 +205,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
               }}
             >
               <Typography variant="body2">
-                {t('languages.selector.moreResults')}
+                {t('countries.selector.moreResults')}
               </Typography>
             </Box>
           );
@@ -285,7 +213,8 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
         return (
           <Box
             component="li"
-            {...props}
+            key={key}
+            {...optionProps}
             sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
           >
             <Avatar
@@ -295,7 +224,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
                 bgcolor: theme.palette.grey[400],
               }}
             >
-              <LanguageIcon fontSize="small" />
+              <FlagCircleIcon fontSize="small" />
             </Avatar>
             <Box>
               <Typography variant="body1">{option.name}</Typography>
@@ -310,9 +239,9 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
           return selected.map((option, index) => {
             const { onDelete, ...other } = getItemProps({ index });
             return (
-              <LanguageChip
+              <CountryChip
                 key={option.code || index}
-                language={option}
+                country={option}
                 onDelete={onDelete}
                 chipProps={other}
               />
@@ -321,13 +250,13 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
         }
 
         const singleValue = Array.isArray(selected) ? selected[0] : selected;
-        return getLanguageName(singleValue);
+        return getCountryName(singleValue);
       }}
       noOptionsText={
-        isLoading ? t('common.loading') : t('languages.selector.noOptions')
+        isLoading ? t('common.loading') : t('countries.selector.noOptions')
       }
     />
   );
 };
 
-export default LanguageSelector;
+export default CountrySelector;

@@ -200,7 +200,17 @@ export default function AssigneeSelector({
       sx={{
         width: '100%',
         '& .MuiAutocomplete-inputRoot': {
-          alignContent: 'center',
+          flexWrap: 'wrap',
+          gap: 0.5,
+        },
+        '& .MuiInputBase-root': {
+          height: 'auto',
+          padding: '2px',
+          margin: '3px',
+        },
+        '& .MuiInputBase-input': {
+          paddingTop: '4px !important',
+          paddingBottom: '4px !important',
         },
       }}
       slotProps={{
@@ -240,64 +250,60 @@ export default function AssigneeSelector({
           }}
         />
       )}
-      renderOption={(props, option) => (
-        <Box
-          component="li"
-          {...props}
-          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-        >
-          {option.type === 'user' ? (
-            <UserAvatar user={option} width={32} height={32} />
-          ) : (
-            <Avatar
-              sx={{
-                width: 32,
-                height: 32,
-                bgcolor: theme.palette.grey[400],
-              }}
-            >
-              <GroupIcon fontSize="small" />
-            </Avatar>
-          )}
-          <Box>
-            <Typography variant="body2">
-              {getAssigneeDisplayName(option)}
-            </Typography>
-            {option.type === 'user' && option.email && (
-              <Typography variant="caption" color="text.secondary">
-                {option.email}
-              </Typography>
+      renderOption={(props, option) => {
+        const { key, ...otherProps } = props;
+        return (
+          <Box
+            component="li"
+            key={key}
+            {...otherProps}
+            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+          >
+            {option.type === 'user' ? (
+              <UserAvatar user={option} width={32} height={32} />
+            ) : (
+              <Avatar
+                sx={{
+                  width: 32,
+                  height: 32,
+                  bgcolor: theme.palette.grey[400],
+                }}
+              >
+                <GroupIcon fontSize="small" />
+              </Avatar>
             )}
-            {option.type === 'group' && option.description && (
-              <Typography variant="caption" color="text.secondary">
-                {option.description}
+            <Box>
+              <Typography variant="body2">
+                {getAssigneeDisplayName(option)}
               </Typography>
-            )}
+              {option.type === 'user' && option.email && (
+                <Typography variant="caption" color="text.secondary">
+                  {option.email}
+                </Typography>
+              )}
+              {option.type === 'group' && option.description && (
+                <Typography variant="caption" color="text.secondary">
+                  {option.description}
+                </Typography>
+              )}
+            </Box>
           </Box>
-        </Box>
-      )}
-      renderValue={(selected) => {
+        );
+      }}
+      renderValue={(selected, getItemProps) => {
         if (!selected) return '';
 
-        if (multiple) {
-          const selectedArray = Array.isArray(selected) ? selected : [selected];
-          return (
-            <Box
-              sx={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 0.5,
-                alignItems: 'center',
-              }}
-            >
-              {selectedArray.map((option) => (
-                <AssigneeChip
-                  key={`${option.type}-${option.id}`}
-                  assignee={option}
-                />
-              ))}
-            </Box>
-          );
+        if (multiple && Array.isArray(selected)) {
+          return selected.map((option, index) => {
+            const { onDelete, ...other } = getItemProps({ index });
+            return (
+              <AssigneeChip
+                key={`${option.type}-${option.id}`}
+                assignee={option}
+                chipProps={other}
+              />
+            );
+          });
         }
 
         const singleValue = Array.isArray(selected) ? selected[0] : selected;

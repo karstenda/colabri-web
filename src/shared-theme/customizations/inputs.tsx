@@ -57,7 +57,7 @@ export const inputsCustomizations: Components<Theme> = {
           },
           {
             props: {
-              color: 'primary',
+              color: 'secondary',
               variant: 'contained',
             },
             style: {
@@ -93,7 +93,7 @@ export const inputsCustomizations: Components<Theme> = {
           },
           {
             props: {
-              color: 'secondary',
+              color: 'primary',
               variant: 'contained',
             },
             style: {
@@ -150,7 +150,7 @@ export const inputsCustomizations: Components<Theme> = {
           },
           {
             props: {
-              color: 'secondary',
+              color: 'primary',
               variant: 'outlined',
             },
             style: {
@@ -205,7 +205,7 @@ export const inputsCustomizations: Components<Theme> = {
           },
           {
             props: {
-              color: 'secondary',
+              color: 'primary',
               variant: 'text',
             },
             style: {

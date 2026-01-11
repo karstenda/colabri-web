@@ -425,8 +425,8 @@ class StatementDocController extends ColabDocController<StmtLoroDoc> {
     return this.loroDoc.subscribe((event: LoroEventBatch) => {
       for (const ev of event.events) {
         if (
-          pathStartsWith(ev.path, ['acl']) ||
-          pathStartsWith(ev.path, ['content', langCode, 'acl'])
+          pathStartsWith(ev.path, ['acls']) ||
+          pathStartsWith(ev.path, ['content', langCode, 'acls'])
         ) {
           callback(event);
           break;

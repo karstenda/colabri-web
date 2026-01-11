@@ -1,5 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
-import type { Organization, Group } from '../../../api/ColabriAPI';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { organizationSettingKeys } from '../useOrganizationSettings/useOrganizationSettings';
+import type {
+  Organization,
+  Group,
+  OrganizationSetting,
+} from '../../../api/ColabriAPI';
 import { UserProfile } from '../../data/User';
 
 type UserAuth = {
@@ -9,6 +14,7 @@ type UserAuth = {
     organization: Organization;
     userId: string;
     userGroups: Group[];
+    userOrgSettings: OrganizationSetting[];
   }[];
   profile: UserProfile;
 };
@@ -20,6 +26,7 @@ type UserAuthError = {
 };
 
 export const useUserAuth = () => {
+  const queryClient = useQueryClient();
   const { data, isLoading, error } = useQuery<UserAuth, UserAuthError>({
     queryKey: ['/auth/me'],
     queryFn: async () => {
@@ -38,7 +45,23 @@ export const useUserAuth = () => {
         throw payload;
       } else {
         const payload = await response.json();
-        return payload as UserAuth;
+
+        const userAuth = payload as UserAuth;
+        // Update the userOrgSettings in the tanstack cache so that they are available elsewhere
+        userAuth.orgs.forEach((org) => {
+          org.userOrgSettings.forEach((setting) => {
+            queryClient.setQueryData(
+              organizationSettingKeys.detail(
+                org.organization.id,
+                setting.type,
+                setting.key,
+              ),
+              { data: setting },
+            );
+          });
+        });
+
+        return userAuth;
       }
     },
     retry: false,
