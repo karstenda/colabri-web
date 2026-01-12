@@ -15,9 +15,10 @@ import {
   usePlatformContentLanguages,
   useContentLanguages,
 } from '../../hooks/useContentLanguages/useContentLanguage';
-import type {
-  OrgContentLanguage,
-  PlatformContentLanguage,
+import {
+  ContentLanguageDirection,
+  type OrgContentLanguage,
+  type PlatformContentLanguage,
 } from '../../../api/ColabriAPI';
 import LanguageChip from '../LanguageChip/LanguageChip';
 
@@ -28,6 +29,12 @@ const filter = createFilterOptions<LanguageOption>();
 const MORE_RESULTS_OPTION: PlatformContentLanguage = {
   code: 'MORE_RESULTS',
   name: 'Type to see more results...',
+  countryCode: '',
+  defaultFont: [],
+  langCode: '',
+  spellCheck: false,
+  spellCheckLangCode: '',
+  textDirection: 'ltr' as ContentLanguageDirection,
 };
 
 interface LanguageSelectorProps {

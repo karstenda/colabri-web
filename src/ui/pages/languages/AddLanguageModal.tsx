@@ -12,6 +12,7 @@ import {
 import { DialogProps } from '../../hooks/useDialogs/useDialogs';
 import { LanguageSelector } from '../../components/LanguageSelector';
 import type { PlatformContentLanguage } from '../../../api/ColabriAPI';
+import { ContentLanguage } from '../../../editor/data/ContentLanguage';
 
 export interface AddLanguageModalPayload {
   orgId: string;
@@ -45,12 +46,7 @@ export function AddLanguageModal({ open, onClose }: AddLanguageModalProps) {
   };
 
   const handleSelectionChange = (
-    value:
-      | string
-      | string[]
-      | PlatformContentLanguage
-      | PlatformContentLanguage[]
-      | null,
+    value: string | string[] | ContentLanguage | ContentLanguage[] | null,
   ) => {
     if (Array.isArray(value)) {
       // Filter to ensure we only have PlatformContentLanguage objects
