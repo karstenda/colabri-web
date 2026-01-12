@@ -1,7 +1,10 @@
 import { StatementElementBlockBP } from './StatementElementBlockBP';
-import { Stack } from '@mui/material';
+import { Stack, Tooltip } from '@mui/material';
 import ColabTextEditor from '../../ColabTextEditor/ColabTextEditor';
-import { useContentLanguages } from '../../../../ui/hooks/useContentLanguages/useContentLanguage';
+import {
+  useContentLanguages,
+  usePlatformContentLanguages,
+} from '../../../../ui/hooks/useContentLanguages/useContentLanguage';
 import { useOrganization } from '../../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
 import { useColabDoc } from '../../../context/ColabDocContext/ColabDocProvider';
 import { LoroDocType } from 'loro-prosemirror';
@@ -22,8 +25,10 @@ import ManageStmtLangModal, {
 import { ConnectedStmtDoc } from '../../../data/ConnectedColabDoc';
 import { Permission } from '../../../../ui/data/Permission';
 import ApprovalDropdown from '../../ApprovalDropdown/ApprovalDropdown';
-import { ColabApprovalState } from '../../../../api/ColabriAPI';
+import ErrorIcon from '@mui/icons-material/Error';
 import { useGoogleFonts } from '../../../../ui/hooks/useFonts/useFonts';
+import { ContentLanguage } from '../../../data/ContentLanguage';
+import { t } from 'i18next';
 
 export type StatementElementBlockProps = {
   bp: StatementElementBlockBP;
@@ -42,13 +47,26 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
   const organization = useOrganization();
 
   // Get the configured languages
-  const { languages } = useContentLanguages(organization?.id);
+  const { languages, isLoading: isLanguagesLoading } = useContentLanguages(
+    organization?.id,
+  );
 
   // Get the dialogs hook
   const dialogs = useDialogs();
 
   // Get the language
-  const language = languages.find((l) => l.code === bp.langCode);
+  let language: ContentLanguage | undefined = languages.find(
+    (l) => l.code === bp.langCode,
+  );
+  // If not found, try to get it from platform languages
+  let isNonOrgContentLanguages = false;
+  const { languages: platformLanguages } = usePlatformContentLanguages(
+    !language && !isLanguagesLoading,
+  );
+  if (!language && !isLanguagesLoading) {
+    language = platformLanguages.find((l) => l.code === bp.langCode);
+    isNonOrgContentLanguages = true;
+  }
 
   // Get the list of custom fonts
   const customFonts = [] as string[];
@@ -154,7 +172,8 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
       Record<Permission, string[]> | undefined
     >(ManageStmtLangModal, {
       loroDoc: loroDoc!,
-      contentLanguage: language!,
+      langCode: bp.langCode,
+      orgId: organization?.id || '',
     });
 
     // If a new ACL map was returned, update the document
@@ -195,8 +214,19 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
               <StmtElementHeaderWrapper>
                 <StmtElementHeaderLeft>
                   <TypographyReadOnly variant="h6">
-                    {language?.name}
+                    {language?.name || bp.langCode}
                   </TypographyReadOnly>
+                  {isNonOrgContentLanguages && (
+                    <Tooltip
+                      title={t('editor.statementElementBlock.nonOrgLanguage')}
+                    >
+                      <ErrorIcon
+                        fontSize="small"
+                        color="error"
+                        sx={{ cursor: 'help' }}
+                      />
+                    </Tooltip>
+                  )}
                 </StmtElementHeaderLeft>
                 <StmtElementHeaderRight>
                   <ApprovalDropdown

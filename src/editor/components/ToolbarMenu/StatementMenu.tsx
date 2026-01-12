@@ -87,7 +87,7 @@ export default function StatementMenu({}: StatementMenuProps) {
    * Get the focussed language
    * @returns
    */
-  const getFocusedLanguage = (): OrgContentLanguage | undefined => {
+  const getFocusedLangCode = (): string | undefined => {
     // Make sure we have a focussed block
     if (!activeBlock || !activeBlock.loroContainerId || !activeBlock.loroDoc) {
       return;
@@ -99,17 +99,17 @@ export default function StatementMenu({}: StatementMenuProps) {
     const contentLoroMap = loroDoc.getMap('content');
 
     // Iterate over the entries until the loroContainerId from the active block is found.
-    let contentLanguage;
+    let focussedLangCode: string | undefined = undefined;
     contentLoroMap.entries().forEach(([langCode, stmtElement]) => {
       if (stmtElement instanceof LoroMap) {
         if (stmtElement.id === activeBlock.loroContainerId) {
           // Found the focussed language
-          contentLanguage = languages.find((lang) => lang.code === langCode);
+          focussedLangCode = langCode;
           return;
         }
       }
     });
-    return contentLanguage;
+    return focussedLangCode;
   };
 
   /**
@@ -122,8 +122,8 @@ export default function StatementMenu({}: StatementMenuProps) {
     e.preventDefault();
 
     // Get the focussed language
-    const contentLanguage = getFocusedLanguage();
-    if (!contentLanguage) {
+    const langCode = getFocusedLangCode();
+    if (!langCode) {
       return;
     }
 
@@ -133,7 +133,8 @@ export default function StatementMenu({}: StatementMenuProps) {
       Record<Permission, string[]> | undefined
     >(ManageStmtLangModal, {
       loroDoc: loroDoc as StmtLoroDoc,
-      contentLanguage,
+      langCode,
+      orgId: organization?.id || '',
     });
 
     // If a new ACL map was returned, update the document
@@ -142,10 +143,7 @@ export default function StatementMenu({}: StatementMenuProps) {
       const stmtDocController = colabDoc.getDocController();
 
       // Patch the document ACL map with the new ACLs
-      stmtDocController.patchStmtElementAclMap(
-        contentLanguage.code,
-        newStmtElementAclMaps,
-      );
+      stmtDocController.patchStmtElementAclMap(langCode, newStmtElementAclMaps);
 
       // Commit the changes
       stmtDocController.commit();
@@ -192,17 +190,22 @@ export default function StatementMenu({}: StatementMenuProps) {
     // Prevent default behavior
     e.preventDefault();
     // Get the focussed language
-    const contentLanguage = getFocusedLanguage();
-    if (!contentLanguage) {
+    const langCode = getFocusedLangCode();
+    if (!langCode) {
       return;
     }
 
-    // Ask for confirmation
-    const confirm = await dialogs.confirm(
-      t('editor.toolbar.removeLanguageConfirm', {
+    // Create a confirmation message
+    let confirmMessage = t('editor.toolbar.removeLanguageConfirmGeneric');
+    const contentLanguage = languages.find((l) => l.code === langCode);
+    if (contentLanguage) {
+      confirmMessage = t('editor.toolbar.removeLanguageConfirm', {
         language: contentLanguage.name,
-      }),
-    );
+      });
+    }
+
+    // Ask for confirmation
+    const confirm = await dialogs.confirm(confirmMessage);
 
     // If not confirmed, return
     if (!confirm) {
@@ -212,7 +215,7 @@ export default function StatementMenu({}: StatementMenuProps) {
     // Create the StatementDocController
     const stmtDocController = colabDoc.getDocController();
     // Remove the language
-    stmtDocController.removeLanguage(contentLanguage.code);
+    stmtDocController.removeLanguage(langCode);
     stmtDocController.commit();
   };
 

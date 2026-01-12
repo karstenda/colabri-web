@@ -25,7 +25,7 @@ import AutoSetupSheetStep, {
 } from './steps/AutoSetupSheetStep';
 import AutoSetupSummaryStep from './steps/AutoSetupSummaryStep';
 
-const AutoSetupForm = () => {
+const AutoSetupForm = ({ onCancel }: { onCancel: () => void }) => {
   const { t } = useTranslation();
   const notifications = useNotifications();
   const compactView = useMediaQuery('(max-width:800px)');
@@ -52,7 +52,11 @@ const AutoSetupForm = () => {
   ];
 
   const onBack = () => {
-    setActiveStep((prev) => Math.max(prev - 1, 0));
+    if (activeStep === 0) {
+      onCancel();
+    } else {
+      setActiveStep((prev) => Math.max(prev - 1, 0));
+    }
   };
 
   const onNext = async () => {

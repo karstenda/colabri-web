@@ -6,16 +6,21 @@ import {
   Button,
   Box,
 } from '@mui/material';
-import type { OrgContentLanguage } from '../../../api/ColabriAPI';
 import PermissionEditor from '../../../ui/components/PermissionEditor/PermissionEditor';
 import { StmtLoroDoc } from '../../data/ColabDoc';
 import { DialogProps } from '../../../ui/hooks/useDialogs/useDialogs';
 import { Permission } from '../../../ui/data/Permission';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  useContentLanguages,
+  usePlatformContentLanguages,
+} from '../../../ui/hooks/useContentLanguages/useContentLanguage';
+import { ContentLanguage } from '../../data/ContentLanguage';
 
 export type ManageStmtLangModalPayload = {
-  contentLanguage: OrgContentLanguage;
+  orgId: string;
+  langCode: string;
   loroDoc: StmtLoroDoc;
 };
 
@@ -31,9 +36,26 @@ const ManageStmtLangModal = ({
   onClose,
 }: ManageStmtLangModalProps) => {
   // Extract the payload
-  const { contentLanguage, loroDoc } = payload;
+  const { orgId, langCode, loroDoc } = payload;
 
   const { t } = useTranslation();
+
+  const { languages, isLoading: isLanguagesLoading } =
+    useContentLanguages(orgId);
+
+  // Get the language
+  let contentLanguage: ContentLanguage | undefined = languages.find(
+    (l) => l.code === langCode,
+  );
+  // If not found, try to get it from platform languages
+  let isNonOrgContentLanguages = false;
+  const { languages: platformLanguages } = usePlatformContentLanguages(
+    !contentLanguage && !isLanguagesLoading,
+  );
+  if (!contentLanguage && !isLanguagesLoading) {
+    contentLanguage = platformLanguages.find((l) => l.code === langCode);
+    isNonOrgContentLanguages = true;
+  }
 
   // Extract the aclMap from the loroDoc
   const docAclMap = loroDoc.getMap('acls');
@@ -45,10 +67,7 @@ const ManageStmtLangModal = ({
   }
 
   // Extract the aclMap from this element
-  const aclMap = loroDoc
-    .getMap('content')
-    ?.get(contentLanguage.code)
-    ?.get('acls');
+  const aclMap = loroDoc.getMap('content')?.get(langCode)?.get('acls');
   let acls;
   if (!aclMap) {
     acls = {};
@@ -71,7 +90,7 @@ const ManageStmtLangModal = ({
     <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
       <DialogTitle>
         {t('editor.manageStmtLangModal.title', {
-          language: contentLanguage.name,
+          language: contentLanguage?.name || langCode,
         })}
       </DialogTitle>
       <DialogContent>

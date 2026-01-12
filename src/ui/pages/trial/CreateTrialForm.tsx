@@ -17,7 +17,11 @@ import { Checkbox, Link } from '@mui/material';
 import { Api, Organization, OrganizationStatus } from '../../../api/ColabriAPI';
 import { validate, CreateTrialFormEntries } from './CreateTrialFormValidate';
 import useNotifications from '../../hooks/useNotifications/useNotifications';
-import { useUserAuth } from '../../hooks/useUserAuth/useUserAuth';
+import {
+  useUserAuth,
+  queryKey as userAuthQueryKey,
+} from '../../hooks/useUserAuth/useUserAuth';
+import { useQueryClient } from '@tanstack/react-query';
 
 const apiClient = new Api({
   baseUrl: '/api/v1',
@@ -41,9 +45,10 @@ const CreateTrialFormContent: React.FC<CreateTrialFormProps> = ({
   onSuccess,
 }) => {
   const { t } = useTranslation();
-  const { isLoading, userAuth, error } = useUserAuth();
+  const { isLoading, userAuth } = useUserAuth();
   const theme = useTheme();
   const notifications = useNotifications();
+  const queryClient = useQueryClient();
   const { executeRecaptcha } = useGoogleReCaptcha();
 
   const [formValues, setFormValues] = React.useState<ExtendedFormValues>({});
@@ -80,7 +85,11 @@ const CreateTrialFormContent: React.FC<CreateTrialFormProps> = ({
     setFormValues(newFormValues);
 
     // Validate field on change
-    const { issues } = validate(newFormValues, t);
+    const { issues } = validate(
+      newFormValues,
+      t,
+      isFixedUserProfileRef.current,
+    );
     const fieldIssue = issues?.find((issue) => issue.path?.[0] === fieldName);
 
     setFormErrors((prevErrors) => ({
@@ -138,7 +147,7 @@ const CreateTrialFormContent: React.FC<CreateTrialFormProps> = ({
   };
 
   const handleSubmit = async () => {
-    const { issues } = validate(formValues, t);
+    const { issues } = validate(formValues, t, isFixedUserProfileRef.current);
     const errors: Partial<Record<keyof ExtendedFormValues, string>> = {};
 
     if (issues && issues.length > 0) {
@@ -170,6 +179,7 @@ const CreateTrialFormContent: React.FC<CreateTrialFormProps> = ({
         throw new Error('Recaptcha token not available');
       }
 
+      // Create the trial
       const trialResp = await apiClient.trials.postTrial({
         name: formValues.name!,
         ownerEmail: formValues.ownerEmail!,
@@ -178,6 +188,10 @@ const CreateTrialFormContent: React.FC<CreateTrialFormProps> = ({
         recaptchaToken: token,
       });
 
+      // Invalidate user auth cache to reflect new organization
+      queryClient.invalidateQueries({ queryKey: userAuthQueryKey });
+
+      // Notify success
       notifications.show(t('trial.createSuccess'), {
         severity: 'success',
         autoHideDuration: 5000,

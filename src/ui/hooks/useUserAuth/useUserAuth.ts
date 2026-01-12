@@ -25,10 +25,12 @@ type UserAuthError = {
   error: string;
 };
 
+export const queryKey = ['/auth/me'];
+
 export const useUserAuth = () => {
   const queryClient = useQueryClient();
   const { data, isLoading, error } = useQuery<UserAuth, UserAuthError>({
-    queryKey: ['/auth/me'],
+    queryKey: queryKey,
     queryFn: async () => {
       const response = await fetch('/auth/me');
       if (!response.ok) {

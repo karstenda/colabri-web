@@ -31,10 +31,10 @@ const AutoSetupPage: React.FC = () => {
   const [showAutoSetupForm, setShowAutoSetupForm] = useState(false);
 
   const onSkipSetup = () => {
-    confirm(t('autosetup.skipWarning')).then((confirmed) => {
+    confirm(t('autosetup.skipWarning')).then(async (confirmed) => {
       if (confirmed) {
         // Remember the skipping setup
-        updateOrganizationSetting({
+        await updateOrganizationSetting({
           type: 'user-setting',
           key: OrganizationSettingsKey.OrganizationSettingsKeyShowQuickSetup,
           value: 'false',
@@ -103,7 +103,9 @@ const AutoSetupPage: React.FC = () => {
             </Box>
           </Stack>
         )}
-        {isOrgAdmin && showAutoSetupForm && <AutoSetupForm />}
+        {isOrgAdmin && showAutoSetupForm && (
+          <AutoSetupForm onCancel={() => setShowAutoSetupForm(false)} />
+        )}
       </Paper>
     </MainFrame>
   );

@@ -25,9 +25,9 @@ const AutoSetupSummaryStep = ({
     organization?.id || '',
   );
 
-  const finishSetup = () => {
+  const finishSetup = async () => {
     // Remember the skipping setup
-    updateOrganizationSetting({
+    await updateOrganizationSetting({
       type: 'user-setting',
       key: OrganizationSettingsKey.OrganizationSettingsKeyShowQuickSetup,
       value: 'false',

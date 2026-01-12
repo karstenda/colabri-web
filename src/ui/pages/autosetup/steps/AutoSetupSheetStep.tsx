@@ -37,9 +37,9 @@ const AutoSetupSheetStep = forwardRef<
     },
   }));
 
-  const finishSetup = () => {
+  const finishSetup = async () => {
     // Remember the skipping setup
-    updateOrganizationSetting({
+    await updateOrganizationSetting({
       type: 'user-setting',
       key: OrganizationSettingsKey.OrganizationSettingsKeyShowQuickSetup,
       value: 'false',

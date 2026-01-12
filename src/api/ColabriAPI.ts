@@ -331,15 +331,15 @@ export interface OrganizationSetting {
 }
 
 export interface PlatformContentLanguage {
-  code?: string;
-  countryCode?: string;
-  defaultFont?: string[];
+  code: string;
+  countryCode: string;
+  defaultFont: string[];
   endonym?: string;
-  langCode?: string;
-  name?: string;
-  spellCheck?: boolean;
-  spellCheckLangCode?: string;
-  textDirection?: ContentLanguageDirection;
+  langCode: string;
+  name: string;
+  spellCheck: boolean;
+  spellCheckLangCode: string;
+  textDirection: ContentLanguageDirection;
 }
 
 export interface PlatformCountry {

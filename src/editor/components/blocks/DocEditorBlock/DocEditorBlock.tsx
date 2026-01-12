@@ -23,6 +23,7 @@ export type DocEditorBlockProps = BoxProps & {
   onFocusChange?: (hasFocus: boolean) => void;
   onHoverChange?: (isHovered: boolean) => void;
   showUpDownControls?: boolean;
+  showManageControls?: boolean;
   onManageBlock?: () => void;
 };
 
@@ -36,7 +37,8 @@ const DocEditorBlock = ({
   readOnly = false,
   onFocusChange,
   onHoverChange,
-  showUpDownControls,
+  showUpDownControls = true,
+  showManageControls = true,
   onManageBlock,
   ...boxProps
 }: DocEditorBlockProps) => {
@@ -67,7 +69,7 @@ const DocEditorBlock = ({
       },
     });
   }
-  if (canManage) {
+  if (showManageControls && canManage) {
     controls.push({
       id: `manage-block-${blockId}`,
       label: 'Manage',

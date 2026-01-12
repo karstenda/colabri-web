@@ -12,6 +12,7 @@ type ValidationResult = {
 export function validate(
   formEntries: CreateTrialFormEntries,
   t: TFunction,
+  isFixedUserProfile: boolean,
 ): ValidationResult {
   let issues: ValidationResult['issues'] = [];
 
@@ -42,7 +43,7 @@ export function validate(
     ];
   }
 
-  if (!formEntries.ownerFirstName) {
+  if (!formEntries.ownerFirstName && !isFixedUserProfile) {
     issues = [
       ...issues,
       {
@@ -52,7 +53,7 @@ export function validate(
     ];
   }
 
-  if (!formEntries.ownerLastName) {
+  if (!formEntries.ownerLastName && !isFixedUserProfile) {
     issues = [
       ...issues,
       {

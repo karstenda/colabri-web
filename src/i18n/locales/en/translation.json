@@ -77,8 +77,10 @@
     "createSuccess": "Trial organization created successfully",
     "createError": "Failed to create trial: {{error}}",
     "trialCreatedTitle": "Trial Created",
-    "trialRequiresValidationMessage": "Your trial has been successfully created! Please check your inbox to verify your email address and set your password. Once that’s done, you’re all set to start exploring your Colabri trial <1>here</1>. We hope you enjoy it!",
-    "trialCreatedMessage": "Your trial has been successfully created! You can access your new Colabri trial <1>here</1>. We hope you enjoy it!",
+    "trialRequiresValidationMessage1": "Your trial has been successfully created! Please check your inbox for a 'Change Password' email to verify your email address and set your password. Be sure to check your spam/junk folder if you don't see them your inbox.",
+    "trialRequiresValidationMessage2": "Once that's done, you're all set to start exploring your Colabri trial!. We hope you enjoy it!",
+    "trialCreatedMessage": "Your trial has been successfully created! You can access your new Colabri trial. We hope you enjoy it!",
+    "startUsingButton": "Start Using Colabri",
     "recaptchaError": "reCAPTCHA verification failed. Please try again.",
     "validation": {
       "companyNameRequired": "Company Name is required",
@@ -92,8 +94,8 @@
   },
   "autosetup": {
     "title": "Quick Setup",
-    "intro": "This setup wizard will guide you through setting up an initial configuration for your organization. This is a quick and easy way to get started with Colabri. You can always modify your configuration later from within the admin section.",
-    "skipWarning": "Are you sure you want to skip this? You will need to configure your organization manually yourself.",
+    "intro": "This wizard will help you to quickly setup up an initial minimal configuration for this Colabri setup. This is a fast and easy way to get started with Colabri. You can always modify or extend your configuration later from within the admin section.",
+    "skipWarning": "Are you sure you want to skip this? You will need to configure your setup from scratch yourself.",
     "skipSetup": "Skip Setup",
     "startSetup": "Start Setup",
     "noAdmin": "You need to be an organization admin to perform the setup.",
@@ -175,7 +177,8 @@
       "manageLanguageTooltip": "Manage selected language",
       "manageDocument": "Manage Document",
       "manageDocumentTooltip": "Manage permissions  and settings for this document",
-      "removeLanguageConfirm": "Are you sure you want to remove the {{language}} language?"
+      "removeLanguageConfirm": "Are you sure you want to remove the {{language}} language?",
+      "removeLanguageConfirmGeneric": "Are you sure you want to remove the selected language?"
     },
     "manageStmtModal": {
       "title": "Manage {{documentName}}"
@@ -186,6 +189,9 @@
     "statementBlock": {
       "noLanguagesConfigured": "No languages configured.",
       "noLanguagesAvailable": "No languages available."
+    },
+    "statementElementBlock": {
+      "nonOrgLanguage": "This language is not configured for your organization."
     }
   },
   "languages": {
