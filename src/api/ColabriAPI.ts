@@ -124,6 +124,11 @@ export interface CheckOrganizationNameResponse {
   available?: boolean;
 }
 
+export interface ColabApproval {
+  state: ColabApprovalState;
+  type: ColabApprovalType;
+}
+
 export interface ColabComment {
   author: string;
   state: ColabCommentState;
@@ -135,6 +140,13 @@ export interface ColabComment {
 export interface ColabModelProperties {
   contentType: string;
   type: ColabModelType;
+}
+
+export interface ColabSheetModel {
+  acls?: Record<string, string[]>;
+  approvals: Record<string, ColabApproval>;
+  content: any[];
+  properties: ColabModelProperties;
 }
 
 export interface ColabStatementElement {
@@ -203,6 +215,12 @@ export interface CreateProductRequest {
   name: string;
 }
 
+export interface CreateSheetDocRequest {
+  /** @example "OatKind-Choc-Sheet" */
+  name: string;
+  sheet: ColabSheetModel;
+}
+
 export interface CreateStatementDocRequest {
   /** @example "OatKind-Choc-Sheet" */
   name: string;
@@ -226,6 +244,8 @@ export interface CreateUserRequest {
 
 export interface Document {
   acls: Record<string, string[]>;
+  container?: string;
+  containerType?: string;
   createdAt: string;
   createdBy: string;
   id: string;
@@ -362,6 +382,22 @@ export interface ResolvedPrpl {
   user?: User;
 }
 
+export interface SheetDocument {
+  acls: Record<string, string[]>;
+  container?: string;
+  containerType?: string;
+  createdAt: string;
+  createdBy: string;
+  id: string;
+  name: string;
+  owner: string;
+  sheet: ColabSheetModel;
+  streams: Record<string, DocumentStream[]>;
+  type: string;
+  updatedAt: string;
+  updatedBy: string;
+}
+
 export interface SpellCheckRequest {
   data?: string;
   language: string;
@@ -435,6 +471,8 @@ export interface SpellSoftware {
 
 export interface StatementDocument {
   acls: Record<string, string[]>;
+  container?: string;
+  containerType?: string;
   createdAt: string;
   createdBy: string;
   id: string;
@@ -1240,6 +1278,26 @@ export class Api<
       }),
 
     /**
+     * @description Soft delete a document within the specified organization
+     *
+     * @tags documents
+     * @name DeleteDocument
+     * @summary Delete a document
+     * @request DELETE:/{orgId}/documents/{docId}
+     */
+    deleteDocument: (
+      orgId: string,
+      docId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<void, HTTPError>({
+        path: `/${orgId}/documents/${docId}`,
+        method: "DELETE",
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
      * @description List all attribute values for a specific document in the specified organization
      *
      * @tags attributes
@@ -1778,6 +1836,65 @@ export class Api<
         path: `/${orgId}/settings/${type}/${key}`,
         method: "PUT",
         body: setting,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description This endpoint will retrieve all sheets in the specified organization. Only users who are members of the organization can list sheets.
+     *
+     * @tags sheets
+     * @name GetSheets
+     * @summary List all sheets in an organization
+     * @request GET:/{orgId}/sheets
+     */
+    getSheets: (
+      orgId: string,
+      query?: {
+        /**
+         * Number of sheets to return
+         * @default 10
+         */
+        limit?: number;
+        /**
+         * Number of sheets to skip
+         * @default 0
+         */
+        offset?: number;
+        /** Sort sheets by fields: e.g. [{'direction':'asc','field':'owner'}] */
+        sort?: string;
+        /** Filter sheets by fields: e.g. {'items':[{'id':'1','field':'name', 'operator':'equals','value':'Sheet X'}], 'logicOperator':'and'} */
+        filter?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<SheetDocument[], HTTPError>({
+        path: `/${orgId}/sheets`,
+        method: "GET",
+        query: query,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Create a new sheet for a user
+     *
+     * @tags sheets
+     * @name PostSheet
+     * @summary Create a new sheet
+     * @request POST:/{orgId}/sheets
+     */
+    postSheet: (
+      orgId: string,
+      sheet: CreateSheetDocRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<SheetDocument, HTTPError>({
+        path: `/${orgId}/sheets`,
+        method: "POST",
+        body: sheet,
         type: ContentType.Json,
         format: "json",
         ...params,

@@ -1,8 +1,13 @@
-import { ColabLoroDoc, StmtLoroDoc } from './ColabDoc';
+import { ColabLoroDoc, SheetLoroDoc, StmtLoroDoc } from './ColabDoc';
 import ColabDocController from '../controllers/ColabDocController';
 import ColabEphemeralStoreManager from '../components/ColabDocEditor/EphemeralStoreManager';
 import StatementDocController from '../controllers/StatementDocController';
-import { StatementDocument } from '../../api/ColabriAPI';
+import {
+  SheetDocument,
+  StatementDocument,
+  DocumentType,
+} from '../../api/ColabriAPI';
+import SheetDocController from '../controllers/SheetDocController';
 
 /**
  * A connected Colab document
@@ -28,6 +33,10 @@ export class ConnectedColabDoc<T extends ColabLoroDoc> {
     throw new Error('Method not implemented.');
   }
 
+  public getDocType(): DocumentType {
+    throw new Error('Method not implemented.');
+  }
+
   public getLoroDoc(): T {
     return this.loroDoc;
   }
@@ -38,6 +47,43 @@ export class ConnectedColabDoc<T extends ColabLoroDoc> {
 
   public getEphStoreMgr(): ColabEphemeralStoreManager {
     return this.ephStoreMgr;
+  }
+}
+
+/**
+ * A connected sheet document
+ */
+export class ConnectedSheetDoc extends ConnectedColabDoc<SheetLoroDoc> {
+  private sheetDoc: SheetDocument;
+
+  constructor(
+    loroDoc: SheetLoroDoc,
+    loroDocController: SheetDocController,
+    ephStoreMgr: ColabEphemeralStoreManager,
+    sheetDoc: SheetDocument,
+  ) {
+    super(loroDoc, loroDocController, ephStoreMgr);
+    this.sheetDoc = sheetDoc;
+  }
+
+  public getDocController(): SheetDocController {
+    return this.loroDocController as SheetDocController;
+  }
+
+  public getLoroDoc(): SheetLoroDoc {
+    return this.loroDoc;
+  }
+
+  public getSheetDoc(): SheetDocument {
+    return this.sheetDoc;
+  }
+
+  public getDocName(): string {
+    return this.sheetDoc.name;
+  }
+
+  public getDocType(): DocumentType {
+    return DocumentType.DocumentTypeColabSheet;
   }
 }
 
@@ -71,5 +117,9 @@ export class ConnectedStmtDoc extends ConnectedColabDoc<StmtLoroDoc> {
 
   public getDocName(): string {
     return this.statementDoc.name;
+  }
+
+  public getDocType(): DocumentType {
+    return DocumentType.DocumentTypeColabStatement;
   }
 }

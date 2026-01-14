@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Api, CreateStatementDocRequest } from '../../../api/ColabriAPI';
+import { Api, CreateSheetDocRequest } from '../../../api/ColabriAPI';
 import {
   GridListFilterModel,
   GridListSortModel,
@@ -16,23 +16,23 @@ const apiClient = new Api({
   },
 });
 
-// Query keys factory for statements
-export const statementKeys = {
-  all: ['statements'] as const,
-  lists: () => [...statementKeys.all, 'list'] as const,
+// Query keys factory for sheets
+export const sheetKeys = {
+  all: ['sheets'] as const,
+  lists: () => [...sheetKeys.all, 'list'] as const,
   list: (orgId: string, filters: { limit?: number; offset?: number }) =>
-    [...statementKeys.lists(), orgId, filters] as const,
-  details: () => [...statementKeys.all, 'detail'] as const,
-  detail: (orgId: string, statementId: string) =>
-    [...statementKeys.details(), orgId, statementId] as const,
+    [...sheetKeys.lists(), orgId, filters] as const,
+  details: () => [...sheetKeys.all, 'detail'] as const,
+  detail: (orgId: string, sheetId: string) =>
+    [...sheetKeys.details(), orgId, sheetId] as const,
 };
 
 // Custom hooks for user operations
 
 /**
- * Hook to fetch a list of users in an organization with pagination
+ * Hook to fetch a list of sheets in an organization with pagination
  */
-export const useStatements = (
+export const useSheets = (
   orgId: string,
   params?: {
     limit?: number;
@@ -43,7 +43,7 @@ export const useStatements = (
   enabled = true,
 ) => {
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: statementKeys.list(orgId, params || {}),
+    queryKey: sheetKeys.list(orgId, params || {}),
     queryFn: () => {
       const apiParams: {
         limit?: number;
@@ -65,44 +65,41 @@ export const useStatements = (
         apiParams.sort = JSON.stringify(params.sort);
       }
 
-      return apiClient.orgId.getStatements(orgId, apiParams);
+      return apiClient.orgId.getSheets(orgId, apiParams);
     },
     enabled: enabled && !!orgId,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
   });
-  return { statements: data?.data || [], isLoading, error, refetch };
+  return { sheets: data?.data || [], isLoading, error, refetch };
 };
 
 /**
- * Hook to create a new statement
+ * Hook to create a new sheet
  */
-export const useCreateStatement = (orgId: string) => {
+export const useCreateSheet = (orgId: string) => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (data: CreateStatementDocRequest) =>
-      apiClient.orgId.postStatement(orgId, data),
-    onSuccess: (newStatement) => {
-      const { data } = newStatement;
+    mutationFn: (data: CreateSheetDocRequest) =>
+      apiClient.orgId.postSheet(orgId, data),
+    onSuccess: (newSheet) => {
+      const { data } = newSheet;
 
-      // Invalidate and refetch users list
-      queryClient.invalidateQueries({ queryKey: statementKeys.lists() });
+      // Invalidate and refetch sheets list
+      queryClient.invalidateQueries({ queryKey: sheetKeys.lists() });
 
-      // Optionally add the new user to the cache
-      queryClient.setQueryData(
-        statementKeys.detail(orgId, data.id!),
-        newStatement,
-      );
+      // Optionally add the new sheet to the cache
+      queryClient.setQueryData(sheetKeys.detail(orgId, data.id!), newSheet);
     },
     onError: (error) => {
-      console.error('Failed to create statement:', error);
+      console.error('Failed to create sheet:', error);
     },
   });
 
   return {
-    createStatement: mutation.mutateAsync,
-    createdStatement: mutation.data,
+    createSheet: mutation.mutateAsync,
+    createdSheet: mutation.data,
     isPending: mutation.isPending,
     error: mutation.error,
   };

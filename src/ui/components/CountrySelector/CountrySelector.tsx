@@ -32,9 +32,7 @@ export interface CountrySelectorProps {
   orgId?: string;
   multiple?: boolean;
   value?: string | string[] | CountryOption | CountryOption[] | null;
-  onChange?: (
-    value: string | string[] | CountryOption | CountryOption[] | null,
-  ) => void;
+  onChange?: (value: CountryOption | CountryOption[] | null) => void;
   label?: string;
   placeholder?: string;
   disabled?: boolean;

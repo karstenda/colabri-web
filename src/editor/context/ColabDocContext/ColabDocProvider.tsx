@@ -2,8 +2,11 @@ import React, { useContext, useEffect, useState, useRef } from 'react';
 import { getDocServiceConnUrl } from '../../../utils/UrlUtils';
 import { LoroWebsocketClient } from 'loro-websocket';
 import { LoroAdaptor, LoroEphemeralAdaptor } from 'loro-adaptors/loro';
-import { ColabLoroDoc, StmtLoroDoc } from '../../data/ColabDoc';
-import { ConnectedColabDoc } from '../../data/ConnectedColabDoc';
+import { ColabLoroDoc, SheetLoroDoc, StmtLoroDoc } from '../../data/ColabDoc';
+import {
+  ConnectedColabDoc,
+  ConnectedSheetDoc,
+} from '../../data/ConnectedColabDoc';
 import {
   useOrgUserId,
   useOrganization,
@@ -11,7 +14,7 @@ import {
   useUserProfile,
   useUserUid,
 } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
-import { Document } from '../../../api/ColabriAPI';
+import { Document, SheetDocument } from '../../../api/ColabriAPI';
 
 import ColabDocContext, { ColabDocContextType } from './ColabDocContext';
 
@@ -26,6 +29,7 @@ import ColabEphemeralStoreManager from '../../components/ColabDocEditor/Ephemera
 import { getUserDisplayName, UserProfile } from '../../../ui/data/User';
 import StatementDocController from '../../controllers/StatementDocController';
 import { ConnectedStmtDoc } from '../../data/ConnectedColabDoc';
+import SheetDocController from '../../controllers/SheetDocController';
 
 export type ColabDocProviderProps = {
   docId: string;
@@ -68,7 +72,10 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
       return;
     }
 
-    if (document.type !== ColabModelType.ColabModelStatementType) {
+    if (
+      document.type !== ColabModelType.ColabModelStatementType &&
+      document.type !== ColabModelType.ColabModelSheetType
+    ) {
       return;
     }
 
@@ -81,7 +88,7 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
         },
       );
     }
-  }, [document, userId, userProfile]);
+  }, [document, userId, userProfile, org, userUid, authPrpls]);
 
   // Cleanup on unmount only
   useEffect(() => {
@@ -169,6 +176,19 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
         ),
         ephStoreMgr,
         document as StatementDocument,
+      );
+    } else if (docType === ColabModelType.ColabModelSheetType) {
+      newConnectedDoc = new ConnectedSheetDoc(
+        loroDoc as SheetLoroDoc,
+        new SheetDocController(
+          loroDoc as SheetLoroDoc,
+          org.id,
+          document.owner,
+          userId,
+          new Set(authPrpls),
+        ),
+        ephStoreMgr,
+        document as SheetDocument,
       );
     }
     // An unsupported document type for now

@@ -43,6 +43,11 @@ export const useIsOrgAdmin = () => {
   }
 };
 
+export const useIsCloudAdmin = () => {
+  const { prpls } = useUserOrganizationContext();
+  return prpls.includes('r/Colabri-CloudAdmin');
+};
+
 export const usePrpls = () => {
   const { prpls } = useUserOrganizationContext();
   return prpls;

@@ -36,10 +36,26 @@ import StatementListPage from './pages/statements/StatementListPage';
 import StatementCreatePage from './pages/statements/StatementCreatePage';
 import PrivacyPolicyPage from './pages/legal/PrivacyPolicyPage';
 import TermsAndConditionsPage from './pages/legal/TermsAndConditionsPage';
+import SheetListPage from './pages/sheets/SheetListPage';
+import SheetCreatePage from './pages/sheets/SheetCreatePage';
 
 const router = createHashRouter([
   {
     path: 'org/:orgId/docs/:docId',
+    Component: () => (
+      <UserOrganizationProvider>
+        <OrgUserProtectedRoute>
+          <NotificationsProvider>
+            <DialogsProvider>
+              <ColabDocEditorPage />
+            </DialogsProvider>
+          </NotificationsProvider>
+        </OrgUserProtectedRoute>
+      </UserOrganizationProvider>
+    ),
+  },
+  {
+    path: 'org/:orgId/sheets/:docId',
     Component: () => (
       <UserOrganizationProvider>
         <OrgUserProtectedRoute>
@@ -128,20 +144,40 @@ const router = createHashRouter([
         Component: AttributeEditPage,
       },
       {
+        path: 'org/:orgId/sheets',
+        Component: SheetListPage,
+      },
+      {
+        path: 'org/:orgId/sheets/my',
+        Component: () => <SheetListPage scope="my" />,
+      },
+      {
+        path: 'org/:orgId/sheets/shared',
+        Component: () => <SheetListPage scope="shared" />,
+      },
+      {
+        path: 'org/:orgId/sheets/lib',
+        Component: () => <SheetListPage scope="lib" />,
+      },
+      {
+        path: 'org/:orgId/sheets/new',
+        Component: SheetCreatePage,
+      },
+      {
         path: 'org/:orgId/statements',
         Component: StatementListPage,
       },
       {
         path: 'org/:orgId/statements/my',
-        Component: StatementListPage,
+        Component: () => <StatementListPage scope="my" />,
       },
       {
         path: 'org/:orgId/statements/shared',
-        Component: StatementListPage,
+        Component: () => <StatementListPage scope="shared" />,
       },
       {
         path: 'org/:orgId/statements/lib',
-        Component: StatementListPage,
+        Component: () => <StatementListPage scope="lib" />,
       },
       {
         path: 'org/:orgId/statements/new',

@@ -8,22 +8,26 @@ import TextField from '@mui/material/TextField';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from 'react-router';
 import {
-  ColabModelType,
-  ColabStatementModel,
-  DocumentType,
-  type StatementDocument,
+  ColabSheetModel,
+  OrgCountry,
+  OrgProduct,
 } from '../../../api/ColabriAPI';
 import { ContentTypeSelector } from '../../components/ContentTypeSelector';
 import { useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';
+import { CountrySelector } from '../../components/CountrySelector';
+import { LanguageSelector } from '../../components/LanguageSelector';
+import { ContentLanguage } from '../../../editor/data/ContentLanguage';
 
-export type StatementFormEntries = {
-  contentType?: string;
+export type SheetFormEntries = {
   name?: string;
+  countries?: OrgCountry[];
+  languages?: ContentLanguage[];
+  product?: OrgProduct;
 };
 
-export interface StatementFormState {
-  values: StatementFormEntries;
-  errors: Partial<Record<keyof StatementFormState['values'], string>>;
+export interface SheetFormState {
+  values: SheetFormEntries;
+  errors: Partial<Record<keyof SheetFormState['values'], string>>;
 }
 
 export type FormFieldValue =
@@ -31,25 +35,26 @@ export type FormFieldValue =
   | string[]
   | number
   | boolean
-  | ColabStatementModel
+  | ColabSheetModel
+  | OrgProduct
+  | OrgCountry[]
+  | ContentLanguage[]
   | null;
 
-export interface StatementFormProps {
+export interface SheetFormProps {
   formMode: 'create' | 'edit';
-  formState: StatementFormState;
+  formState: SheetFormState;
   onFieldChange: (
-    name: keyof StatementFormState['values'],
+    name: keyof SheetFormState['values'],
     value: FormFieldValue,
   ) => void;
-  onSubmit: (
-    formValues: Partial<StatementFormState['values']>,
-  ) => Promise<void>;
-  onReset?: (formValues: Partial<StatementFormState['values']>) => void;
+  onSubmit: (formValues: Partial<SheetFormState['values']>) => Promise<void>;
+  onReset?: (formValues: Partial<SheetFormState['values']>) => void;
   submitButtonLabel: string;
   backButtonPath?: string;
 }
 
-export default function StatementForm(props: StatementFormProps) {
+export default function SheetForm(props: SheetFormProps) {
   const {
     formState,
     onFieldChange,
@@ -84,7 +89,7 @@ export default function StatementForm(props: StatementFormProps) {
   const handleTextFieldChange = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       onFieldChange(
-        event.target.name as keyof StatementFormState['values'],
+        event.target.name as keyof SheetFormState['values'],
         event.target.value,
       );
     },
@@ -98,15 +103,26 @@ export default function StatementForm(props: StatementFormProps) {
   }, [formValues, onReset]);
 
   const handleBack = React.useCallback(() => {
-    navigate(backButtonPath ?? '/statements');
+    navigate(backButtonPath ?? '/sheets');
   }, [navigate, backButtonPath]);
 
-  const onContentTypeChange = React.useCallback(
-    (newValue: string | string[] | null) => {
-      if (!newValue || Array.isArray(newValue)) {
-        return;
-      }
-      onFieldChange('contentType', newValue);
+  const onProductChange = React.useCallback(
+    (newValue: OrgProduct | null) => {
+      onFieldChange('product', newValue);
+    },
+    [onFieldChange],
+  );
+
+  const onCountryChange = React.useCallback(
+    (newValue: OrgCountry[] | null) => {
+      onFieldChange('countries', newValue);
+    },
+    [onFieldChange],
+  );
+
+  const onLanguageChange = React.useCallback(
+    (newValue: ContentLanguage[] | null) => {
+      onFieldChange('languages', newValue);
     },
     [onFieldChange],
   );
@@ -136,13 +152,38 @@ export default function StatementForm(props: StatementFormProps) {
           </Grid>
         </Grid>
         <Grid container spacing={2} sx={{ mb: 2, width: '100%' }}>
-          <Grid size={{ xs: 12, sm: 12 }} sx={{ display: 'flex' }}>
-            <ContentTypeSelector
-              value={formValues.contentType ?? ''}
+          <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
+            <CountrySelector
+              value={formValues.countries ?? []}
               orgId={organization?.id ?? ''}
-              multiple={false}
-              onChange={onContentTypeChange}
-              docTypeFilter={DocumentType.DocumentTypeColabStatement}
+              multiple={true}
+              onChange={(args) => {
+                let countries;
+                if (!Array.isArray(args) && args != null) {
+                  countries = [args]; // Ensure it's an array
+                } else {
+                  countries = args;
+                }
+                onCountryChange(countries);
+              }}
+              scope="organization"
+            />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
+            <LanguageSelector
+              value={formValues.languages ?? []}
+              orgId={organization?.id ?? ''}
+              multiple={true}
+              onChange={(args) => {
+                let languages;
+                if (!Array.isArray(args) && args != null) {
+                  languages = [args]; // Ensure it's an array
+                } else {
+                  languages = args;
+                }
+                onLanguageChange(languages);
+              }}
+              scope="organization"
             />
           </Grid>
         </Grid>

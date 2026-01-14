@@ -1,6 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
-import { Api, HTTPError, HttpResponse } from '../../../api/ColabriAPI';
-import { Http } from '@mui/icons-material';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Api } from '../../../api/ColabriAPI';
+import { statementKeys } from '../useStatements/useStatements';
+import { sheetKeys } from '../useSheets/useSheets';
 
 // Create a singleton API client instance
 const apiClient = new Api({
@@ -56,9 +57,18 @@ export const useDocument = (orgId: string, docId: string, enabled = true) => {
 };
 
 export const useDeleteDocument = (orgId: string) => {
-  const deleteDocument = async (docId: string) => {
-    // TODO: Implement API call when deleteDocument endpoint is available
-    console.log('Delete document:', docId);
-  };
-  return { deleteDocument };
+  const queryClient = useQueryClient();
+  const {
+    mutateAsync: deleteDocument,
+    isPending: isDeleting,
+    error,
+  } = useMutation({
+    mutationFn: (docId: string) => apiClient.orgId.deleteDocument(orgId, docId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: documentKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: statementKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: sheetKeys.lists() });
+    },
+  });
+  return { deleteDocument, isDeleting, error };
 };

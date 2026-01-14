@@ -4,8 +4,13 @@ import UndoRedoMenu from './UndoRedoMenu';
 import { ToolbarMenuDivider } from './ToolbarMenuStyles';
 import StatementMenu from './StatementMenu';
 import { useMediaQuery } from '@mui/material';
+import { DocumentType } from '../../../api/ColabriAPI';
 
-export default function ToolbarMenu() {
+export type ToolbarMenuProps = {
+  docType?: DocumentType;
+};
+
+export default function ToolbarMenu({ docType }: ToolbarMenuProps) {
   const toolbarSetup = useActiveToolbarSetup();
   const compactView = useMediaQuery('(max-width:800px)');
   return (
@@ -17,7 +22,7 @@ export default function ToolbarMenu() {
         </>
       )}
       <FormattingMenu setup={toolbarSetup?.formatting || {}} />
-      <StatementMenu />
+      {docType === DocumentType.DocumentTypeColabStatement && <StatementMenu />}
     </>
   );
 }

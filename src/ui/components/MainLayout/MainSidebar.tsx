@@ -149,17 +149,17 @@ export default function MainSidebar({
           >
             <MainSidebarHeaderItem>Content</MainSidebarHeaderItem>
             <MainSidebarPageItem
-              id="docs"
-              title="Documents"
+              id="sheets"
+              title="Sheets"
               icon={<InsertDriveFileIcon />}
-              href={`/org/${organization?.id}/docs`}
+              href={`/org/${organization?.id}/sheets`}
               selected={
-                !!matchPath(`/org/${organization?.id}/docs/*`, pathname)
+                !!matchPath(`/org/${organization?.id}/sheets/*`, pathname)
               }
               defaultExpanded={
-                !!matchPath(`/org/${organization?.id}/docs/*`, pathname)
+                !!matchPath(`/org/${organization?.id}/sheets/*`, pathname)
               }
-              expanded={expandedItemIds.includes(`docs`)}
+              expanded={expandedItemIds.includes(`sheets`)}
               nestedNavigation={
                 <List
                   dense
@@ -171,25 +171,40 @@ export default function MainSidebar({
                   }}
                 >
                   <MainSidebarPageItem
-                    id="my-docs"
-                    title="My Documents"
+                    id="my-sheets"
+                    title="My Sheets"
                     icon={<DescriptionIcon />}
-                    href="/docs/my"
-                    selected={!!matchPath('/docs/my', pathname)}
+                    href={`/org/${organization?.id}/sheets/my`}
+                    selected={
+                      !!matchPath(
+                        `/org/${organization?.id}/sheets/my`,
+                        pathname,
+                      )
+                    }
                   />
                   <MainSidebarPageItem
-                    id="shared-docs"
-                    title="Shared Documents"
+                    id="shared-sheets"
+                    title="Shared Sheets"
                     icon={<ShareIcon />}
-                    href="/docs/shared"
-                    selected={!!matchPath('/docs/shared', pathname)}
+                    href={`/org/${organization?.id}/sheets/shared`}
+                    selected={
+                      !!matchPath(
+                        `/org/${organization?.id}/sheets/shared`,
+                        pathname,
+                      )
+                    }
                   />
                   <MainSidebarPageItem
-                    id="library-docs"
-                    title="Document Library"
+                    id="library-sheets"
+                    title="Sheet Library"
                     icon={<LocalLibraryIcon />}
-                    href="/docs/lib"
-                    selected={!!matchPath('/docs/lib', pathname)}
+                    href={`/org/${organization?.id}/sheets/lib`}
+                    selected={
+                      !!matchPath(
+                        `/org/${organization?.id}/sheets/lib`,
+                        pathname,
+                      )
+                    }
                   />
                 </List>
               }

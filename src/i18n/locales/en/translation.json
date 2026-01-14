@@ -267,6 +267,58 @@
       "details": "Product Details"
     }
   },
+  "statements": {
+    "type": "Statement",
+    "title": "Statements",
+    "myStatements": "My Statements",
+    "sharedStatements": "Shared With Me",
+    "libraryStatements": "Statement Library",
+    "addStatement": "Create Statement",
+    "columns": {
+      "name": "Name",
+      "owner": "Owner",
+      "createdBy": "Created By",
+      "createdAt": "Created",
+      "updatedBy": "Updated By",
+      "updatedAt": "Updated",
+      "approvalStatus": "Approval Status"
+    },
+    "actions": {
+      "reloadData": "Reload data"
+    },
+    "messages": {
+      "deleteConfirm": "Do you wish to delete {{name}}?",
+      "deleteTitle": "Delete statement?",
+      "deleteSuccess": "Statement {{name}} deleted successfully.",
+      "deleteError": "Failed to delete statement. Reason: {{error}}"
+    }
+  },
+  "sheets": {
+    "type": "Sheet",
+    "title": "Sheets",
+    "mySheets": "My Sheets",
+    "sharedSheets": "Shared With Me",
+    "librarySheets": "Sheet Library",
+    "addSheet": "Create Sheet",
+    "columns": {
+      "name": "Name",
+      "owner": "Owner",
+      "createdBy": "Created By",
+      "createdAt": "Created",
+      "updatedBy": "Updated By",
+      "updatedAt": "Updated",
+      "approvalStatus": "Approval Status"
+    },
+    "actions": {
+      "reloadData": "Reload data"
+    },
+    "messages": {
+      "deleteConfirm": "Do you wish to delete {{name}}?",
+      "deleteTitle": "Delete sheet?",
+      "deleteSuccess": "Sheet {{name}} deleted successfully.",
+      "deleteError": "Failed to delete sheet. Reason: {{error}}"
+    }
+  },
   "spellcheck": {
     "noReplacements": "No replacements available",
     "ignore": "Ignore"

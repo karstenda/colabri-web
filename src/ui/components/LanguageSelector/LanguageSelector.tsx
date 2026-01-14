@@ -54,49 +54,13 @@ interface LanguageSelectorProps {
    * Whether to allow multiple language selection
    */
   multiple?: boolean;
-
-  /**
-   * Current selected value(s)
-   * - Single value when multiple=false (string code or language object)
-   * - Array of values when multiple=true (string codes or language objects)
-   */
   value?: string | string[] | LanguageOption | LanguageOption[] | null;
-
-  /**
-   * Callback when selection changes
-   */
-  onChange?: (
-    value: string | string[] | LanguageOption | LanguageOption[] | null,
-  ) => void;
-
-  /**
-   * Label for the input field
-   */
+  onChange?: (value: LanguageOption | LanguageOption[] | null) => void;
   label?: string;
-
-  /**
-   * Placeholder text
-   */
   placeholder?: string;
-
-  /**
-   * Whether the field is disabled
-   */
   disabled?: boolean;
-
-  /**
-   * Whether the field is required
-   */
   required?: boolean;
-
-  /**
-   * Error state
-   */
   error?: boolean;
-
-  /**
-   * Helper text to display below the field
-   */
   helperText?: string;
 
   /**

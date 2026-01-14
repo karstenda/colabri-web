@@ -20,23 +20,21 @@ import {
 import ColabriSvgIcon from '../../../ui/components/MainLayout/icons/ColabriSvgIcon';
 import ProfileMenu from '../../../ui/components/ProfileMenu/ProfileMenu';
 import ThemeSwitcher from '../../../ui/components/ThemeSwitcher/ThemeSwitcher';
-import {
-  Box,
-  CircularProgress,
-  Stack,
-  Typography,
-  useMediaQuery,
-} from '@mui/material';
+import { Box, CircularProgress, Stack, useMediaQuery } from '@mui/material';
 import ColabDocEditorProvider from '../../context/ColabDocEditorContext/ColabDocEditorProvider';
 import ToolbarMenu from '../ToolbarMenu/ToolbarMenu';
 import StatementBlock from '../blocks/StatementBlock/StatementBlock';
 import { useContentTypes } from '../../../ui/hooks/useTemplates/useTemplates';
 import { useOrganization } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
-import { ContentType } from '../../../api/ColabriAPI';
+import { ContentType, DocumentType } from '../../../api/ColabriAPI';
 import { ColabLoroDoc } from '../../data/ColabDoc';
 import ManageDocButton from '../ManageDocButton/ManageDocButton';
+import { useTranslation } from 'react-i18next';
 
 export default function ColabDocEditor() {
+  // Get the translation hook
+  const { t } = useTranslation();
+
   // Get the ColabDoc context
   const { colabDoc } = useColabDoc();
 
@@ -123,11 +121,22 @@ export default function ColabDocEditor() {
                 <EditorTopHeaderLeftStack>
                   <Stack direction="row" spacing={1} alignItems="center">
                     <ColabriSvgIcon expanded={false} />
-                    <DocNameHeader variant="h6">
-                      {colabDoc.getDocName()}
-                    </DocNameHeader>
                     {!compactView && (
-                      <DocumentTypeLabel>Statement</DocumentTypeLabel>
+                      <DocNameHeader variant="h6">
+                        {colabDoc.getDocName()}
+                      </DocNameHeader>
+                    )}
+                    {!compactView && (
+                      <DocumentTypeLabel>
+                        {colabDoc?.getDocType() ===
+                          DocumentType.DocumentTypeColabStatement && (
+                          <>{t('statements.type')}</>
+                        )}
+                        {colabDoc?.getDocType() ===
+                          DocumentType.DocumentTypeColabSheet && (
+                          <>{t('sheets.type')}</>
+                        )}
+                      </DocumentTypeLabel>
                     )}
                     {contentTypeRef.current && (
                       <DocumentTypeLabel>
@@ -143,7 +152,7 @@ export default function ColabDocEditor() {
                 </EditorTopHeaderRightStack>
               </EditorTopHeaderWrapper>
               <EditorToolbarWrapper>
-                <ToolbarMenu />
+                <ToolbarMenu docType={colabDoc?.getDocType()} />
               </EditorToolbarWrapper>
             </EditorHeaderWrapper>
             <EditorContentWrapper>
@@ -152,7 +161,12 @@ export default function ColabDocEditor() {
               {/* Main Editor Area */}
               <EditorContentMainColumn>
                 <EditorContentBlockTrack>
-                  <StatementBlock bp={{}} />
+                  {colabDoc?.getDocType() ===
+                    DocumentType.DocumentTypeColabStatement && (
+                    <StatementBlock bp={{}} />
+                  )}
+                  {colabDoc?.getDocType() ===
+                    DocumentType.DocumentTypeColabSheet && <>TODO</>}
                 </EditorContentBlockTrack>
               </EditorContentMainColumn>
               <EditorContentRightColumn></EditorContentRightColumn>

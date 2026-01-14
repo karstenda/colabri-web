@@ -1,6 +1,6 @@
 import { DataGrid } from '@mui/x-data-grid/DataGrid';
 import React from 'react';
-import { useStatements } from '../../hooks/useStatements/useStatements';
+import { useSheets } from '../../hooks/useSheets/useSheets';
 import {
   useIsOrgAdmin,
   useOrganization,
@@ -22,7 +22,7 @@ import {
 } from '@mui/x-data-grid/models';
 import { GridColumnVisibilityModel } from '@mui/x-data-grid/hooks/features/columns';
 import { GridActionsCellItem } from '@mui/x-data-grid/components/cell';
-import { StatementDocument } from '../../../api/ColabriAPI';
+import { SheetDocument } from '../../../api/ColabriAPI';
 import { useDialogs } from '../../hooks/useDialogs/useDialogs';
 import useNotifications from '../../hooks/useNotifications/useNotifications';
 import { useNavigate } from 'react-router';
@@ -39,13 +39,13 @@ import { useTranslation } from 'react-i18next';
 
 const INITIAL_PAGE_SIZE = 10;
 
-export type StatementsGridProps = {
+export type SheetsGridProps = {
   scope?: 'my' | 'shared' | 'lib';
   editable?: boolean;
-  handleClick?: (params: StatementDocument) => void;
+  handleClick?: (params: SheetDocument) => void;
 };
 
-function StatementsGrid(props: StatementsGridProps) {
+function SheetsGrid(props: SheetsGridProps) {
   const { t } = useTranslation();
   const { scope, handleClick, editable = true } = props;
 
@@ -119,12 +119,12 @@ function StatementsGrid(props: StatementsGridProps) {
     [],
   );
 
-  // Use React Query hook for fetching statements
+  // Use React Query hook for fetching sheets
   const {
-    statements,
+    sheets,
     isLoading,
-    refetch: refetchStatements,
-  } = useStatements(organization?.id || '', {
+    refetch: refetchSheets,
+  } = useSheets(organization?.id || '', {
     limit: paginationModel.pageSize,
     offset: paginationModel.page * paginationModel.pageSize,
     sort: sortModel.map((item) => ({
@@ -157,31 +157,31 @@ function StatementsGrid(props: StatementsGridProps) {
     },
   });
 
-  // Extract all the prpls from the statements that we potentially need to display
-  const statementPrpls = React.useMemo(() => {
+  // Extract all the prpls from the sheets that we potentially need to display
+  const sheetPrpls = React.useMemo(() => {
     const prplSet = new Set<string>();
-    statements.forEach((statement) => {
-      if (statement.owner) {
-        prplSet.add(statement.owner);
+    sheets.forEach((sheet) => {
+      if (sheet.owner) {
+        prplSet.add(sheet.owner);
       }
-      if (statement.createdBy) {
-        prplSet.add(statement.createdBy);
+      if (sheet.createdBy) {
+        prplSet.add(sheet.createdBy);
       }
-      if (statement.updatedBy) {
-        prplSet.add(statement.updatedBy);
+      if (sheet.updatedBy) {
+        prplSet.add(sheet.updatedBy);
       }
     });
     return Array.from(prplSet);
-  }, [statements]);
+  }, [sheets]);
 
-  // When a statement is to be deleted
-  const handleStatementDelete = React.useCallback(
-    (statement: StatementDocument) => async () => {
-      const statementName = statement.name || 'this statement';
+  // When a sheet is to be deleted
+  const handleSheetDelete = React.useCallback(
+    (sheet: SheetDocument) => async () => {
+      const sheetName = sheet.name || 'this sheet';
       const confirmed = await dialogs.confirm(
-        t('statements.messages.deleteConfirm', { name: statementName }),
+        t('sheets.messages.deleteConfirm', { name: sheetName }),
         {
-          title: t('statements.messages.deleteTitle'),
+          title: t('sheets.messages.deleteTitle'),
           severity: 'error',
           okText: t('common.delete'),
           cancelText: t('common.cancel'),
@@ -191,10 +191,10 @@ function StatementsGrid(props: StatementsGridProps) {
       if (confirmed) {
         try {
           // Delete the document
-          await deleteDocument(statement.id!);
+          await deleteDocument(sheet.id!);
 
           notifications.show(
-            t('statements.messages.deleteSuccess', { name: statementName }),
+            t('sheets.messages.deleteSuccess', { name: sheetName }),
             {
               severity: 'success',
               autoHideDuration: 3000,
@@ -202,7 +202,7 @@ function StatementsGrid(props: StatementsGridProps) {
           );
         } catch (deleteError) {
           notifications.show(
-            t('statements.messages.deleteError', {
+            t('sheets.messages.deleteError', {
               error: (deleteError as Error).message,
             }),
             {
@@ -216,28 +216,28 @@ function StatementsGrid(props: StatementsGridProps) {
     [dialogs, notifications, deleteDocument, t],
   );
 
-  // When a statement is to be added
-  const handleStatementCreate = React.useCallback(() => {
-    navigate(`/org/${organization?.id}/statements/new`);
+  // When a sheet is to be added
+  const handleSheetCreate = React.useCallback(() => {
+    navigate(`/org/${organization?.id}/sheets/new`);
   }, [organization, navigate]);
 
-  // When a statement is clicked for editing
+  // When a sheet is clicked for editing
   const handleRowEdit = React.useCallback(
-    (statement: StatementDocument) => async () => {
-      navigate(`/org/${organization?.id}/statements/${statement.id}/edit`);
+    (sheet: SheetDocument) => async () => {
+      navigate(`/org/${organization?.id}/sheets/${sheet.id}/edit`);
     },
     [organization, navigate],
   );
 
   // When the refresh button is clicked
   const handleRefresh = React.useCallback(() => {
-    refetchStatements();
-  }, [refetchStatements]);
+    refetchSheets();
+  }, [refetchSheets]);
 
-  // When the statement is clicked for inspection
+  // When the sheet is clicked for inspection
   const defaultHandleClick = React.useCallback(
-    (statement: StatementDocument) => {
-      navigate(`/org/${organization?.id}/statements/${statement.id}`);
+    (sheet: SheetDocument) => {
+      navigate(`/org/${organization?.id}/sheets/${sheet.id}`);
     },
     [organization, navigate],
   );
@@ -246,13 +246,13 @@ function StatementsGrid(props: StatementsGridProps) {
     () => [
       {
         field: 'name',
-        headerName: t('statements.columns.name'),
+        headerName: t('sheets.columns.name'),
         width: 250,
         flex: 1,
       },
       {
         field: 'owner',
-        headerName: t('statements.columns.owner'),
+        headerName: t('sheets.columns.owner'),
         width: 150,
         renderCell: (row) => (
           <IdentityDisplay
@@ -263,7 +263,7 @@ function StatementsGrid(props: StatementsGridProps) {
       },
       {
         field: 'createdBy',
-        headerName: t('statements.columns.createdBy'),
+        headerName: t('sheets.columns.createdBy'),
         width: 150,
         renderCell: (row) => (
           <IdentityDisplay
@@ -274,14 +274,14 @@ function StatementsGrid(props: StatementsGridProps) {
       },
       {
         field: 'createdAt',
-        headerName: t('statements.columns.createdAt'),
+        headerName: t('sheets.columns.createdAt'),
         type: 'date',
         valueGetter: (value) => value && new Date(value),
         width: 140,
       },
       {
         field: 'updatedBy',
-        headerName: t('statements.columns.updatedBy'),
+        headerName: t('sheets.columns.updatedBy'),
         width: 150,
         renderCell: (row) => (
           <IdentityDisplay
@@ -292,7 +292,7 @@ function StatementsGrid(props: StatementsGridProps) {
       },
       {
         field: 'updatedAt',
-        headerName: t('statements.columns.updatedAt'),
+        headerName: t('sheets.columns.updatedAt'),
         type: 'date',
         valueGetter: (value) => value && new Date(value),
         width: 140,
@@ -306,7 +306,7 @@ function StatementsGrid(props: StatementsGridProps) {
         width: 100,
         getActions: editable
           ? (params) => {
-              // Can you delete the statement?
+              // Can you delete the sheet?
               const canDelete =
                 isCloudAdmin || isOrgAdmin || prpls?.includes(params.row.owner);
 
@@ -318,7 +318,7 @@ function StatementsGrid(props: StatementsGridProps) {
                     key="delete-item"
                     icon={<DeleteIcon />}
                     label={t('common.delete')}
-                    onClick={handleStatementDelete(params.row)}
+                    onClick={handleSheetDelete(params.row)}
                   />,
                 );
               }
@@ -335,7 +335,7 @@ function StatementsGrid(props: StatementsGridProps) {
           : () => [],
       },
     ],
-    [handleRowEdit, handleStatementDelete, editable, t],
+    [handleRowEdit, handleSheetDelete, editable, t],
   );
 
   return (
@@ -348,7 +348,7 @@ function StatementsGrid(props: StatementsGridProps) {
           justifyContent="flex-end"
         >
           <Tooltip
-            title={t('statements.actions.reloadData')}
+            title={t('sheets.actions.reloadData')}
             placement="right"
             enterDelay={1000}
           >
@@ -364,7 +364,7 @@ function StatementsGrid(props: StatementsGridProps) {
           </Tooltip>
           <Button
             variant="contained"
-            onClick={handleStatementCreate}
+            onClick={handleSheetCreate}
             startIcon={<AddIcon />}
           >
             {t('common.create')}
@@ -372,10 +372,10 @@ function StatementsGrid(props: StatementsGridProps) {
         </Stack>
       )}
 
-      <ResolvedPrplsProvider prpls={statementPrpls}>
+      <ResolvedPrplsProvider prpls={sheetPrpls}>
         <DataGrid
-          rows={statements}
-          rowCount={statements.length}
+          rows={sheets}
+          rowCount={sheets.length}
           columns={columns}
           columnVisibilityModel={columnVisibilityModel}
           onColumnVisibilityModelChange={(newModel) =>
@@ -435,4 +435,4 @@ function StatementsGrid(props: StatementsGridProps) {
   );
 }
 
-export default StatementsGrid;
+export default SheetsGrid;

@@ -1,26 +1,26 @@
 import * as React from 'react';
 import { useNavigate } from 'react-router';
 import useNotifications from '../../hooks/useNotifications/useNotifications';
-import { validate as validateStatement } from './StatementFormValidate';
-import { useCreateStatement } from '../../hooks/useStatements/useStatements';
-import StatementForm, {
+import { validate as validateSheet } from './SheetFormValidate';
+import { useCreateSheet } from '../../hooks/useSheets/useSheets';
+import SheetForm, {
   type FormFieldValue,
-  type StatementFormState,
-} from './StatementForm';
+  type SheetFormState,
+} from './SheetForm';
 import PageContainer from '../../components/MainLayout/PageContainer';
 import { useUserOrganizationContext } from '../../context/UserOrganizationContext/UserOrganizationProvider';
-import { ColabModelType, ColabStatementModel } from '../../../api/ColabriAPI';
+import { ColabModelType, ColabSheetModel } from '../../../api/ColabriAPI';
 
-export default function StatementCreate() {
+export default function SheetCreatePage() {
   const navigate = useNavigate();
 
   const notifications = useNotifications();
 
   const { organization } = useUserOrganizationContext();
 
-  const { createStatement } = useCreateStatement(organization?.id || '');
+  const { createSheet } = useCreateSheet(organization?.id || '');
 
-  const [formState, setFormState] = React.useState<StatementFormState>(() => ({
+  const [formState, setFormState] = React.useState<SheetFormState>(() => ({
     values: {},
     errors: {},
   }));
@@ -28,7 +28,7 @@ export default function StatementCreate() {
   const formErrors = formState.errors;
 
   const setFormValues = React.useCallback(
-    (newFormValues: Partial<StatementFormState['values']>) => {
+    (newFormValues: Partial<SheetFormState['values']>) => {
       setFormState((previousState) => ({
         ...previousState,
         values: newFormValues,
@@ -38,7 +38,7 @@ export default function StatementCreate() {
   );
 
   const setFormErrors = React.useCallback(
-    (newFormErrors: Partial<StatementFormState['errors']>) => {
+    (newFormErrors: Partial<SheetFormState['errors']>) => {
       setFormState((previousState) => ({
         ...previousState,
         errors: newFormErrors,
@@ -48,11 +48,11 @@ export default function StatementCreate() {
   );
 
   const handleFormFieldChange = React.useCallback(
-    (name: keyof StatementFormState['values'], value: FormFieldValue) => {
+    (name: keyof SheetFormState['values'], value: FormFieldValue) => {
       const validateField = async (
-        values: Partial<StatementFormState['values']>,
+        values: Partial<SheetFormState['values']>,
       ) => {
-        const { issues } = validateStatement(values);
+        const { issues } = validateSheet(values);
         setFormErrors({
           ...formErrors,
           [name]: issues?.find((issue) => issue.path?.[0] === name)?.message,
@@ -72,7 +72,7 @@ export default function StatementCreate() {
   }, [setFormValues]);
 
   const handleFormSubmit = React.useCallback(async () => {
-    const { issues } = validateStatement(formValues);
+    const { issues } = validateSheet(formValues);
     if (issues && issues.length > 0) {
       setFormErrors(
         Object.fromEntries(
@@ -84,14 +84,19 @@ export default function StatementCreate() {
     setFormErrors({});
 
     try {
-      // Create the statement doc with the selected content type
-      const newStatement = {
+      // Create the sheet structure based on the form values
+      const newSheet = {
         properties: {
-          type: ColabModelType.ColabModelStatementType,
-          contentType: formValues.contentType,
+          type: ColabModelType.ColabModelSheetType,
+          contentType: 'PRODUCT',
+          countryCodes:
+            formValues.countries?.map((country) => country.code) || [],
+          langCodes: formValues.languages?.map((lang) => lang.code) || [],
         },
-        content: {
-          en: {
+        content: [
+          {
+            type: 'text',
+            acls: {},
             textElement: {
               nodeName: 'doc',
               children: [
@@ -103,27 +108,26 @@ export default function StatementCreate() {
               ],
               attributes: {},
             },
-            acls: {},
-            approvals: {},
           },
-        },
+        ],
         acls: {},
-      } as ColabStatementModel;
+        approvals: {},
+      };
 
-      await createStatement({
+      await createSheet({
         name: formValues.name as string,
-        statement: newStatement,
+        sheet: newSheet,
       });
 
-      notifications.show('Statement created successfully.', {
+      notifications.show('Sheet created successfully.', {
         severity: 'success',
         autoHideDuration: 3000,
       });
 
-      navigate('/org/' + organization?.id + '/statements');
+      navigate('/org/' + organization?.id + '/sheets');
     } catch (createError) {
       notifications.show(
-        `Failed to create statement. Reason: ${(createError as Error).message}`,
+        `Failed to create sheet. Reason: ${(createError as Error).message}`,
         {
           severity: 'error',
           autoHideDuration: 3000,
@@ -136,22 +140,22 @@ export default function StatementCreate() {
     navigate,
     notifications,
     setFormErrors,
-    createStatement,
+    createSheet,
     organization?.id,
   ]);
 
   return (
     <PageContainer
-      title="New Statement"
+      title="New Sheet"
       breadcrumbs={[
         {
-          title: 'Statements',
-          path: '/org/' + organization?.id + '/statements',
+          title: 'Sheets',
+          path: '/org/' + organization?.id + '/sheets',
         },
         { title: 'New' },
       ]}
     >
-      <StatementForm
+      <SheetForm
         formState={formState}
         formMode="create"
         onFieldChange={handleFormFieldChange}
