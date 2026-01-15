@@ -1,4 +1,5 @@
-import { StatementElementBlockBP } from './StatementElementBlockBP';
+import { SheetTextBlockBP } from './SheetTextBlockBP';
+import React from 'react';
 import { Stack, Tooltip } from '@mui/material';
 import ColabTextEditor from '../../ColabTextEditor/ColabTextEditor';
 import {
@@ -16,16 +17,16 @@ import { ContainerID, LoroMap } from 'loro-crdt';
 import DocEditorBlock from '../DocEditorBlock';
 import {
   ColabTextEditorOutline,
-  StmtElementHeaderLeft,
-  StmtElementHeaderRight,
-  StmtElementHeaderWrapper,
+  SheetTextBlockHeaderLeft,
+  SheetTextBlockHeaderRight,
+  SheetTextBlockHeaderWrapper,
   TypographyReadOnly,
-} from './StatementElementBlockStyle';
+} from './SheetTextBlockStyle';
 import { useDialogs } from '../../../../ui/hooks/useDialogs/useDialogs';
 import ManagePermissionModal, {
   ManagePermissionModalPayload,
 } from '../../ManagePermissionModal/ManagePermissionModal';
-import { ConnectedStmtDoc } from '../../../data/ConnectedColabDoc';
+import { ConnectedSheetDoc } from '../../../data/ConnectedColabDoc';
 import { Permission } from '../../../../ui/data/Permission';
 import ApprovalDropdown from '../../ApprovalDropdown/ApprovalDropdown';
 import ErrorIcon from '@mui/icons-material/Error';
@@ -34,16 +35,16 @@ import { ContentLanguage } from '../../../data/ContentLanguage';
 import { t } from 'i18next';
 import { ColabApprovalState } from '../../../../api/ColabriAPI';
 
-export type StatementElementBlockProps = {
-  bp: StatementElementBlockBP;
+export type SheetTextBlockProps = {
+  bp: SheetTextBlockBP;
 };
 
-const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
+const SheetTextBlock: React.FC<SheetTextBlockProps> = ({ bp }) => {
   // Get the current ColabDoc
   const { colabDoc } = useColabDoc();
-  if (!(colabDoc instanceof ConnectedStmtDoc)) {
+  if (!(colabDoc instanceof ConnectedSheetDoc)) {
     throw new Error(
-      'StatementElementBlock can only be used with connected statement docs.',
+      'SheetTextBlock can only be used with connected sheet docs.',
     );
   }
 
@@ -110,32 +111,34 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
         textElementContainerId = textElementContainer.id;
       } else {
         console.log(
-          "Could not find 'textElement' inside StatementElement with id: " +
+          "Could not find 'textElement' inside SheetTextBlock with id: " +
             bp.containerId,
         );
       }
     } else {
-      console.log('Could not find StatementElement with id: ' + bp.containerId);
+      console.log('Could not find SheetTextBlock with id: ' + bp.containerId);
     }
   }
 
   // State to track whether the user can edit this statement element
-  const [canEdit, setCanEdit] = useState<boolean>(false);
+  const [canEdit, setCanEdit] = useState<boolean>(
+    controller ? controller.canEditBlock(bp.containerId) : false,
+  );
   // State to track approval info
   const [approvalState, setApprovalState] = useState<ColabApprovalState>(
     controller
-      ? controller.getStatementElementState(bp.langCode)
+      ? controller.getBlockState(bp.containerId)
       : ColabApprovalState.Draft,
   );
   const [canApprove, setCanApprove] = useState<boolean>(
-    controller ? controller.hasApprovePermission(bp.langCode) : false,
+    controller ? controller.hasApprovePermission(bp.containerId) : false,
   );
   const [canManage, setCanManage] = useState<boolean>(
     controller ? controller.hasManagePermission() : false,
   );
   const [hasRejected, setHasRejected] = useState<boolean>(
     controller
-      ? controller.hasRejectedApproval(bp.langCode, approvalKey)
+      ? controller.hasRejectedBlockApproval(bp.containerId, approvalKey)
       : false,
   );
 
@@ -145,40 +148,38 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
   const showOutlines = (focus || isHovered) && canEdit;
 
   useEffect(() => {
-    if (controller && bp.langCode && loroDoc) {
+    if (controller && bp.containerId && loroDoc) {
       // Update the canEdit state
-      setCanEdit(controller.canEditStatementElement(bp.langCode));
-      setApprovalState(controller.getStatementElementState(bp.langCode));
-      setCanApprove(controller.hasApprovePermission(bp.langCode));
+      setCanEdit(controller.canEditBlock(bp.containerId));
+      setApprovalState(controller.getBlockState(bp.containerId));
+      setCanApprove(controller.hasApprovePermission(bp.containerId));
       setCanManage(controller.hasManagePermission());
-      setHasRejected(controller.hasRejectedApproval(bp.langCode, approvalKey));
+      setHasRejected(
+        controller.hasRejectedBlockApproval(bp.containerId, approvalKey),
+      );
 
       // Subscribe to ACL changes in the loroDoc
-      const aclUnsubscribe = controller.subscribeToStatementElementAclChanges(
-        bp.langCode,
+      const aclUnsubscribe = controller.subscribeToBlockAclChanges(
+        bp.containerId,
         () => {
           // On any ACL change, update the canEdit state
-          setCanEdit(controller.canEditStatementElement(bp.langCode));
-          setCanApprove(controller.hasApprovePermission(bp.langCode));
+          setCanEdit(controller.canEditBlock(bp.containerId));
+          setCanApprove(controller.hasApprovePermission(bp.containerId));
           setCanManage(controller.hasManagePermission());
         },
       );
       // Subscribe to approval changes in the loroDoc
-      const approvalUnsubscribe =
-        controller.subscribeToStatementElementApprovalChanges(
-          bp.langCode,
-          () => {
-            // On any approval change, update the canEdit state
-            setCanEdit(controller.canEditStatementElement(bp.langCode));
-            setApprovalState(controller.getStatementElementState(bp.langCode));
-            setHasRejected(
-              controller.hasRejectedApproval(bp.langCode, approvalKey),
-            );
-
-            // On any approval change, update the canEdit state
-            setCanEdit(controller.canEditStatementElement(bp.langCode));
-          },
-        );
+      const approvalUnsubscribe = controller.subscribeToBlockApprovalChanges(
+        bp.containerId,
+        () => {
+          // On any approval change, update the canEdit state
+          setCanEdit(controller.canEditBlock(bp.containerId));
+          setApprovalState(controller.getBlockState(bp.containerId));
+          setHasRejected(
+            controller.hasRejectedBlockApproval(bp.containerId, approvalKey),
+          );
+        },
+      );
 
       // Cleanup subscriptions on unmount
       return () => {
@@ -186,7 +187,7 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
         approvalUnsubscribe();
       };
     }
-  }, [loroDoc, controller, bp.langCode]);
+  }, [loroDoc, controller, bp.containerId]);
 
   // Handle focus change from DocEditorBlock
   const handleFocusChange = (hasFocus: boolean) => {
@@ -196,6 +197,39 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
     setIsHovered(isHovered);
   };
 
+  const handleApprove = () => {
+    if (!controller) {
+      return;
+    }
+    const hasApproved = controller.approveBlock(bp.containerId, approvalKey);
+    if (hasApproved) {
+      controller.commit();
+      setApprovalState(controller.getBlockState(bp.containerId));
+    }
+  };
+
+  const handleReject = () => {
+    if (!controller) {
+      return;
+    }
+    const hasRejected = controller.rejectBlock(bp.containerId, approvalKey);
+    if (hasRejected) {
+      controller.commit();
+      setApprovalState(controller.getBlockState(bp.containerId));
+    }
+  };
+
+  const handleRevert = () => {
+    if (!controller) {
+      return;
+    }
+    const hasReverted = controller.revertBlockToDraft(bp.containerId);
+    if (hasReverted) {
+      controller.commit();
+      setApprovalState(controller.getBlockState(bp.containerId));
+    }
+  };
+
   const handleManageElement = async () => {
     if (!loroDoc || !language || !controller) {
       return;
@@ -203,7 +237,7 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
 
     // Get the current ACLs
     const docAcls = controller.getDocAclMap();
-    const stmtElementAcls = controller.getStmtElementAclMap(bp.langCode);
+    const blockAcls = controller.getBlockAclMap(bp.containerId);
 
     // Open the modal to manage the statement element
     const newStmtElementAclMaps = await dialogs.open<
@@ -212,7 +246,7 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
     >(ManagePermissionModal, {
       langCode: bp.langCode,
       orgId: organization?.id || '',
-      acls: stmtElementAcls,
+      acls: blockAcls,
       docAcls: docAcls,
     });
 
@@ -222,52 +256,10 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
       const stmtDocController = colabDoc.getDocController();
 
       // Patch the document ACL map with the new ACLs
-      stmtDocController.patchStmtElementAclMap(
-        language.code,
-        newStmtElementAclMaps,
-      );
+      stmtDocController.patchBlockAclMap(bp.containerId, newStmtElementAclMaps);
 
       // Commit the changes
       stmtDocController.commit();
-    }
-  };
-
-  const handleApprove = () => {
-    if (!controller) {
-      return;
-    }
-    const hasApproved = controller.approveStatementElement(
-      bp.langCode,
-      approvalKey,
-    );
-    if (hasApproved) {
-      controller.commit();
-      setApprovalState(controller.getStatementElementState(bp.langCode));
-    }
-  };
-
-  const handleReject = () => {
-    if (!controller) {
-      return;
-    }
-    const hasRejected = controller.rejectStatementElement(
-      bp.langCode,
-      approvalKey,
-    );
-    if (hasRejected) {
-      controller.commit();
-      setApprovalState(controller.getStatementElementState(bp.langCode));
-    }
-  };
-
-  const handleRevert = () => {
-    if (!controller) {
-      return;
-    }
-    const hasReverted = controller.revertStatementElementToDraft(bp.langCode);
-    if (hasReverted) {
-      controller.commit();
-      setApprovalState(controller.getStatementElementState(bp.langCode));
     }
   };
 
@@ -284,14 +276,14 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
           controller={controller}
           onFocusChange={handleFocusChange}
           onHoverChange={handleHoverChange}
-          showUpDownControls={false}
+          showUpDownControls={true}
           onManageBlock={handleManageElement}
           readOnly={!canEdit}
         >
           <Stack direction="column" spacing={0.5}>
             <Stack direction="row" spacing={1} flex={1}>
-              <StmtElementHeaderWrapper>
-                <StmtElementHeaderLeft>
+              <SheetTextBlockHeaderWrapper>
+                <SheetTextBlockHeaderLeft>
                   <TypographyReadOnly variant="h6">
                     {language?.name || bp.langCode}
                   </TypographyReadOnly>
@@ -306,8 +298,8 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
                       />
                     </Tooltip>
                   )}
-                </StmtElementHeaderLeft>
-                <StmtElementHeaderRight>
+                </SheetTextBlockHeaderLeft>
+                <SheetTextBlockHeaderRight>
                   <ApprovalDropdown
                     state={approvalState}
                     canApprove={canApprove}
@@ -317,8 +309,8 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
                     onReject={handleReject}
                     onRevert={handleRevert}
                   />
-                </StmtElementHeaderRight>
-              </StmtElementHeaderWrapper>
+                </SheetTextBlockHeaderRight>
+              </SheetTextBlockHeaderWrapper>
             </Stack>
             {textElementContainerId != null && (
               <ColabTextEditorOutline showOutlines={showOutlines}>
@@ -345,4 +337,4 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
   }
 };
 
-export default StatementElementBlock;
+export default SheetTextBlock;

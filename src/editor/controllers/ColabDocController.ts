@@ -1,7 +1,8 @@
-import { LoroEventBatch, LoroList } from 'loro-crdt';
+import { LoroEventBatch, LoroList, LoroMap } from 'loro-crdt';
 import { Permission } from '../../ui/data/Permission';
-import { AclLoroMap, ColabLoroDoc } from '../data/ColabDoc';
+import { AclLoroMap, ColabLoroDoc, UserApprovalLoro } from '../data/ColabDoc';
 import { pathStartsWith } from '../util/LoroPathUtil';
+import { ColabApprovalState } from '../../api/ColabriAPI';
 
 export default class ColabDocController<T extends ColabLoroDoc> {
   // The actual lorodoc
@@ -115,6 +116,53 @@ export default class ColabDocController<T extends ColabLoroDoc> {
         permissionList.push(prpl);
       });
     });
+  }
+
+  /**
+   * A utility method to get the state from an Approval map
+   * @param approvalMap
+   */
+  protected getApprovalStateFromMap(
+    approvalMap: LoroMap<Record<string, UserApprovalLoro>>,
+  ) {
+    if (!approvalMap || approvalMap.size === 0) {
+      return ColabApprovalState.Draft;
+    } else {
+      // Iterate over the approvals to see if any are pending
+      let lowestStateScore = 4;
+      for (let [key, value] of approvalMap.entries()) {
+        const approval = value as any as UserApprovalLoro;
+        // Associate a score with this state
+        let score = 1;
+        if (approval.get('state') === ColabApprovalState.Rejected) {
+          score = 0;
+        } else if (approval.get('state') === ColabApprovalState.Approved) {
+          score = 3;
+        } else if (approval.get('state') === ColabApprovalState.Pending) {
+          score = 2;
+        } else if (approval.get('state') === ColabApprovalState.Draft) {
+          score = 1;
+        }
+
+        if (score < lowestStateScore) {
+          lowestStateScore = score;
+        }
+      }
+
+      // Map the lowest score back to a state
+      if (lowestStateScore === 3) {
+        return ColabApprovalState.Approved;
+      } else if (lowestStateScore === 2) {
+        return ColabApprovalState.Pending;
+      } else if (lowestStateScore === 1) {
+        return ColabApprovalState.Draft;
+      } else if (lowestStateScore === 0) {
+        return ColabApprovalState.Rejected;
+      } else {
+        console.log('Unknown state score: ' + lowestStateScore);
+        return ColabApprovalState.Draft;
+      }
+    }
   }
 
   /**

@@ -1,0 +1,168 @@
+import { useEffect, useState } from 'react';
+import { SheetBlockBP } from './SheetBlockBP';
+import { SheetContentBlockBP } from './SheetContentBlockBP';
+import { useColabDoc } from '../../../context/ColabDocContext/ColabDocProvider';
+import { LoroEventBatch, LoroList, LoroMap } from 'loro-crdt';
+import { Alert, Box, CircularProgress, Skeleton, Stack } from '@mui/material';
+import { useContentLanguages } from '../../../../ui/hooks/useContentLanguages/useContentLanguage';
+import { useOrganization } from '../../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
+import { ConnectedSheetDoc } from '../../../data/ConnectedColabDoc';
+import { useTranslation } from 'react-i18next';
+import { SheetBlockLoro, SheetLoroDoc } from '../../../data/ColabDoc';
+import { ColabSheetBlockType } from '../../../../api/ColabriAPI';
+import { SheetTextBlockBP } from '../SheetTextBlock/SheetTextBlockBP';
+import { SheetStatementGridBlockBP } from '../SheetStatementGridBlock/SheetStatementGridBlockBP';
+import SheetTextBlock from '../SheetTextBlock/SheetTextBlock';
+import SheetStatementGridBlock from '../SheetStatementGridBlock/SheetStatementGridBlock';
+export type SheetBlockProps = {
+  bp: SheetBlockBP;
+};
+
+const DEFAULT_LANGCODE = 'en';
+
+const SheetBlock = ({ bp }: SheetBlockProps) => {
+  const { t } = useTranslation();
+
+  // Get the current ColabDoc
+  const { colabDoc } = useColabDoc();
+  if (!(colabDoc instanceof ConnectedSheetDoc)) {
+    throw new Error('SheetBlock can only be used with connected sheet docs.');
+  }
+
+  // Get the LoroDoc
+  const loroDoc = colabDoc?.getLoroDoc();
+
+  // Get the current organization
+  const organization = useOrganization();
+
+  // Get the configured languages
+  const { languages } = useContentLanguages(organization?.id);
+
+  // The state to track the SheetBlockBPs
+  const [sheetContentBlockBPs, setSheetContentBlockBPs] = useState<
+    SheetContentBlockBP[] | null
+  >(null);
+
+  useEffect(() => {
+    // Ensure we have the LoroDoc
+    if (!loroDoc || !languages) {
+      return;
+    }
+
+    // Get the StatementModelContent from the LoroDoc
+    const sheetModelContent = loroDoc.getList('content');
+    if (!sheetModelContent) {
+      console.error(`Sheet model content could not be found.`);
+      return;
+    }
+
+    // Generate the StatementElementBPs for each child
+    updateSheetBlockBPs(sheetModelContent);
+
+    // Bind to the LoroMap to listen for changes
+    bindToLoro(loroDoc);
+  }, [loroDoc, bp, languages]);
+
+  /*
+   * Bind this statement block to the LoroMap to listen for changes
+   */
+  const bindToLoro = (loroDoc: SheetLoroDoc) => {
+    const sheetModelContent = loroDoc.getList('content');
+
+    // Subscribe to changes in the container
+    const listener = loroDoc.subscribe((e: LoroEventBatch) => {
+      // Iterate over the events
+      e.events.forEach((event) => {
+        // Check if the event is for our statement model content
+        if (event.target === sheetModelContent.id) {
+          // This means that we need to regenerate our StatementElementBPs
+          updateSheetBlockBPs(sheetModelContent);
+        }
+      });
+    });
+
+    return listener;
+  };
+
+  // Update the StatementElementBPs based on the current content
+  const updateSheetBlockBPs = (sheetModelContent: LoroList<SheetBlockLoro>) => {
+    const newSheetBlockBPs: SheetContentBlockBP[] = [];
+
+    // Iterate over the blocks
+    for (let i = 0; i < sheetModelContent.length; i++) {
+      const sheetContentBlock = sheetModelContent.get(i);
+      const blockType = (
+        sheetContentBlock as LoroMap<{ type: ColabSheetBlockType }>
+      ).get('type');
+      switch (blockType) {
+        case ColabSheetBlockType.ColabSheetBlockTypeText: {
+          // Text Block
+          const textBlockBP: SheetTextBlockBP = {
+            id: sheetContentBlock.id,
+            type: ColabSheetBlockType.ColabSheetBlockTypeText,
+            containerId: sheetContentBlock.id,
+            langCode: DEFAULT_LANGCODE,
+          };
+          newSheetBlockBPs.push(textBlockBP);
+          break;
+        }
+        case ColabSheetBlockType.ColabSheetBlockTypeStatementGrid: {
+          // Statement Grid Block
+          const statementGridBlockBP: SheetStatementGridBlockBP = {
+            id: sheetContentBlock.id,
+            type: ColabSheetBlockType.ColabSheetBlockTypeStatementGrid,
+            containerId: sheetContentBlock.id,
+          };
+          newSheetBlockBPs.push(statementGridBlockBP);
+          break;
+        }
+      }
+    }
+
+    // Set the ref
+    setSheetContentBlockBPs(newSheetBlockBPs);
+  };
+
+  // Get the actual component
+  return (
+    <>
+      <Stack spacing={2}>
+        {sheetContentBlockBPs == null && (
+          <Skeleton variant="rounded" width="100%" height={100} />
+        )}
+        {sheetContentBlockBPs != null && sheetContentBlockBPs.length === 0 && (
+          <Box>
+            <Alert severity="info">
+              {t('editor.sheetBlock.noBlocksAdded')}
+            </Alert>
+          </Box>
+        )}
+        {sheetContentBlockBPs != null &&
+          sheetContentBlockBPs.map((sheetContentBlockBP) => {
+            switch (sheetContentBlockBP.type) {
+              case ColabSheetBlockType.ColabSheetBlockTypeText: {
+                return (
+                  <SheetTextBlock
+                    key={sheetContentBlockBP.id}
+                    bp={sheetContentBlockBP as SheetTextBlockBP}
+                  />
+                );
+              }
+              case ColabSheetBlockType.ColabSheetBlockTypeStatementGrid: {
+                return (
+                  <SheetStatementGridBlock
+                    key={sheetContentBlockBP.id}
+                    bp={sheetContentBlockBP as SheetStatementGridBlockBP}
+                  />
+                );
+              }
+              default: {
+                return <></>;
+              }
+            }
+          })}
+      </Stack>
+    </>
+  );
+};
+export default SheetBlock;

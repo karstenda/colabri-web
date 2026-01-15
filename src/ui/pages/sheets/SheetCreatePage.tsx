@@ -9,7 +9,11 @@ import SheetForm, {
 } from './SheetForm';
 import PageContainer from '../../components/MainLayout/PageContainer';
 import { useUserOrganizationContext } from '../../context/UserOrganizationContext/UserOrganizationProvider';
-import { ColabModelType, ColabSheetModel } from '../../../api/ColabriAPI';
+import {
+  ColabModelType,
+  ColabSheetModel,
+  StatementGridRowType,
+} from '../../../api/ColabriAPI';
 
 export default function SheetCreatePage() {
   const navigate = useNavigate();
@@ -90,13 +94,16 @@ export default function SheetCreatePage() {
           type: ColabModelType.ColabModelSheetType,
           contentType: 'PRODUCT',
           countryCodes:
-            formValues.countries?.map((country) => country.code) || [],
+            formValues.countries
+              ?.map((country) => country.code)
+              .filter((code): code is string => !!code) || [],
           langCodes: formValues.languages?.map((lang) => lang.code) || [],
         },
         content: [
           {
             type: 'text',
             acls: {},
+            approvals: {},
             textElement: {
               nodeName: 'doc',
               children: [
@@ -108,6 +115,39 @@ export default function SheetCreatePage() {
               ],
               attributes: {},
             },
+          },
+          {
+            type: 'statement-grid',
+            acls: {},
+            rows: [
+              {
+                type: StatementGridRowType.StatementGridRowTypeLocal,
+                statement: {
+                  properties: {
+                    type: ColabModelType.ColabModelStatementType,
+                    contentType: 'MARKETING_COPY',
+                  },
+                  acls: {},
+                  content: {
+                    en: {
+                      acls: {},
+                      approvals: {},
+                      textElement: {
+                        nodeName: 'doc',
+                        children: [
+                          {
+                            nodeName: 'paragraph',
+                            children: ['This is set during creation.'],
+                            attributes: {},
+                          },
+                        ],
+                        attributes: {},
+                      },
+                    },
+                  },
+                },
+              },
+            ],
           },
         ],
         acls: {},

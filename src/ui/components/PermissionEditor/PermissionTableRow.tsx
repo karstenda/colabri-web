@@ -16,9 +16,9 @@ import {
 
 export type PermissionsTableRowProps = {
   resolvedPrpl: ResolvedPrplOption;
-  permissions: Set<Permission>;
-  fixedPermissions: Set<Permission>;
-  availablePermissions?: Set<Permission>;
+  permissions: Set<Permission>; // Map of prpls with their permissions
+  fixedPermissions: Set<Permission>; // Map of prpls with fixed permissions
+  availablePermissions?: Record<string, Set<Permission>>; // Sections and their permissions
   onChange?: (prpl: string, newPermissions: Set<Permission>) => void;
 };
 
@@ -30,29 +30,18 @@ const PermissionsTableRow = (props: PermissionsTableRowProps) => {
     props.permissions,
   );
 
+  // Calculate a flat list of all permissions
+  let allPermissions = new Set<Permission>();
+  Object.keys(props.availablePermissions || {}).forEach((permission) => {
+    allPermissions.add(permission as Permission);
+  });
   // Take the union of the available permissions and the current permisions.
-  const allPermissions = props.availablePermissions
+  allPermissions = props.availablePermissions
     ? new Set<Permission>([
-        ...Array.from(props.availablePermissions),
+        ...Array.from(allPermissions),
         ...Array.from(props.permissions),
       ])
     : new Set<Permission>(Array.from(props.permissions));
-
-  // Group permissions into sections
-  const generalPermissions = [
-    Permission.Manage,
-    Permission.View,
-    Permission.AddRemove,
-    Permission.Delete,
-  ];
-  const contentPermissions = [Permission.Edit, Permission.Approve];
-
-  const availableGeneralPermissions = generalPermissions.filter((p) =>
-    allPermissions.has(p),
-  );
-  const availableContentPermissions = contentPermissions.filter((p) =>
-    allPermissions.has(p),
-  );
 
   const allDisplayedPermissions = new Set<Permission>([
     ...Array.from(permissions),
@@ -114,54 +103,43 @@ const PermissionsTableRow = (props: PermissionsTableRowProps) => {
           }}
           fullWidth
         >
-          {availableGeneralPermissions.length > 0 && (
-            <ListSubheader>{t('permissions.sections.document')}</ListSubheader>
+          {props.availablePermissions != undefined ? (
+            Object.keys(props.availablePermissions).map((section) => {
+              const sectionAvailablePermissions = Array.from(
+                props.availablePermissions
+                  ? props.availablePermissions[section]
+                  : [],
+              );
+              return (
+                <>
+                  {section !== 'default' && (
+                    <ListSubheader>{section}</ListSubheader>
+                  )}
+                  {sectionAvailablePermissions.map((permission) => {
+                    const isFixed = props.fixedPermissions.has(permission);
+                    return (
+                      <MenuItem
+                        key={permission}
+                        value={permission}
+                        disabled={isFixed}
+                        sx={{ py: 0, px: 0, mb: 0.5 }}
+                      >
+                        <Checkbox
+                          checked={permissions.has(permission)}
+                          disabled={isFixed}
+                        />
+                        <ListItemText
+                          primary={t(`permissions.${permission as Permission}`)}
+                        />
+                      </MenuItem>
+                    );
+                  })}
+                </>
+              );
+            })
+          ) : (
+            <></>
           )}
-          {availableGeneralPermissions.map((permission) => {
-            const isFixed = props.fixedPermissions.has(permission);
-            return (
-              <MenuItem
-                key={permission}
-                value={permission}
-                disabled={isFixed}
-                sx={{ py: 0, px: 0, mb: 0.5 }}
-              >
-                <Checkbox
-                  checked={permissions.has(permission)}
-                  disabled={isFixed}
-                />
-                <ListItemText
-                  primary={t(`permissions.${permission as Permission}`)}
-                />
-              </MenuItem>
-            );
-          })}
-
-          {availableContentPermissions.length > 0 && (
-            <ListSubheader>{t('permissions.sections.language')}</ListSubheader>
-          )}
-          {availableContentPermissions.map((permission) => {
-            const isFixed = props.fixedPermissions.has(permission);
-            return (
-              <MenuItem
-                key={permission}
-                value={permission}
-                disabled={isFixed}
-                sx={{ py: 0, px: 0, mb: 0.5 }}
-              >
-                <Checkbox
-                  checked={
-                    permissions.has(permission) ||
-                    props.fixedPermissions.has(permission)
-                  }
-                  disabled={props.fixedPermissions.has(permission)}
-                />
-                <ListItemText
-                  primary={t(`permissions.${permission as Permission}`)}
-                />
-              </MenuItem>
-            );
-          })}
         </Select>
       </PermissionEditorTableCellRight>
     </PermissionEditorTableRow>

@@ -125,44 +125,7 @@ class StatementDocController extends ColabDocController<StmtLoroDoc> {
       );
     }
     const stmtElementApprovalMap = stmtElementMap.get('approvals');
-    if (!stmtElementApprovalMap || stmtElementApprovalMap.size === 0) {
-      return ColabApprovalState.Draft;
-    } else {
-      // Iterate over the approvals to see if any are pending
-      let lowestStateScore = 4;
-      for (let [key, value] of stmtElementApprovalMap.entries()) {
-        const approval = value as any as UserApprovalLoro;
-        // Associate a score with this state
-        let score = 1;
-        if (approval.get('state') === ColabApprovalState.Rejected) {
-          score = 0;
-        } else if (approval.get('state') === ColabApprovalState.Approved) {
-          score = 3;
-        } else if (approval.get('state') === ColabApprovalState.Pending) {
-          score = 2;
-        } else if (approval.get('state') === ColabApprovalState.Draft) {
-          score = 1;
-        }
-
-        if (score < lowestStateScore) {
-          lowestStateScore = score;
-        }
-      }
-
-      // Map the lowest score back to a state
-      if (lowestStateScore === 3) {
-        return ColabApprovalState.Approved;
-      } else if (lowestStateScore === 2) {
-        return ColabApprovalState.Pending;
-      } else if (lowestStateScore === 1) {
-        return ColabApprovalState.Draft;
-      } else if (lowestStateScore === 0) {
-        return ColabApprovalState.Rejected;
-      } else {
-        console.log('Unknown state score: ' + lowestStateScore);
-        return ColabApprovalState.Draft;
-      }
-    }
+    return this.getApprovalStateFromMap(stmtElementApprovalMap);
   }
 
   /**

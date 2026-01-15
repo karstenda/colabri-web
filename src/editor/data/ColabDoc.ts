@@ -3,8 +3,11 @@ import {
   ColabApprovalState,
   ColabApprovalType,
   ColabModelType,
+  ColabSheetBlockType,
+  ColabStatementModel,
   DocumentStream,
   StatementDocument,
+  StatementGridRowType,
 } from '../../api/ColabriAPI';
 import { Permission } from '../../ui/data/Permission';
 
@@ -35,7 +38,7 @@ export type StmtDocSchema = {
 
 export type SheetDocSchema = {
   properties: StmtDocPropertiesLoro;
-  content: LoroList<LoroMap>;
+  content: LoroList<SheetBlockLoro>;
   acls: AclLoroMap;
   approvals: LoroMap<Record<string, ApprovalLoro>>;
 };
@@ -54,9 +57,37 @@ export type StmtDocPropertiesLoro = LoroMap<{
 }>;
 
 export type StmtElementLoro = LoroMap<{
-  textElement: textElementLoro;
+  textElement: TextElementLoro;
   acls: AclLoroMap;
   approvals: LoroMap<Record<string, UserApprovalLoro>>;
+}>;
+
+export type SheetBlockLoro = LoroMap<
+  SheetTextBlockSchema | SheetStatementGridBlockSchema
+>;
+
+export type SheetTextBlockSchema = {
+  type: ColabSheetBlockType;
+  acls: AclLoroMap;
+  textElement: TextElementLoro;
+  approvals: LoroMap<Record<string, UserApprovalLoro>>;
+};
+
+export type SheetTextBlockLoro = LoroMap<SheetTextBlockSchema>;
+
+export type SheetStatementGridBlockSchema = {
+  type: ColabSheetBlockType;
+  acls: AclLoroMap;
+  rows: LoroList<SheetStatementGridRowLoro>;
+};
+
+export type SheetStatementGridBlockLoro =
+  LoroMap<SheetStatementGridBlockSchema>;
+
+export type SheetStatementGridRowLoro = LoroMap<{
+  type: StatementGridRowType;
+  statement?: LoroMap<StmtDocSchema>;
+  statementRef?: string;
 }>;
 
 export type ApprovalLoro = GroupApprovalLoro | UserApprovalLoro;
@@ -76,7 +107,7 @@ export type GroupApprovalLoro = LoroMap<{
   approvals: LoroMap<Record<string, UserApprovalLoro>>;
 }>;
 
-export type textElementLoro = LoroMap<{
+export type TextElementLoro = LoroMap<{
   type: string;
   children?: LoroList<TextElementChild>;
   attributes?: LoroMap<{ [key: string]: string }>;

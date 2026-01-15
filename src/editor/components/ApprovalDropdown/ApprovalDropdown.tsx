@@ -8,11 +8,6 @@ import MenuItem from '@mui/material/MenuItem';
 import MenuList from '@mui/material/MenuList';
 import { useTranslation } from 'react-i18next';
 import { ColabApprovalState } from '../../../api/ColabriAPI';
-import StatementDocController from '../../controllers/StatementDocController';
-import {
-  useOrganization,
-  useOrgUserId,
-} from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
 import {
   StyledButtonGroup,
   StatusButton,
@@ -20,33 +15,28 @@ import {
 } from './ApprovalDropdownStyles';
 
 export type ApprovalDropdownProps = {
-  controller: StatementDocController;
-  langCode: string;
+  state: ColabApprovalState;
+  canApprove: boolean;
+  canManage: boolean;
+  hasRejected: boolean;
+  onApprove: () => void;
+  onReject: () => void;
+  onRevert: () => void;
 };
 
 const ApprovalDropdown: React.FC<ApprovalDropdownProps> = ({
-  langCode,
-  controller,
+  state,
+  canApprove,
+  canManage,
+  hasRejected,
+  onApprove,
+  onReject,
+  onRevert,
 }) => {
   const { t } = useTranslation();
-  const organization = useOrganization();
-  const userId = useOrgUserId();
 
-  // The approval key for the current user
-  const approvalKey = organization?.id + '/u/' + userId;
-
-  const [state, setState] = React.useState<ColabApprovalState>(
-    controller.getStatementElementState(langCode),
-  );
   const [open, setOpen] = React.useState(false);
   const anchorRef = React.useRef<HTMLDivElement>(null);
-
-  const [canApprove, setCanApprove] = React.useState<boolean>(
-    controller.hasApprovePermission(langCode),
-  );
-  const [canManage, setCanManage] = React.useState<boolean>(
-    controller.hasManagePermission(),
-  );
 
   let options = [] as { label: string; action: string }[];
   if (state === ColabApprovalState.Draft) {
@@ -71,7 +61,7 @@ const ApprovalDropdown: React.FC<ApprovalDropdownProps> = ({
     }
   } else if (state === ColabApprovalState.Rejected) {
     // If this user can approve and rejected before.
-    if (canApprove && controller.hasRejectedApproval(langCode, approvalKey)) {
+    if (canApprove && hasRejected) {
       options.push({
         label: t('approval.action.doApprove'),
         action: 'approve',
@@ -86,6 +76,26 @@ const ApprovalDropdown: React.FC<ApprovalDropdownProps> = ({
     }
   }
 
+  const handleMenuItemClick = (
+    event: React.MouseEvent<HTMLLIElement, MouseEvent>,
+    action: string,
+  ) => {
+    // Handle the approval action
+    if (action === 'approve') {
+      onApprove();
+    }
+    // Handle the reject action
+    else if (action === 'reject') {
+      onReject();
+    }
+    // Handle the revert action
+    else if (action === 'revert') {
+      onRevert();
+    }
+
+    setOpen(false);
+  };
+
   const getStateLabel = (state: ColabApprovalState) => {
     switch (state) {
       case ColabApprovalState.Draft:
@@ -99,68 +109,6 @@ const ApprovalDropdown: React.FC<ApprovalDropdownProps> = ({
       default:
         return '';
     }
-  };
-
-  React.useEffect(() => {
-    // Initialize canApprove and canManage states
-    setCanApprove(controller.hasApprovePermission(langCode));
-    setCanManage(controller.hasManagePermission());
-    // Subscribe to ACL changes
-    const aclUnsubscribe = controller.subscribeToStatementElementAclChanges(
-      langCode,
-      () => {
-        setCanApprove(controller.hasApprovePermission(langCode));
-        setCanManage(controller.hasManagePermission());
-      },
-    );
-    // Subscribe to approval state changes
-    const approvalUnsubscribe =
-      controller.subscribeToStatementElementApprovalChanges(langCode, () => {
-        setState(controller.getStatementElementState(langCode));
-      });
-    return () => {
-      // Cleanup subscriptions on unmount
-      aclUnsubscribe();
-      approvalUnsubscribe();
-    };
-  }, [controller, langCode]);
-
-  const handleMenuItemClick = (
-    event: React.MouseEvent<HTMLLIElement, MouseEvent>,
-    action: string,
-  ) => {
-    // Handle the approval action
-    if (action === 'approve') {
-      const hasApproved = controller.approveStatementElement(
-        langCode,
-        approvalKey,
-      );
-      if (hasApproved) {
-        controller.commit();
-        setState(controller.getStatementElementState(langCode));
-      }
-    }
-    // Handle the reject action
-    else if (action === 'reject') {
-      const hasRejected = controller.rejectStatementElement(
-        langCode,
-        approvalKey,
-      );
-      if (hasRejected) {
-        controller.commit();
-        setState(controller.getStatementElementState(langCode));
-      }
-    }
-    // Handle the revert action
-    else if (action === 'revert') {
-      const hasReverted = controller.revertStatementElementToDraft(langCode);
-      if (hasReverted) {
-        controller.commit();
-        setState(controller.getStatementElementState(langCode));
-      }
-    }
-
-    setOpen(false);
   };
 
   const handleToggle = () => {

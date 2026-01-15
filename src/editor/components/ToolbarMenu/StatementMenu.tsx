@@ -11,9 +11,9 @@ import { useActiveBlock } from '../../context/ColabDocEditorContext/ColabDocEdit
 import { StmtLoroDoc } from '../../data/ColabDoc';
 import { Permission } from '../../../ui/data/Permission';
 import { useTranslation } from 'react-i18next';
-import ManageStmtLangModal, {
-  ManageStmtLangModalPayload,
-} from '../ManageStmtLangModal/ManageStmtLangModel';
+import ManagePermissionModal, {
+  ManagePermissionModalPayload,
+} from '../ManagePermissionModal/ManagePermissionModal';
 import { LoroMap } from 'loro-crdt';
 import { ConnectedStmtDoc } from '../../data/ConnectedColabDoc';
 
@@ -123,18 +123,23 @@ export default function StatementMenu({}: StatementMenuProps) {
 
     // Get the focussed language
     const langCode = getFocusedLangCode();
-    if (!langCode) {
+    if (!langCode || !controller) {
       return;
     }
 
+    // Get the current ACLs
+    const docAcls = controller.getDocAclMap();
+    const stmtElementAcls = controller.getStmtElementAclMap(langCode);
+
     // Open the modal to manage the statement element
     const newStmtElementAclMaps = await dialogs.open<
-      ManageStmtLangModalPayload,
+      ManagePermissionModalPayload,
       Record<Permission, string[]> | undefined
-    >(ManageStmtLangModal, {
-      loroDoc: loroDoc as StmtLoroDoc,
+    >(ManagePermissionModal, {
       langCode,
       orgId: organization?.id || '',
+      acls: stmtElementAcls,
+      docAcls: docAcls,
     });
 
     // If a new ACL map was returned, update the document

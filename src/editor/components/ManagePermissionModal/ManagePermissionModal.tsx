@@ -7,7 +7,6 @@ import {
   Box,
 } from '@mui/material';
 import PermissionEditor from '../../../ui/components/PermissionEditor/PermissionEditor';
-import { StmtLoroDoc } from '../../data/ColabDoc';
 import { DialogProps } from '../../../ui/hooks/useDialogs/useDialogs';
 import { Permission } from '../../../ui/data/Permission';
 import { useState } from 'react';
@@ -18,25 +17,26 @@ import {
 } from '../../../ui/hooks/useContentLanguages/useContentLanguage';
 import { ContentLanguage } from '../../data/ContentLanguage';
 
-export type ManageStmtLangModalPayload = {
+export type ManagePermissionModalPayload = {
   orgId: string;
-  langCode: string;
-  loroDoc: StmtLoroDoc;
+  langCode: string; // Used for title
+  acls: Record<Permission, string[]>;
+  docAcls: Record<Permission, string[]>;
 };
 
-export interface ManageStmtLangModalProps
+export interface ManagePermissionModalProps
   extends DialogProps<
-    ManageStmtLangModalPayload,
+    ManagePermissionModalPayload,
     Record<Permission, string[]> | undefined
   > {}
 
-const ManageStmtLangModal = ({
+const ManagePermissionModal = ({
   open,
   payload,
   onClose,
-}: ManageStmtLangModalProps) => {
+}: ManagePermissionModalProps) => {
   // Extract the payload
-  const { orgId, langCode, loroDoc } = payload;
+  const { orgId, langCode, acls, docAcls } = payload;
 
   const { t } = useTranslation();
 
@@ -55,24 +55,6 @@ const ManageStmtLangModal = ({
   if (!contentLanguage && !isLanguagesLoading) {
     contentLanguage = platformLanguages.find((l) => l.code === langCode);
     isNonOrgContentLanguages = true;
-  }
-
-  // Extract the aclMap from the loroDoc
-  const docAclMap = loroDoc.getMap('acls');
-  let fixedAcls;
-  if (!docAclMap) {
-    fixedAcls = {};
-  } else {
-    fixedAcls = docAclMap.toJSON();
-  }
-
-  // Extract the aclMap from this element
-  const aclMap = loroDoc.getMap('content')?.get(langCode)?.get('acls');
-  let acls;
-  if (!aclMap) {
-    acls = {};
-  } else {
-    acls = aclMap.toJSON();
   }
 
   // Remember the new acls in the state
@@ -96,12 +78,15 @@ const ManageStmtLangModal = ({
       <DialogContent>
         <Box sx={{ pt: 2 }}>
           <PermissionEditor
-            permissions={
-              new Set<Permission>([Permission.Edit, Permission.Approve])
-            }
+            permissions={{
+              default: new Set<Permission>([
+                Permission.Edit,
+                Permission.Approve,
+              ]),
+            }}
             defaultPermission={Permission.Edit}
             aclMap={acls}
-            aclFixedMap={fixedAcls}
+            aclFixedMap={docAcls}
             onAclChange={setNewAcls}
           />
         </Box>
@@ -116,4 +101,4 @@ const ManageStmtLangModal = ({
   );
 };
 
-export default ManageStmtLangModal;
+export default ManagePermissionModal;

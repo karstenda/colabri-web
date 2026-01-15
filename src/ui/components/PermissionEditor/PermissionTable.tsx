@@ -10,9 +10,9 @@ import { PermissionEditorTable } from './PermissionEditorStyles';
 
 type PermissionsTableProps = {
   identities: Record<string, ResolvedPrpl>;
-  permissionMap: Record<string, Set<Permission>>;
-  fixedPermissionMap: Record<string, Set<Permission>>;
-  availablePermissions?: Set<Permission>;
+  permissionMap: Record<string, Set<Permission>>; // Map of prpls with their permissions
+  fixedPermissionMap: Record<string, Set<Permission>>; // Map of prpls with fixed permissions
+  availablePermissions?: Record<string, Set<Permission>>; // Map of sections and permissions
   onChange?: (newPermissionMap: Record<string, Set<Permission>>) => void;
 };
 

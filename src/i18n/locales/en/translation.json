@@ -45,7 +45,8 @@
     "delete": "Delete",
     "sections": {
       "document": "Document Permissions",
-      "language": "Language Permissions"
+      "language": "Language Permissions",
+      "block": "Block Permissions"
     }
   },
   "approval": {
@@ -180,7 +181,7 @@
       "removeLanguageConfirm": "Are you sure you want to remove the {{language}} language?",
       "removeLanguageConfirmGeneric": "Are you sure you want to remove the selected language?"
     },
-    "manageStmtModal": {
+    "managePermissionModal": {
       "title": "Manage {{documentName}}"
     },
     "manageStmtLangModal": {
@@ -192,6 +193,9 @@
     },
     "statementElementBlock": {
       "nonOrgLanguage": "This language is not configured for your organization."
+    },
+    "sheetBlock": {
+      "noBlocksAdded": "No blocks have been added to this sheet yet."
     }
   },
   "languages": {

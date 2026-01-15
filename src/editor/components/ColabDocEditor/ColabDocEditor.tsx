@@ -30,6 +30,7 @@ import { ContentType, DocumentType } from '../../../api/ColabriAPI';
 import { ColabLoroDoc } from '../../data/ColabDoc';
 import ManageDocButton from '../ManageDocButton/ManageDocButton';
 import { useTranslation } from 'react-i18next';
+import SheetBlock from '../blocks/SheetBlock/SheetBlock';
 
 export default function ColabDocEditor() {
   // Get the translation hook
@@ -146,7 +147,9 @@ export default function ColabDocEditor() {
                   </Stack>
                 </EditorTopHeaderLeftStack>
                 <EditorTopHeaderRightStack>
-                  {canManage && <ManageDocButton />}
+                  {canManage && (
+                    <ManageDocButton docType={colabDoc?.getDocType()} />
+                  )}
                   {!compactView && <ThemeSwitcher />}
                   <ProfileMenu />
                 </EditorTopHeaderRightStack>
@@ -166,7 +169,9 @@ export default function ColabDocEditor() {
                     <StatementBlock bp={{}} />
                   )}
                   {colabDoc?.getDocType() ===
-                    DocumentType.DocumentTypeColabSheet && <>TODO</>}
+                    DocumentType.DocumentTypeColabSheet && (
+                    <SheetBlock bp={{}} />
+                  )}
                 </EditorContentBlockTrack>
               </EditorContentMainColumn>
               <EditorContentRightColumn></EditorContentRightColumn>

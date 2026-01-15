@@ -11,7 +11,7 @@ import { Assignee } from '../../data/Common';
 
 type PermissionEditorProps = {
   helperText?: string;
-  permissions: Set<Permission>;
+  permissions: Record<string, Set<Permission>>;
   defaultPermission: Permission;
   aclMap: Record<Permission, string[]>;
   aclFixedMap?: Record<Permission, string[]>;
@@ -24,6 +24,12 @@ const PermissionEditor = (props: PermissionEditorProps) => {
   const [aclMap, setAclMap] = useState<Record<Permission, string[]>>(
     props.aclMap,
   );
+
+  // Calculate a flat list of all permissions
+  const allPermissions = new Set<Permission>();
+  Object.keys(props.permissions).forEach((permission) => {
+    allPermissions.add(permission as Permission);
+  });
 
   // When a new assignee is selected, remember their identity and pass it to children so they don't need to resolve it again based on the prpl.
   const [knownIdentities, setKnownIdentities] = useState<
@@ -47,7 +53,7 @@ const PermissionEditor = (props: PermissionEditorProps) => {
   if (props.aclFixedMap) {
     Object.entries(props.aclFixedMap).forEach(([permission, prpls]) => {
       // Ignore permissions that do not apply to this editor
-      if (!props.permissions.has(permission as Permission)) {
+      if (!allPermissions.has(permission as Permission)) {
         return;
       }
       // Register the fixed permissions

@@ -10,6 +10,11 @@
  * ---------------------------------------------------------------
  */
 
+export enum StatementGridRowType {
+  StatementGridRowTypeLocal = "local",
+  StatementGridRowTypeReference = "reference",
+}
+
 export enum ResolvedPrplType {
   ResolvedPrplUserType = "user",
   ResolvedPrplGroupType = "group",
@@ -46,6 +51,11 @@ export enum DocumentType {
 export enum ContentLanguageDirection {
   ContentLanguageDirectionLTR = "ltr",
   ContentLanguageDirectionRTL = "rtl",
+}
+
+export enum ColabSheetBlockType {
+  ColabSheetBlockTypeText = "text",
+  ColabSheetBlockTypeStatementGrid = "statement-grid",
 }
 
 export enum ColabModelType {
@@ -139,7 +149,14 @@ export interface ColabComment {
 
 export interface ColabModelProperties {
   contentType: string;
+  countryCodes?: string[];
+  langCodes?: string[];
   type: ColabModelType;
+}
+
+export interface ColabSheetBlockDictionary {
+  colabSheetStatementGridBlock?: ColabSheetStatementGridBlock;
+  colabSheetTextBlock?: ColabSheetTextBlock;
 }
 
 export interface ColabSheetModel {
@@ -147,6 +164,24 @@ export interface ColabSheetModel {
   approvals: Record<string, ColabApproval>;
   content: any[];
   properties: ColabModelProperties;
+}
+
+export interface ColabSheetStatementGridBlock {
+  acls: Record<string, string[]>;
+  rows: ColabSheetStatementGridRow[];
+  type: ColabSheetBlockType;
+}
+
+export interface ColabSheetStatementGridRow {
+  statement?: ColabStatementModel;
+  statementRef?: string;
+  type: StatementGridRowType;
+}
+
+export interface ColabSheetTextBlock {
+  acls: Record<string, string[]>;
+  textElement: TextElement;
+  type: ColabSheetBlockType;
 }
 
 export interface ColabStatementElement {
@@ -1028,6 +1063,24 @@ export class Api<
         path: `/prpls/resolve`,
         method: "POST",
         body: prpls,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+  };
+  sheets = {
+    /**
+     * @description This endpoint will list all blocks that are supported in ColabSheets.
+     *
+     * @tags sheets
+     * @name GetSheetsBlockdict
+     * @summary Get all supported blocks in ColabSheets
+     * @request GET:/sheets/blockdict
+     */
+    getSheetsBlockdict: (params: RequestParams = {}) =>
+      this.request<ColabSheetBlockDictionary, HTTPError>({
+        path: `/sheets/blockdict`,
+        method: "GET",
         type: ContentType.Json,
         format: "json",
         ...params,

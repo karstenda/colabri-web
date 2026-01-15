@@ -21,7 +21,7 @@ const StatementBlock = ({ bp }: StatementBlockProps) => {
   const { colabDoc } = useColabDoc();
   if (!(colabDoc instanceof ConnectedStmtDoc)) {
     throw new Error(
-      'StatementElementBlock can only be used with connected statement docs.',
+      'StatementBlock can only be used with connected statement docs.',
     );
   }
 
@@ -42,12 +42,6 @@ const StatementBlock = ({ bp }: StatementBlockProps) => {
   useEffect(() => {
     // Ensure we have the LoroDoc
     if (!loroDoc || !languages) {
-      return;
-    }
-
-    // If there are no languages, set empty array
-    if (languages.length === 0) {
-      setStmtElementsBPs([]);
       return;
     }
 

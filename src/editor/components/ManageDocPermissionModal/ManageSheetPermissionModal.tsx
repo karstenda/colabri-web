@@ -13,17 +13,21 @@ import { Permission } from '../../../ui/data/Permission';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 
-export type ManageStmtModalPayload = {
+export type ManageSheetPermissionModalPayload = {
   docName: string;
   loroDoc: StmtLoroDoc;
 };
 
-export interface ManageStmtModalProps
+export interface ManageSheetPermissionModalProps
   extends DialogProps<
-    ManageStmtModalPayload,
+    ManageSheetPermissionModalPayload,
     Record<Permission, string[]> | null
   > {}
-const ManageStmtModal = ({ open, payload, onClose }: ManageStmtModalProps) => {
+const ManageSheetPermissionModal = ({
+  open,
+  payload,
+  onClose,
+}: ManageSheetPermissionModalProps) => {
   // Extract the payload
   const { loroDoc, docName } = payload;
 
@@ -57,20 +61,22 @@ const ManageStmtModal = ({ open, payload, onClose }: ManageStmtModalProps) => {
   return (
     <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
       <DialogTitle>
-        {t('editor.manageStmtModal.title', { documentName: docName })}
+        {t('editor.managePermissionModal.title', { documentName: docName })}
       </DialogTitle>
       <DialogContent>
         <Box sx={{ pt: 2 }}>
           <PermissionEditor
-            permissions={
-              new Set<Permission>([
+            permissions={{
+              [t('permissions.sections.document')]: new Set<Permission>([
                 Permission.View,
-                Permission.Edit,
-                Permission.Approve,
                 Permission.Manage,
                 Permission.AddRemove,
-              ])
-            }
+              ]),
+              [t('permissions.sections.block')]: new Set<Permission>([
+                Permission.Edit,
+                Permission.Approve,
+              ]),
+            }}
             defaultPermission={Permission.View}
             aclMap={acls}
             onAclChange={onAclChange}
@@ -87,4 +93,4 @@ const ManageStmtModal = ({ open, payload, onClose }: ManageStmtModalProps) => {
   );
 };
 
-export default ManageStmtModal;
+export default ManageSheetPermissionModal;
