@@ -19,7 +19,8 @@ import { ContentLanguage } from '../../data/ContentLanguage';
 
 export type ManagePermissionModalPayload = {
   orgId: string;
-  langCode: string; // Used for title
+  langCode?: string; // Used for title
+  title?: string;
   acls: Record<Permission, string[]>;
   docAcls: Record<Permission, string[]>;
 };
@@ -36,12 +37,14 @@ const ManagePermissionModal = ({
   onClose,
 }: ManagePermissionModalProps) => {
   // Extract the payload
-  const { orgId, langCode, acls, docAcls } = payload;
+  const { orgId, langCode, acls, docAcls, title } = payload;
 
   const { t } = useTranslation();
 
-  const { languages, isLoading: isLanguagesLoading } =
-    useContentLanguages(orgId);
+  const { languages, isLoading: isLanguagesLoading } = useContentLanguages(
+    orgId,
+    !title,
+  );
 
   // Get the language
   let contentLanguage: ContentLanguage | undefined = languages.find(
@@ -50,7 +53,7 @@ const ManagePermissionModal = ({
   // If not found, try to get it from platform languages
   let isNonOrgContentLanguages = false;
   const { languages: platformLanguages } = usePlatformContentLanguages(
-    !contentLanguage && !isLanguagesLoading,
+    !contentLanguage && !isLanguagesLoading && !title,
   );
   if (!contentLanguage && !isLanguagesLoading) {
     contentLanguage = platformLanguages.find((l) => l.code === langCode);
@@ -70,11 +73,14 @@ const ManagePermissionModal = ({
 
   return (
     <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
-      <DialogTitle>
-        {t('editor.manageStmtLangModal.title', {
-          language: contentLanguage?.name || langCode,
-        })}
-      </DialogTitle>
+      {!title && (
+        <DialogTitle>
+          {t('editor.managePermissionModal.langTitle', {
+            language: contentLanguage?.name || langCode,
+          })}
+        </DialogTitle>
+      )}
+      {title && <DialogTitle>{title}</DialogTitle>}
       <DialogContent>
         <Box sx={{ pt: 2 }}>
           <PermissionEditor

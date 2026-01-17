@@ -51,12 +51,10 @@ export const ToolbarMenuDivider = styled('div')(({ theme }) => ({
   }),
 }));
 
-export const ToolbarButton = styled(Button)(({ theme }) => ({
+export const ToolbarButton = styled(IconButton)(({ theme }) => ({
   height: '28px',
-  padding: '4px 8px',
   borderRadius: '4px',
   textTransform: 'none',
-  fontSize: '12px',
   '&:hover': {
     backgroundColor: (theme.vars || theme).palette.grey[200],
   },

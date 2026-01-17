@@ -23,6 +23,9 @@ export const templateKeys = {
     [...templateKeys.details(), orgId, templateId] as const,
 };
 
+// Stable empty array reference to avoid unnecessary re-renders
+const EMPTY_CONTENT_TYPES: never[] = [];
+
 /**
  * Hook to fetch a list of templates in an organization with pagination
  **/
@@ -36,5 +39,10 @@ export const useContentTypes = (orgId: string, enabled = true) => {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  return { contentTypes: data?.data || [], isLoading, error, refetch };
+  return {
+    contentTypes: data?.data ?? EMPTY_CONTENT_TYPES,
+    isLoading,
+    error,
+    refetch,
+  };
 };

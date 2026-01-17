@@ -61,7 +61,7 @@ const ManageSheetPermissionModal = ({
   return (
     <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
       <DialogTitle>
-        {t('editor.managePermissionModal.title', { documentName: docName })}
+        {t('editor.manageDocPermissionModal.title', { documentName: docName })}
       </DialogTitle>
       <DialogContent>
         <Box sx={{ pt: 2 }}>

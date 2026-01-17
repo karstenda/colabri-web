@@ -5,16 +5,24 @@ import {
   SheetStatementGridRowLoro,
   StmtDocSchema,
 } from '../../../data/ColabDoc';
-import { DataGrid } from '@mui/x-data-grid/DataGrid';
+import { DataGrid } from '@mui/x-data-grid';
 import {
   ColabSheetStatementGridRow,
   StatementGridRowType,
 } from '../../../../api/ColabriAPI';
-import { useState, useMemo, useCallback } from 'react';
-import { GridFilterModel, GridSortModel } from '@mui/x-data-grid/models';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import {
+  GridColDef,
+  GridFilterModel,
+  GridSortModel,
+} from '@mui/x-data-grid/models';
 import { GridColumnVisibilityModel } from '@mui/x-data-grid';
 import { gridClasses } from '@mui/x-data-grid';
 import getStmtNameColumn from './columns/StmtNameColumn';
+import { useColabDoc } from '../../../context/ColabDocContext/ColabDocProvider';
+import getStmtLangColumn from './columns/StmtLangColumn';
+import { useContentLanguages } from '../../../../ui/hooks/useContentLanguages/useContentLanguage';
+import getStmtActionsColumn from './columns/StmtActionsColumn';
 
 export type StatementGridEditorProps = {
   stmtGridRowLoroList: LoroList<SheetStatementGridRowLoro>;
@@ -30,8 +38,10 @@ export type StatementGridEditorRow = {
 const StatementGridEditor: React.FC<StatementGridEditorProps> = ({
   stmtGridRowLoroList,
 }) => {
+  const { colabDoc } = useColabDoc();
   const { t } = useTranslation();
   const organization = useOrganization();
+  const { languages } = useContentLanguages(organization?.id);
 
   // Convert LoroList into array of type StatementGridEditorRow and set is state
   const [statementRows, setStatementRows] = useState<StatementGridEditorRow[]>(
@@ -50,6 +60,9 @@ const StatementGridEditor: React.FC<StatementGridEditorProps> = ({
     },
   );
 
+  // Create state for the columns
+  const [columns, setColumns] = useState<any[]>([]);
+
   // Create states for filter, sort, and column visibility
   const [filterModel, setFilterModel] = useState<GridFilterModel>({
     items: [],
@@ -58,14 +71,44 @@ const StatementGridEditor: React.FC<StatementGridEditorProps> = ({
   const [columnVisibilityModel, setColumnVisibilityModel] =
     useState<GridColumnVisibilityModel>({});
 
+  // Handle updating columns
+  const updateColumns = useCallback(() => {
+    const newColumns: GridColDef<StatementGridEditorRow>[] = [
+      getStmtNameColumn(t),
+      getStmtActionsColumn(t),
+    ];
+
+    const propertiesMap = colabDoc?.getLoroDoc().getMap('properties');
+    if (!propertiesMap) {
+      setColumns(newColumns);
+      return;
+    }
+
+    const langCodesLoro = propertiesMap.get('langCodes');
+    if (langCodesLoro) {
+      for (let i = 0; i < langCodesLoro.length; i++) {
+        const langCode = langCodesLoro.get(i);
+        const language = languages?.find((lang) => lang.code === langCode);
+        if (language) {
+          newColumns.push(getStmtLangColumn(language, t));
+        }
+      }
+    }
+
+    setColumns(newColumns);
+  }, [colabDoc, languages, t]);
+
+  // Make sure we update the columns when colabDoc or organization changes
+  useEffect(() => {
+    updateColumns();
+  }, [updateColumns]);
+
   const handleRowClick = useCallback(
     (params: { row: StatementGridEditorRow }) => {
       console.log('Row clicked:', params.row);
     },
     [],
   );
-
-  const columns = useMemo(() => [getStmtNameColumn(t)], [t]);
 
   const gridSx = useMemo(
     () => ({
@@ -78,7 +121,10 @@ const StatementGridEditor: React.FC<StatementGridEditorProps> = ({
           outline: 'none',
         },
       [`& .${gridClasses.row}:hover`]: {
-        cursor: 'pointer',
+        backgroundColor: 'transparent',
+      },
+      [`& .${gridClasses.row}:hovered`]: {
+        backgroundColor: 'transparent',
       },
     }),
     [],
@@ -109,11 +155,11 @@ const StatementGridEditor: React.FC<StatementGridEditorProps> = ({
     <>
       <DataGrid
         rows={statementRows}
-        rowCount={statementRows.length}
         columns={columns}
         showToolbar
         hideFooter
         disableRowSelectionOnClick
+        getRowHeight={() => 'auto'}
         sortingMode="client"
         filterMode="client"
         columnVisibilityModel={columnVisibilityModel}

@@ -13,6 +13,7 @@ import {
   PermissionEditorTableCellRight,
   PermissionEditorTableRow,
 } from './PermissionEditorStyles';
+import MenuList from '@mui/material/MenuList';
 
 export type PermissionsTableRowProps = {
   resolvedPrpl: ResolvedPrplOption;
@@ -110,32 +111,36 @@ const PermissionsTableRow = (props: PermissionsTableRowProps) => {
                   ? props.availablePermissions[section]
                   : [],
               );
-              return (
-                <>
-                  {section !== 'default' && (
-                    <ListSubheader>{section}</ListSubheader>
-                  )}
-                  {sectionAvailablePermissions.map((permission) => {
-                    const isFixed = props.fixedPermissions.has(permission);
-                    return (
-                      <MenuItem
-                        key={permission}
-                        value={permission}
-                        disabled={isFixed}
-                        sx={{ py: 0, px: 0, mb: 0.5 }}
-                      >
-                        <Checkbox
-                          checked={permissions.has(permission)}
-                          disabled={isFixed}
-                        />
-                        <ListItemText
-                          primary={t(`permissions.${permission as Permission}`)}
-                        />
-                      </MenuItem>
-                    );
-                  })}
-                </>
-              );
+
+              const entries = [];
+              if (section !== 'default') {
+                entries.push(
+                  <ListSubheader key={section}>{section}</ListSubheader>,
+                );
+              }
+
+              const items = sectionAvailablePermissions.map((permission) => {
+                const isFixed = props.fixedPermissions.has(permission);
+                return (
+                  <MenuItem
+                    key={permission}
+                    value={permission}
+                    disabled={isFixed}
+                    sx={{ py: 0, px: 0, mb: 0.5 }}
+                  >
+                    <Checkbox
+                      checked={permissions.has(permission)}
+                      disabled={isFixed}
+                    />
+                    <ListItemText
+                      primary={t(`permissions.${permission as Permission}`)}
+                    />
+                  </MenuItem>
+                );
+              });
+              entries.push(...items);
+
+              return entries;
             })
           ) : (
             <></>

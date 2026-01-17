@@ -14,6 +14,7 @@ import {
 import { useOrganization } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
 import type { OrgContentLanguage } from '../../../api/ColabriAPI';
 import { DialogProps } from '../../../ui/hooks/useDialogs/useDialogs';
+import { useTranslation } from 'react-i18next';
 
 export interface AddLanguageModalPayload {
   existingLanguages: OrgContentLanguage[];
@@ -27,6 +28,7 @@ export const AddLanguageModal: React.FC<AddLanguageModalProps> = ({
   onClose,
   payload,
 }) => {
+  const { t } = useTranslation();
   const { existingLanguages } = payload;
   const organization = useOrganization();
   const [selectedLanguages, setSelectedLanguages] = useState<LanguageOption[]>(
@@ -71,7 +73,7 @@ export const AddLanguageModal: React.FC<AddLanguageModalProps> = ({
 
   return (
     <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
-      <DialogTitle>Add Languages to Document</DialogTitle>
+      <DialogTitle>{t('editor.addLanguageModal.title')}</DialogTitle>
       <DialogContent>
         <Box sx={{ pt: 2 }}>
           <LanguageSelector
@@ -93,7 +95,7 @@ export const AddLanguageModal: React.FC<AddLanguageModalProps> = ({
           variant="contained"
           disabled={selectedLanguages.length === 0}
         >
-          Add{' '}
+          {t('common.add')}{' '}
           {selectedLanguages.length > 0 ? `(${selectedLanguages.length})` : ''}
         </Button>
       </DialogActions>

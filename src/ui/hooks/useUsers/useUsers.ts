@@ -1,11 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Api, CreateUserRequest, UpdateUserRequest } from '../../../api/ColabriAPI';
-import { GridListFilterModel, GridListSortModel } from '../../data/GridListOptions';
+import {
+  Api,
+  CreateUserRequest,
+  UpdateUserRequest,
+} from '../../../api/ColabriAPI';
+import {
+  GridListFilterModel,
+  GridListSortModel,
+} from '../../data/GridListOptions';
 import { groupKeys } from '../useGroups/useGroups';
 
 // Create a singleton API client instance
 const apiClient = new Api({
-  baseUrl: "/api/v1",
+  baseUrl: '/api/v1',
   baseApiParams: {
     credentials: 'include', // Include cookies for authentication
     headers: {
@@ -18,24 +25,42 @@ const apiClient = new Api({
 export const userKeys = {
   all: ['users'] as const,
   lists: () => [...userKeys.all, 'list'] as const,
-  list: (orgId: string, filters: { limit?: number; offset?: number }) => 
+  list: (orgId: string, filters: { limit?: number; offset?: number }) =>
     [...userKeys.lists(), orgId, filters] as const,
   details: () => [...userKeys.all, 'detail'] as const,
-  detail: (orgId: string, userId: string) => [...userKeys.details(), orgId, userId] as const,
-  groups: (orgId: string, userId: string) => [...userKeys.details(), orgId, userId, 'groups'] as const,
+  detail: (orgId: string, userId: string) =>
+    [...userKeys.details(), orgId, userId] as const,
+  groups: (orgId: string, userId: string) =>
+    [...userKeys.details(), orgId, userId, 'groups'] as const,
 };
+
+// Stable empty array reference to avoid unnecessary re-renders
+const EMPTY_USERS: never[] = [];
 
 // Custom hooks for user operations
 
 /**
  * Hook to fetch a list of users in an organization with pagination
  */
-export const useUsers = (orgId: string, params?: { limit?: number; offset?: number; sort?: GridListSortModel; filter?: GridListFilterModel }, enabled = true) => {
-  const {data, isLoading, error, refetch} = useQuery({
+export const useUsers = (
+  orgId: string,
+  params?: {
+    limit?: number;
+    offset?: number;
+    sort?: GridListSortModel;
+    filter?: GridListFilterModel;
+  },
+  enabled = true,
+) => {
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: userKeys.list(orgId, params || {}),
     queryFn: () => {
-
-      const apiParams: { limit?: number; offset?: number; filter?: string; sort?: string } = {};
+      const apiParams: {
+        limit?: number;
+        offset?: number;
+        filter?: string;
+        sort?: string;
+      } = {};
 
       if (params?.limit) {
         apiParams.limit = params.limit;
@@ -50,27 +75,27 @@ export const useUsers = (orgId: string, params?: { limit?: number; offset?: numb
         apiParams.sort = JSON.stringify(params.sort);
       }
 
-      return apiClient.orgId.getUsers(orgId, apiParams)
+      return apiClient.orgId.getUsers(orgId, apiParams);
     },
     enabled: enabled && !!orgId,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
   });
-  return {users: data?.data || [], isLoading, error, refetch};
+  return { users: data?.data ?? EMPTY_USERS, isLoading, error, refetch };
 };
 
 /**
  * Hook to fetch a single user by ID
  */
 export const useUser = (orgId: string, userId: string, enabled = true) => {
-  const {data, isLoading, error, refetch} = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: userKeys.detail(orgId, userId),
     queryFn: () => apiClient.orgId.getUser(orgId, userId),
     enabled: enabled && !!orgId && !!userId,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
-  return {user: data?.data || null, isLoading, error, refetch};
+  return { user: data?.data || null, isLoading, error, refetch };
 };
 
 /**
@@ -80,24 +105,22 @@ export const useCreateUser = (orgId: string) => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (data: CreateUserRequest) => 
+    mutationFn: (data: CreateUserRequest) =>
       apiClient.orgId.postUser(orgId, data),
     onSuccess: (newUser, variables) => {
-
-      const {data} = newUser;
+      const { data } = newUser;
 
       // Invalidate and refetch users list
       queryClient.invalidateQueries({ queryKey: userKeys.lists() });
-      
+
       // Optionally add the new user to the cache
-      queryClient.setQueryData(
-        userKeys.detail(orgId, data.id!),
-        newUser
-      );
+      queryClient.setQueryData(userKeys.detail(orgId, data.id!), newUser);
 
       // Invalidate the group members of those groups the user belongs to
       for (const groupId of variables.groupIds || []) {
-        queryClient.invalidateQueries({ queryKey: groupKeys.members(orgId, groupId, {}) });
+        queryClient.invalidateQueries({
+          queryKey: groupKeys.members(orgId, groupId, {}),
+        });
       }
     },
     onError: (error) => {
@@ -120,28 +143,32 @@ export const useUpdateUser = (orgId: string) => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: ({ userId, data }: { 
-      userId: string; 
-      data: UpdateUserRequest 
+    mutationFn: ({
+      userId,
+      data,
+    }: {
+      userId: string;
+      data: UpdateUserRequest;
     }) => apiClient.orgId.patchUser(orgId, userId, data),
     onSuccess: (updatedUser, variables) => {
       const { userId, data } = variables;
-      
+
       // Update the specific user in cache
-      queryClient.setQueryData(
-        userKeys.detail(orgId, userId),
-        updatedUser
-      );
+      queryClient.setQueryData(userKeys.detail(orgId, userId), updatedUser);
 
       // Invalidate the user groups as they might have changed
-      queryClient.invalidateQueries({ queryKey: userKeys.groups(orgId, userId) });
-      
+      queryClient.invalidateQueries({
+        queryKey: userKeys.groups(orgId, userId),
+      });
+
       // Invalidate users list to reflect changes
       queryClient.invalidateQueries({ queryKey: userKeys.lists() });
 
       // Invalidate the group members of those groups the user belongs to
       for (const groupId of data.groupIds || []) {
-        queryClient.invalidateQueries({ queryKey: groupKeys.members(orgId, groupId, {}) });
+        queryClient.invalidateQueries({
+          queryKey: groupKeys.members(orgId, groupId, {}),
+        });
       }
     },
     onError: (error) => {
@@ -149,9 +176,9 @@ export const useUpdateUser = (orgId: string) => {
     },
   });
 
-  return { 
+  return {
     updateUser: mutation.mutateAsync,
-    updatedUser: mutation.data, 
+    updatedUser: mutation.data,
     isPending: mutation.isPending,
     error: mutation.error,
   };
@@ -164,12 +191,11 @@ export const useDeleteUser = (orgId: string) => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (userId: string) => 
-      apiClient.orgId.deleteUser(orgId, userId),
+    mutationFn: (userId: string) => apiClient.orgId.deleteUser(orgId, userId),
     onSuccess: (_, userId) => {
       // Remove the user from cache
       queryClient.removeQueries({ queryKey: userKeys.detail(orgId, userId) });
-      
+
       // Invalidate users list
       queryClient.invalidateQueries({ queryKey: userKeys.lists() });
     },
@@ -182,11 +208,15 @@ export const useDeleteUser = (orgId: string) => {
     deleteUser: mutation.mutateAsync,
     deletedUser: mutation.data,
     isPending: mutation.isPending,
-    error: mutation.error
+    error: mutation.error,
   };
 };
 
-export const useUserGroups = (orgId: string, userId: string, enabled = true) => {
+export const useUserGroups = (
+  orgId: string,
+  userId: string,
+  enabled = true,
+) => {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: userKeys.groups(orgId, userId),
     queryFn: () => apiClient.orgId.getUsersGroups(orgId, userId),

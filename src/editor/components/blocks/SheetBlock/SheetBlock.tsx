@@ -95,22 +95,22 @@ const SheetBlock = ({ bp }: SheetBlockProps) => {
         sheetContentBlock as LoroMap<{ type: ColabSheetBlockType }>
       ).get('type');
       switch (blockType) {
-        case ColabSheetBlockType.ColabSheetBlockTypeText: {
+        case 'text': {
           // Text Block
           const textBlockBP: SheetTextBlockBP = {
             id: sheetContentBlock.id,
-            type: ColabSheetBlockType.ColabSheetBlockTypeText,
+            type: 'text' as ColabSheetBlockType,
             containerId: sheetContentBlock.id,
             langCode: DEFAULT_LANGCODE,
           };
           newSheetBlockBPs.push(textBlockBP);
           break;
         }
-        case ColabSheetBlockType.ColabSheetBlockTypeStatementGrid: {
+        case 'statement-grid': {
           // Statement Grid Block
           const statementGridBlockBP: SheetStatementGridBlockBP = {
             id: sheetContentBlock.id,
-            type: ColabSheetBlockType.ColabSheetBlockTypeStatementGrid,
+            type: 'statement-grid' as ColabSheetBlockType,
             containerId: sheetContentBlock.id,
           };
           newSheetBlockBPs.push(statementGridBlockBP);

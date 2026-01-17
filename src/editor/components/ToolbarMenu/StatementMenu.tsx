@@ -1,4 +1,4 @@
-import { Stack, Tooltip } from '@mui/material';
+import { Stack, SvgIcon, Tooltip } from '@mui/material';
 import { ToolbarButton, ToolbarMenuDivider } from './ToolbarMenuStyles';
 import { useColabDoc } from '../../context/ColabDocContext/ColabDocProvider';
 import { useEffect, useRef, useState } from 'react';
@@ -16,6 +16,9 @@ import ManagePermissionModal, {
 } from '../ManagePermissionModal/ManagePermissionModal';
 import { LoroMap } from 'loro-crdt';
 import { ConnectedStmtDoc } from '../../data/ConnectedColabDoc';
+import LanguageAddIcon from '../icons/LanguageAddIcon';
+import LanguageRemoveIcon from '../icons/LanguageRemoveIcon';
+import LanguageSettingsIcon from '../icons/LanguageSettingsIcon';
 
 export type StatementMenuProps = {};
 
@@ -238,7 +241,7 @@ export default function StatementMenu({}: StatementMenuProps) {
                   disabled={disabled.current}
                   onClick={handleAddLanguageClicked}
                 >
-                  {t('editor.toolbar.addLanguage')}
+                  <LanguageAddIcon width={'100%'} height={'100%'} />
                 </ToolbarButton>
               </span>
             </Tooltip>
@@ -248,7 +251,7 @@ export default function StatementMenu({}: StatementMenuProps) {
                   disabled={disabled.current || !isStatementElementBlockFocused}
                   onMouseDown={handleRemoveLanguageClicked}
                 >
-                  {t('editor.toolbar.removeLanguage')}
+                  <SvgIcon component={LanguageRemoveIcon} />
                 </ToolbarButton>
               </span>
             </Tooltip>
@@ -264,7 +267,7 @@ export default function StatementMenu({}: StatementMenuProps) {
                   disabled={disabled.current || !isStatementElementBlockFocused}
                   onMouseDown={handleManageStatementElementClicked}
                 >
-                  {t('editor.toolbar.manageLanguage')}
+                  <LanguageSettingsIcon />
                 </ToolbarButton>
               </span>
             </Tooltip>

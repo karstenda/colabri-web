@@ -18,6 +18,10 @@ export const countryKeys = {
   list: (orgId: string) => [...countryKeys.lists(), orgId] as const,
 };
 
+// Stable empty array reference to avoid unnecessary re-renders
+const EMPTY_COUNTRIES: never[] = [];
+const EMPTY_REFETCH = () => {};
+
 export const usePlatformCountries = (enabled = true) => {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: countryKeys.platform(),
@@ -26,12 +30,22 @@ export const usePlatformCountries = (enabled = true) => {
     staleTime: 60 * 60 * 1000,
   });
 
-  return { countries: data?.data || [], isLoading, error, refetch };
+  return {
+    countries: data?.data ?? EMPTY_COUNTRIES,
+    isLoading,
+    error,
+    refetch,
+  };
 };
 
 export const useCountries = (orgId?: string, enabled = true) => {
   if (!orgId) {
-    return { countries: [], isLoading: false, error: null, refetch: () => {} };
+    return {
+      countries: EMPTY_COUNTRIES,
+      isLoading: false,
+      error: null,
+      refetch: EMPTY_REFETCH,
+    };
   }
 
   const { data, isLoading, error, refetch } = useQuery({
@@ -41,7 +55,12 @@ export const useCountries = (orgId?: string, enabled = true) => {
     staleTime: 60 * 60 * 1000,
   });
 
-  return { countries: data?.data || [], isLoading, error, refetch };
+  return {
+    countries: data?.data ?? EMPTY_COUNTRIES,
+    isLoading,
+    error,
+    refetch,
+  };
 };
 
 export const useAddCountries = (orgId: string) => {

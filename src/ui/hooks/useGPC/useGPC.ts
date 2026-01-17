@@ -17,6 +17,9 @@ export const gpcKeys = {
   list: (params: Record<string, any>) => [...gpcKeys.all, params] as const,
 };
 
+// Stable empty array reference to avoid unnecessary re-renders
+const EMPTY_NODES: never[] = [];
+
 export interface UseGPCNodesParams {
   queryScope:
     | 'gpcSegment'
@@ -53,5 +56,5 @@ export const useGPCNodes = ({
     placeholderData: (previousData) => previousData,
   });
 
-  return { nodes: data?.data || [], isLoading, error, refetch };
+  return { nodes: data?.data ?? EMPTY_NODES, isLoading, error, refetch };
 };

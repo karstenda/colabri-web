@@ -27,6 +27,9 @@ export const sheetKeys = {
     [...sheetKeys.details(), orgId, sheetId] as const,
 };
 
+// Stable empty array reference to avoid unnecessary re-renders
+const EMPTY_SHEETS: never[] = [];
+
 // Custom hooks for user operations
 
 /**
@@ -71,7 +74,7 @@ export const useSheets = (
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
   });
-  return { sheets: data?.data || [], isLoading, error, refetch };
+  return { sheets: data?.data ?? EMPTY_SHEETS, isLoading, error, refetch };
 };
 
 /**

@@ -5,6 +5,7 @@ import { ColabLoroDoc } from '../../data/ColabDoc';
 export type ColabDocContextType = {
   docId: string | null;
   colabDoc: ConnectedColabDoc<ColabLoroDoc> | null;
+  error: Error | null;
 };
 
 const ColabDocContext = createContext<ColabDocContextType | null>(null);

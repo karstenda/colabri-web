@@ -20,7 +20,13 @@ import {
 import ColabriSvgIcon from '../../../ui/components/MainLayout/icons/ColabriSvgIcon';
 import ProfileMenu from '../../../ui/components/ProfileMenu/ProfileMenu';
 import ThemeSwitcher from '../../../ui/components/ThemeSwitcher/ThemeSwitcher';
-import { Box, CircularProgress, Stack, useMediaQuery } from '@mui/material';
+import {
+  Alert,
+  Box,
+  CircularProgress,
+  Stack,
+  useMediaQuery,
+} from '@mui/material';
 import ColabDocEditorProvider from '../../context/ColabDocEditorContext/ColabDocEditorProvider';
 import ToolbarMenu from '../ToolbarMenu/ToolbarMenu';
 import StatementBlock from '../blocks/StatementBlock/StatementBlock';
@@ -33,11 +39,11 @@ import { useTranslation } from 'react-i18next';
 import SheetBlock from '../blocks/SheetBlock/SheetBlock';
 
 export default function ColabDocEditor() {
-  // Get the translation hook
+  // Get the standard hooks
   const { t } = useTranslation();
 
   // Get the ColabDoc context
-  const { colabDoc } = useColabDoc();
+  const { colabDoc, error: colabDocError } = useColabDoc();
 
   // Get the organization
   const organization = useOrganization();
@@ -99,19 +105,39 @@ export default function ColabDocEditor() {
   }, [colabDoc]);
 
   if (colabDoc == null) {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          width: '100%',
-          height: '100%',
-        }}
-      >
-        <CircularProgress />
-      </Box>
-    );
+    if (colabDocError == null) {
+      return (
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: '100%',
+            height: '100%',
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      );
+    } else if (colabDocError != null) {
+      let message = colabDocError.message;
+      if (message === 'Join failed: 2 - Authentication failed') {
+        message = t('editor.errors.authFailed');
+      }
+      return (
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: '100%',
+            height: '100%',
+          }}
+        >
+          <Alert severity="error">{message}</Alert>
+        </Box>
+      );
+    }
   } else {
     return (
       <>

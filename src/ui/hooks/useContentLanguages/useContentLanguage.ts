@@ -26,6 +26,10 @@ export const languageKeys = {
 
 // Custom hooks for language operations
 
+// Stable empty array reference to avoid unnecessary re-renders
+const EMPTY_LANGUAGES: never[] = [];
+const EMPTY_REFETCH = () => {};
+
 /**
  * Hook to fetch a list of all languages on the platform
  */
@@ -38,7 +42,12 @@ export const usePlatformContentLanguages = (enabled = true) => {
     enabled: enabled,
     staleTime: 60 * 60 * 1000, // 1 hour
   });
-  return { languages: data?.data || [], isLoading, error, refetch };
+  return {
+    languages: data?.data ?? EMPTY_LANGUAGES,
+    isLoading,
+    error,
+    refetch,
+  };
 };
 
 /**
@@ -46,7 +55,12 @@ export const usePlatformContentLanguages = (enabled = true) => {
  */
 export const useContentLanguages = (orgId?: string, enabled = true) => {
   if (!orgId) {
-    return { languages: [], isLoading: false, error: null, refetch: () => {} };
+    return {
+      languages: EMPTY_LANGUAGES,
+      isLoading: false,
+      error: null,
+      refetch: EMPTY_REFETCH,
+    };
   }
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: languageKeys.list(orgId, {}),
@@ -56,7 +70,12 @@ export const useContentLanguages = (orgId?: string, enabled = true) => {
     enabled: enabled,
     staleTime: 60 * 60 * 1000, // 1 hour
   });
-  return { languages: data?.data || [], isLoading, error, refetch };
+  return {
+    languages: data?.data ?? EMPTY_LANGUAGES,
+    isLoading,
+    error,
+    refetch,
+  };
 };
 
 /**

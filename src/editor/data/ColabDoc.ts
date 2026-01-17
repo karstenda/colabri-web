@@ -4,7 +4,6 @@ import {
   ColabApprovalType,
   ColabModelType,
   ColabSheetBlockType,
-  ColabStatementModel,
   DocumentStream,
   StatementDocument,
   StatementGridRowType,
@@ -31,13 +30,13 @@ export type ColabDoc =
     };
 
 export type StmtDocSchema = {
-  properties: StmtDocPropertiesLoro;
+  properties: DocPropertiesLoro;
   content: LoroMap<Record<string, StmtElementLoro>>;
   acls: AclLoroMap;
 };
 
 export type SheetDocSchema = {
-  properties: StmtDocPropertiesLoro;
+  properties: DocPropertiesLoro;
   content: LoroList<SheetBlockLoro>;
   acls: AclLoroMap;
   approvals: LoroMap<Record<string, ApprovalLoro>>;
@@ -51,9 +50,11 @@ export type SheetLoroDoc = LoroDoc<SheetDocSchema>;
 
 export type AclLoroMap = LoroMap<Record<Permission, LoroList<string>>>;
 
-export type StmtDocPropertiesLoro = LoroMap<{
+export type DocPropertiesLoro = LoroMap<{
   type: string;
   contentType: string;
+  langCodes?: LoroList<string>;
+  countryCodes?: LoroList<string>;
 }>;
 
 export type StmtElementLoro = LoroMap<{
@@ -108,13 +109,13 @@ export type GroupApprovalLoro = LoroMap<{
 }>;
 
 export type TextElementLoro = LoroMap<{
-  type: string;
+  nodeName: string;
   children?: LoroList<TextElementChild>;
   attributes?: LoroMap<{ [key: string]: string }>;
 }>;
 
 export type TextElementChild = LoroMap<{
-  type: string;
+  nodeName: string;
   children?: LoroList<TextElementChild> | string;
   attributes?: LoroMap<{ [key: string]: string }>;
 }>;

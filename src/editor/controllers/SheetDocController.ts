@@ -1,8 +1,15 @@
-import { ContainerID, LoroEventBatch, LoroList, LoroMap } from 'loro-crdt';
+import {
+  ContainerID,
+  Loro,
+  LoroEventBatch,
+  LoroList,
+  LoroMap,
+} from 'loro-crdt';
 import {
   AclLoroMap,
   SheetBlockLoro,
   SheetLoroDoc,
+  SheetStatementGridBlockLoro,
   SheetTextBlockLoro,
   StmtLoroDoc,
   UserApprovalLoro,
@@ -349,6 +356,107 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
   }
 
   /**
+   * Get the position of the content container in the content list
+   *
+   * @param containerId
+   * @returns
+   */
+  getContentListPosition(containerId: ContainerID): number {
+    const contentList = this.loroDoc.getList('content');
+    for (let i = 0; i < contentList.length; i++) {
+      const container = contentList.get(i);
+      if (container.id === containerId) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * Add a new block to the document
+   *
+   * @param ColabSheetBlockType
+   * @param position
+   */
+  addBlock(
+    ColabSheetBlockType: ColabSheetBlockType,
+    position?: number,
+  ): ContainerID {
+    const contentList = this.loroDoc.getList('content');
+
+    // Ensure position is valid
+    if (
+      position === undefined ||
+      position < 0 ||
+      position > contentList.length
+    ) {
+      position = contentList.length;
+    } else {
+      position = position + 1;
+    }
+
+    // Create the block based on type
+    if (ColabSheetBlockType === 'text') {
+      const blockMap = contentList.insertContainer(
+        position,
+        new LoroMap(),
+      ) as SheetTextBlockLoro;
+
+      // Initialize the block
+      blockMap.set('type', 'text' as ColabSheetBlockType);
+      blockMap.setContainer('acls', new LoroMap());
+      blockMap.setContainer('approvals', new LoroMap());
+
+      // Set the text element
+      // Create the textElement
+      const textElementMap = blockMap.getOrCreateContainer(
+        'textElement',
+        new LoroMap(),
+      );
+      textElementMap.set('nodeName', 'doc');
+
+      return blockMap.id;
+    }
+    if (ColabSheetBlockType === 'statement-grid') {
+      const blockMap = contentList.insertContainer(
+        position,
+        new LoroMap(),
+      ) as SheetStatementGridBlockLoro;
+
+      // Initialize the block
+      blockMap.set('type', 'statement-grid' as ColabSheetBlockType);
+      blockMap.setContainer('acls', new LoroMap());
+      blockMap.setContainer('rows', new LoroMap());
+
+      return blockMap.id;
+    }
+    // Unsupported block type
+    else {
+      throw new Error(`Unsupported block type: ${ColabSheetBlockType}`);
+    }
+  }
+
+  /**
+   * Remove a block from the document
+   *
+   * @param containerId
+   * @returns
+   */
+  removeBlock(containerId: ContainerID): boolean {
+    // Get the position of the container
+    const position = this.getContentListPosition(containerId);
+    if (position === -1) {
+      console.warn(`Could not find block with container ID: ${containerId}`);
+      return false;
+    }
+
+    // Delete the container
+    const contentList = this.loroDoc.getList('content');
+    contentList.delete(position, 1);
+    return true;
+  }
+
+  /**
    * Subscribe to ACL changes for the statement element.
    *
    * @param langCode
@@ -391,7 +499,8 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
     return this.loroDoc.subscribe((event: LoroEventBatch) => {
       const blockPath = this.loroDoc.getPathToContainer(containerId);
       if (!blockPath) {
-        throw new Error(`Could not find block for container ID ${containerId}`);
+        // Probably because the block container was deleted
+        return;
       }
 
       for (const ev of event.events) {

@@ -26,6 +26,9 @@ export const productKeys = {
     [...productKeys.details(), orgId, productId] as const,
 };
 
+// Stable empty array reference to avoid unnecessary re-renders
+const EMPTY_PRODUCTS: never[] = [];
+
 // Custom hooks for product operations
 
 /**
@@ -39,7 +42,7 @@ export const useProducts = (orgId: string, enabled = true) => {
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
-  return { products: data?.data || [], isLoading, error, refetch };
+  return { products: data?.data ?? EMPTY_PRODUCTS, isLoading, error, refetch };
 };
 
 /**

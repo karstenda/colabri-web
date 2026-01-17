@@ -30,6 +30,7 @@ import { getUserDisplayName, UserProfile } from '../../../ui/data/User';
 import StatementDocController from '../../controllers/StatementDocController';
 import { ConnectedStmtDoc } from '../../data/ConnectedColabDoc';
 import SheetDocController from '../../controllers/SheetDocController';
+import useNotifications from '../../../ui/hooks/useNotifications/useNotifications';
 
 export type ColabDocProviderProps = {
   docId: string;
@@ -43,6 +44,7 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
   const userUid = useUserUid();
   const userProfile = useUserProfile();
   const authPrpls = usePrpls();
+  const notifications = useNotifications();
 
   // Fetch the targeted document
   const { document } = useDocument(
@@ -58,6 +60,9 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
   // The connected doc state.
   const [connectedDoc, setConnectedDoc] =
     useState<ConnectedColabDoc<ColabLoroDoc> | null>(null);
+
+  // The potential error state.
+  const [error, setError] = useState<Error | null>(null);
 
   // Load initial document (via message or REST)
   useEffect(() => {
@@ -82,11 +87,14 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
     // Check if we're NOT currently connected, then connect once
     if (!connected.current) {
       connected.current = true;
-      connect(docId, document, userUid, org, userId, userProfile).then(
-        (disconnectFn) => {
+      connect(docId, document, userUid, org, userId, userProfile)
+        .then((disconnectFn) => {
           disconnectFnRef.current = disconnectFn;
-        },
-      );
+        })
+        .catch((error) => {
+          console.error('Error connecting to document:', error);
+          setError(error as Error);
+        });
     }
   }, [document, userId, userProfile, org, userUid, authPrpls]);
 
@@ -216,7 +224,7 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
   };
 
   return (
-    <ColabDocContext.Provider value={{ docId, colabDoc: connectedDoc }}>
+    <ColabDocContext.Provider value={{ docId, colabDoc: connectedDoc, error }}>
       {children}
     </ColabDocContext.Provider>
   );
@@ -228,6 +236,7 @@ export function useColabDoc(): ColabDocContextType {
     return {
       docId: null,
       colabDoc: null,
+      error: null,
     };
   } else {
     return colabDocContext;

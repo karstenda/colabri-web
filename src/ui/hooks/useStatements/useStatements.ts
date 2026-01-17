@@ -27,6 +27,9 @@ export const statementKeys = {
     [...statementKeys.details(), orgId, statementId] as const,
 };
 
+// Stable empty array reference to avoid unnecessary re-renders
+const EMPTY_STATEMENTS: never[] = [];
+
 // Custom hooks for user operations
 
 /**
@@ -71,7 +74,12 @@ export const useStatements = (
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
   });
-  return { statements: data?.data || [], isLoading, error, refetch };
+  return {
+    statements: data?.data ?? EMPTY_STATEMENTS,
+    isLoading,
+    error,
+    refetch,
+  };
 };
 
 /**

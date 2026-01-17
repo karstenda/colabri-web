@@ -25,6 +25,9 @@ export const documentKeys = {
     [...documentKeys.details(), orgId, statementId] as const,
 };
 
+// Stable empty array reference to avoid unnecessary re-renders
+const EMPTY_DOCUMENTS: never[] = [];
+
 export const useDocuments = (
   orgId: string,
   filters?: { limit?: number; offset?: number },
@@ -40,7 +43,12 @@ export const useDocuments = (
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
   });
-  return { documents: data?.data || [], isLoading, error, refetch };
+  return {
+    documents: data?.data ?? EMPTY_DOCUMENTS,
+    isLoading,
+    error,
+    refetch,
+  };
 };
 
 export const useDocument = (orgId: string, docId: string, enabled = true) => {
