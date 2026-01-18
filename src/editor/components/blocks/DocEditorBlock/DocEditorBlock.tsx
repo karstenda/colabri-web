@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Box, BoxProps } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { BoxProps } from '@mui/material';
 import { useSetActiveBlock } from '../../../context/ColabDocEditorContext/ColabDocEditorProvider';
 import DocEditorBlockControls, {
   DocEditorBlockControl,
@@ -16,15 +15,17 @@ import { StyledDocEditorBlock } from './DocEditorBlockStyles';
 export type DocEditorBlockProps = BoxProps & {
   blockId: string;
   blockType: string;
-  loroContainerId?: ContainerID;
-  loroDoc?: LoroDoc;
-  controller?: ColabDocController<ColabLoroDoc>;
+  loroContainerId: ContainerID;
+  loroDoc: LoroDoc;
+  controller: ColabDocController<ColabLoroDoc>;
   readOnly?: boolean;
-  onFocusChange?: (hasFocus: boolean) => void;
-  onHoverChange?: (isHovered: boolean) => void;
   showUpDownControls?: boolean;
   showManageControls?: boolean;
+  onFocusChange?: (hasFocus: boolean) => void;
+  onHoverChange?: (isHovered: boolean) => void;
   onManageBlock?: () => void;
+  onMoveDown?: () => void;
+  onMoveUp?: () => void;
 };
 
 const DocEditorBlock = ({
@@ -35,11 +36,13 @@ const DocEditorBlock = ({
   loroDoc,
   controller,
   readOnly = false,
-  onFocusChange,
-  onHoverChange,
   showUpDownControls = true,
   showManageControls = true,
+  onFocusChange,
+  onHoverChange,
   onManageBlock,
+  onMoveDown,
+  onMoveUp,
   ...boxProps
 }: DocEditorBlockProps) => {
   // The reference to the EditorContentBlock element
@@ -64,9 +67,7 @@ const DocEditorBlock = ({
       id: `move-up-block-${blockId}`,
       label: 'Move Up',
       icon: <KeyboardArrowUpIcon sx={{ fontSize: 16 }} />,
-      onClick: () => {
-        /* Implement move up logic here */
-      },
+      onClick: onMoveUp || (() => {}),
     });
   }
   if (showManageControls && canManage) {
@@ -82,9 +83,7 @@ const DocEditorBlock = ({
       id: `move-down-block-${blockId}`,
       label: 'Move Down',
       icon: <KeyboardArrowDownIcon sx={{ fontSize: 16 }} />,
-      onClick: () => {
-        /* Implement move down logic here */
-      },
+      onClick: onMoveDown || (() => {}),
     });
   }
 

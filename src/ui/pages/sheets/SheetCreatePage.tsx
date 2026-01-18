@@ -104,6 +104,10 @@ export default function SheetCreatePage() {
             type: 'text',
             acls: {},
             approvals: {},
+            title: {
+              nodeName: 'doc',
+              children: ['Title'],
+            },
             textElement: {
               nodeName: 'doc',
               children: [
@@ -119,6 +123,10 @@ export default function SheetCreatePage() {
           {
             type: 'statement-grid',
             acls: {},
+            title: {
+              nodeName: 'doc',
+              children: ['Title 2'],
+            },
             rows: [
               {
                 type: StatementGridRowType.StatementGridRowTypeLocal,

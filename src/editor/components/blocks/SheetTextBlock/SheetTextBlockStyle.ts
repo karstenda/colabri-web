@@ -10,7 +10,6 @@ export const TypographyReadOnly = styled(Typography)(({ theme }) => ({
 }));
 
 export const SheetTextBlockHeaderWrapper = styled(Box)(({ theme }) => ({
-  paddingLeft: '8px',
   display: 'flex',
   flexDirection: 'row',
   alignItems: 'center',

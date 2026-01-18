@@ -1,4 +1,4 @@
-import { LoroDoc, LoroList, LoroMap } from 'loro-crdt';
+import { LoroDoc, LoroList, LoroMap, LoroMovableList } from 'loro-crdt';
 import {
   ColabApprovalState,
   ColabApprovalType,
@@ -37,7 +37,7 @@ export type StmtDocSchema = {
 
 export type SheetDocSchema = {
   properties: DocPropertiesLoro;
-  content: LoroList<SheetBlockLoro>;
+  content: LoroMovableList<SheetBlockLoro>;
   acls: AclLoroMap;
   approvals: LoroMap<Record<string, ApprovalLoro>>;
 };
@@ -70,6 +70,7 @@ export type SheetBlockLoro = LoroMap<
 export type SheetTextBlockSchema = {
   type: ColabSheetBlockType;
   acls: AclLoroMap;
+  title: TextElementLoro;
   textElement: TextElementLoro;
   approvals: LoroMap<Record<string, UserApprovalLoro>>;
 };
@@ -79,6 +80,7 @@ export type SheetTextBlockLoro = LoroMap<SheetTextBlockSchema>;
 export type SheetStatementGridBlockSchema = {
   type: ColabSheetBlockType;
   acls: AclLoroMap;
+  title: TextElementLoro;
   rows: LoroList<SheetStatementGridRowLoro>;
 };
 

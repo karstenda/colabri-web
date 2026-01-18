@@ -6,6 +6,7 @@ import { ConnectedSheetDoc } from '../../../data/ConnectedColabDoc';
 import { useColabDoc } from '../../../context/ColabDocContext/ColabDocProvider';
 import { SheetStatementGridBlockLoro } from '../../../data/ColabDoc';
 import DocEditorBlock from '../DocEditorBlock';
+import DocEditorSheetBlock from '../DocEditorBlock/DocEditorSheetBlock';
 
 export type SheetStatementGridBlockProps = {
   bp: SheetStatementGridBlockBP;
@@ -56,6 +57,7 @@ const SheetStatementGridBlock: React.FC<SheetStatementGridBlockProps> = ({
     if (controller && bp.containerId && loroDoc) {
       // Update the canEdit state
       setCanEdit(controller.canEditBlock(bp.containerId));
+      setCanManage(controller.hasManagePermission());
 
       // Subscribe to ACL changes in the loroDoc
       const aclUnsubscribe = controller.subscribeToBlockAclChanges(
@@ -82,11 +84,8 @@ const SheetStatementGridBlock: React.FC<SheetStatementGridBlockProps> = ({
     setIsHovered(isHovered);
   };
 
-  // Handle manage element
-  const handleManageElement = () => {};
-
   return (
-    <DocEditorBlock
+    <DocEditorSheetBlock
       blockId={bp.id}
       blockType={'SheetStatementGridBlock'}
       loroContainerId={bp.containerId}
@@ -94,13 +93,12 @@ const SheetStatementGridBlock: React.FC<SheetStatementGridBlockProps> = ({
       controller={controller}
       onFocusChange={handleFocusChange}
       onHoverChange={handleHoverChange}
-      showUpDownControls={true}
-      onManageBlock={handleManageElement}
+      showManageControls={canManage}
       readOnly={!canEdit}
       sx={{ padding: '0px' }}
     >
       <StatementGridEditor stmtGridRowLoroList={stmtGridRowLoroList} />
-    </DocEditorBlock>
+    </DocEditorSheetBlock>
   );
 };
 

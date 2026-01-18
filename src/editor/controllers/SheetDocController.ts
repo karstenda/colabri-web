@@ -362,10 +362,10 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
    * @returns
    */
   getContentListPosition(containerId: ContainerID): number {
-    const contentList = this.loroDoc.getList('content');
+    const contentList = this.loroDoc.getMovableList('content');
     for (let i = 0; i < contentList.length; i++) {
       const container = contentList.get(i);
-      if (container.id === containerId) {
+      if (container instanceof LoroMap && container.id === containerId) {
         return i;
       }
     }
@@ -382,7 +382,7 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
     ColabSheetBlockType: ColabSheetBlockType,
     position?: number,
   ): ContainerID {
-    const contentList = this.loroDoc.getList('content');
+    const contentList = this.loroDoc.getMovableList('content');
 
     // Ensure position is valid
     if (
@@ -451,8 +451,40 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
     }
 
     // Delete the container
-    const contentList = this.loroDoc.getList('content');
+    const contentList = this.loroDoc.getMovableList('content');
     contentList.delete(position, 1);
+    return true;
+  }
+
+  /**
+   * Shift a block up or down in the document
+   *
+   * @param containerId
+   * @param direction
+   * @returns
+   */
+  shiftBlock(containerId: ContainerID, direction: 'up' | 'down'): boolean {
+
+    // Get the position of the container
+    const position = this.getContentListPosition(containerId);
+
+    const contentList = this.loroDoc.getMovableList('content');
+
+    let newPosition = -1;
+    if (direction === 'up') {
+      newPosition = position - 1;
+      if (newPosition < 0) {
+        return false;
+      }
+    } else {
+      newPosition = position + 1;
+      if (newPosition >= contentList.length) {
+        return false;
+      }
+    }
+
+    // Move the container
+    contentList.move(position, newPosition);
     return true;
   }
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { forwardRef, useImperativeHandle, useEffect, useRef, useState } from 'react';
 import {
   CursorEphemeralStore,
   LoroEphemeralCursorPlugin,
@@ -13,8 +13,8 @@ import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { keymap } from 'prosemirror-keymap';
 import { baseKeymap } from 'prosemirror-commands';
-import { DOMParser } from 'prosemirror-model';
-import { statementTextSchema } from './StatementTextSchema';
+import { statementTextSchema } from './schemas/StatementTextSchema';
+import { simpleTextSchema } from './schemas/SimpleTextSchema';
 import './editor.css';
 import ColabEphemeralStoreManager from '../ColabDocEditor/EphemeralStoreManager';
 import ToolbarPlugin from './plugins/toolbar/ToolbarPlugin';
@@ -30,10 +30,7 @@ import {
   SpellCheckSuggestionBox,
   SpellCheckSuggestionBoxProps,
 } from './plugins/spellcheck/SpellCheckSuggestionBox';
-
-// Load the document according to the statement text schema
-const mySchema = statementTextSchema;
-const doc = DOMParser.fromSchema(mySchema).parse(document.createElement('div'));
+import { Schema } from 'prosemirror-model';
 
 export type ColabTextEditorProps = {
   loro: LoroDocType;
@@ -45,6 +42,7 @@ export type ColabTextEditorProps = {
     orgId: string;
     langCode?: string;
   };
+  schema?: "simple" | "statement";
   canEdit?: boolean;
   txtDir?: 'ltr' | 'rtl';
   customFonts?: string[];
@@ -52,17 +50,22 @@ export type ColabTextEditorProps = {
   onBlur?: () => void;
 };
 
-export default function ColabTextEditor({
+export type ColabTextEditorHandle = {
+  view: EditorView | null;
+};
+
+const ColabTextEditor = forwardRef<ColabTextEditorHandle, ColabTextEditorProps>(({
   loro,
   ephStoreMgr,
   containerId,
   spellCheck,
+  schema = 'statement',
   canEdit = true,
   txtDir = 'ltr',
   customFonts,
   onFocus,
   onBlur,
-}: ColabTextEditorProps) {
+}: ColabTextEditorProps, ref) => {
   // Get the color scheme
   const { mode } = useColorScheme();
 
@@ -74,6 +77,22 @@ export default function ColabTextEditor({
 
   // Reference to the editor view
   const editorRef = useRef<null | EditorView>(null);
+
+  useImperativeHandle(ref, () => ({
+    get view() {
+      return editorRef.current;
+    },
+  }));
+
+  // Select the proper schema
+  let mySchema: Schema;
+  if (schema === 'simple') {
+    mySchema = simpleTextSchema;
+  } else if (schema === 'statement') {
+    mySchema = statementTextSchema;
+  } else {
+    throw new Error(`Unsupported schema type: ${schema}`);
+  }
 
   // Reference to the DOM node that will contain the editor
   const editorDom = useRef(null);
@@ -190,7 +209,7 @@ export default function ColabTextEditor({
 
     // Initialize the editor view
     const editorView = new EditorView(editorDom.current, {
-      state: EditorState.create({ doc, schema: mySchema, plugins: allPlugins }),
+      state: EditorState.create({ schema: mySchema, plugins: allPlugins }),
       editable: () => canEdit,
       attributes: attributes,
     });
@@ -261,4 +280,6 @@ export default function ColabTextEditor({
       )}
     </>
   );
-}
+});
+
+export default ColabTextEditor;

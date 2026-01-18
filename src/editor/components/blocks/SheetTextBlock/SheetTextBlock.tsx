@@ -1,6 +1,6 @@
 import { SheetTextBlockBP } from './SheetTextBlockBP';
 import React from 'react';
-import { Stack, Tooltip } from '@mui/material';
+import { Stack, Tooltip, Typography } from '@mui/material';
 import ColabTextEditor from '../../ColabTextEditor/ColabTextEditor';
 import {
   useContentLanguages,
@@ -34,6 +34,8 @@ import { useGoogleFonts } from '../../../../ui/hooks/useFonts/useFonts';
 import { ContentLanguage } from '../../../data/ContentLanguage';
 import { t } from 'i18next';
 import { ColabApprovalState } from '../../../../api/ColabriAPI';
+import DocEditorSheetBlock from '../DocEditorBlock/DocEditorSheetBlock';
+import ColabTextEditorOutlined from '../../ColabTextEditor/ColabTextEditorOutlined';
 
 export type SheetTextBlockProps = {
   bp: SheetTextBlockBP;
@@ -101,8 +103,9 @@ const SheetTextBlock: React.FC<SheetTextBlockProps> = ({ bp }) => {
   // Get the controller
   const controller = colabDoc?.getDocController();
 
-  // The reference to the text element container id
+  // The reference to the textElement and title container id
   let textElementContainerId: ContainerID | null = null;
+  let titleContainerId: ContainerID | null = null;
   if (loroDoc) {
     const container = loroDoc.getContainerById(bp.containerId) as LoroMap;
     if (container) {
@@ -112,6 +115,15 @@ const SheetTextBlock: React.FC<SheetTextBlockProps> = ({ bp }) => {
       } else {
         console.log(
           "Could not find 'textElement' inside SheetTextBlock with id: " +
+            bp.containerId,
+        );
+      }
+      const titleContainer = container.get('title') as LoroMap;
+      if (titleContainer) {
+        titleContainerId = titleContainer.id;
+      } else {
+        console.log(
+          "Could not find 'title' inside SheetTextBlock with id: " +
             bp.containerId,
         );
       }
@@ -230,45 +242,12 @@ const SheetTextBlock: React.FC<SheetTextBlockProps> = ({ bp }) => {
     }
   };
 
-  const handleManageElement = async () => {
-    if (!loroDoc || !language || !controller) {
-      return;
-    }
-
-    // Get the current ACLs
-    const docAcls = controller.getDocAclMap();
-    const blockAcls = controller.getBlockAclMap(bp.containerId);
-
-    // Open the modal to manage the statement element
-    const newStmtElementAclMaps = await dialogs.open<
-      ManagePermissionModalPayload,
-      Record<Permission, string[]> | undefined
-    >(ManagePermissionModal, {
-      langCode: bp.langCode,
-      orgId: organization?.id || '',
-      acls: blockAcls,
-      docAcls: docAcls,
-    });
-
-    // If a new ACL map was returned, update the document
-    if (newStmtElementAclMaps) {
-      // Create the StatementDocController
-      const stmtDocController = colabDoc.getDocController();
-
-      // Patch the document ACL map with the new ACLs
-      stmtDocController.patchBlockAclMap(bp.containerId, newStmtElementAclMaps);
-
-      // Commit the changes
-      stmtDocController.commit();
-    }
-  };
-
   if (!loroDoc || !ephStoreMgr) {
     return <div>Loading...</div>;
   } else {
     return (
       <>
-        <DocEditorBlock
+        <DocEditorSheetBlock
           blockId={bp.id}
           blockType={'StatementElementBlock'}
           loroContainerId={bp.containerId}
@@ -276,17 +255,33 @@ const SheetTextBlock: React.FC<SheetTextBlockProps> = ({ bp }) => {
           controller={controller}
           onFocusChange={handleFocusChange}
           onHoverChange={handleHoverChange}
-          showUpDownControls={true}
-          onManageBlock={handleManageElement}
+          showManageControls={canManage}
           readOnly={!canEdit}
         >
           <Stack direction="column" spacing={0.5}>
             <Stack direction="row" spacing={1} flex={1}>
               <SheetTextBlockHeaderWrapper>
                 <SheetTextBlockHeaderLeft>
-                  <TypographyReadOnly variant="h6">
-                    {language?.name || bp.langCode}
-                  </TypographyReadOnly>
+                  {titleContainerId != null && (
+                    <Typography variant="h6">
+                      <ColabTextEditorOutlined
+                        showOutlines={showOutlines}
+                        loro={loroDoc as any as LoroDocType}
+                        ephStoreMgr={ephStoreMgr}
+                        containerId={titleContainerId}
+                        spellCheck={{
+                          enabled: true,
+                          supported: language?.spellCheck || false,
+                          orgId: organization?.id || '',
+                          langCode: language?.spellCheckLangCode,
+                        }}
+                        schema="simple"
+                        canEdit={canEdit}
+                        txtDir={language?.textDirection}
+                        customFonts={customFonts}
+                      />
+                    </Typography>
+                  )}
                   {isNonOrgContentLanguages && (
                     <Tooltip
                       title={t('editor.statementElementBlock.nonOrgLanguage')}
@@ -313,25 +308,24 @@ const SheetTextBlock: React.FC<SheetTextBlockProps> = ({ bp }) => {
               </SheetTextBlockHeaderWrapper>
             </Stack>
             {textElementContainerId != null && (
-              <ColabTextEditorOutline showOutlines={showOutlines}>
-                <ColabTextEditor
-                  loro={loroDoc as any as LoroDocType}
-                  ephStoreMgr={ephStoreMgr}
-                  containerId={textElementContainerId}
-                  spellCheck={{
-                    enabled: true,
-                    supported: language?.spellCheck || false,
-                    orgId: organization?.id || '',
-                    langCode: language?.spellCheckLangCode,
-                  }}
-                  canEdit={canEdit}
-                  txtDir={language?.textDirection}
-                  customFonts={customFonts}
-                />
-              </ColabTextEditorOutline>
+              <ColabTextEditorOutlined
+                showOutlines={showOutlines}
+                loro={loroDoc as any as LoroDocType}
+                ephStoreMgr={ephStoreMgr}
+                containerId={textElementContainerId}
+                spellCheck={{
+                  enabled: true,
+                  supported: language?.spellCheck || false,
+                  orgId: organization?.id || '',
+                  langCode: language?.spellCheckLangCode,
+                }}
+                canEdit={canEdit}
+                txtDir={language?.textDirection}
+                customFonts={customFonts}
+              />
             )}
           </Stack>
-        </DocEditorBlock>
+        </DocEditorSheetBlock>
       </>
     );
   }

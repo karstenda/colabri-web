@@ -66,9 +66,10 @@ export const AddBlockModal: React.FC<AddBlockModalProps> = ({
           cursor: 'pointer',
           borderColor: selectedBlockType === type ? 'primary.main' : 'grey.300',
           width: 200,
+          padding: 0,
         }}
       >
-        <CardActionArea>
+        <CardActionArea sx={{ height: '100%', width: '100%', padding: '12px' }}>
           <CardContent>
             <Typography variant="h5" component="div">
               {name}

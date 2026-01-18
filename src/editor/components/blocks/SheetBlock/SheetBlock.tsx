@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { SheetBlockBP } from './SheetBlockBP';
 import { SheetContentBlockBP } from './SheetContentBlockBP';
 import { useColabDoc } from '../../../context/ColabDocContext/ColabDocProvider';
-import { LoroEventBatch, LoroList, LoroMap } from 'loro-crdt';
+import { LoroEventBatch, LoroList, LoroMap, LoroMovableList } from 'loro-crdt';
 import { Alert, Box, CircularProgress, Skeleton, Stack } from '@mui/material';
 import { useContentLanguages } from '../../../../ui/hooks/useContentLanguages/useContentLanguage';
 import { useOrganization } from '../../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
@@ -50,7 +50,7 @@ const SheetBlock = ({ bp }: SheetBlockProps) => {
     }
 
     // Get the StatementModelContent from the LoroDoc
-    const sheetModelContent = loroDoc.getList('content');
+    const sheetModelContent = loroDoc.getMovableList('content');
     if (!sheetModelContent) {
       console.error(`Sheet model content could not be found.`);
       return;
@@ -67,7 +67,7 @@ const SheetBlock = ({ bp }: SheetBlockProps) => {
    * Bind this statement block to the LoroMap to listen for changes
    */
   const bindToLoro = (loroDoc: SheetLoroDoc) => {
-    const sheetModelContent = loroDoc.getList('content');
+    const sheetModelContent = loroDoc.getMovableList('content');
 
     // Subscribe to changes in the container
     const listener = loroDoc.subscribe((e: LoroEventBatch) => {
@@ -85,7 +85,7 @@ const SheetBlock = ({ bp }: SheetBlockProps) => {
   };
 
   // Update the StatementElementBPs based on the current content
-  const updateSheetBlockBPs = (sheetModelContent: LoroList<SheetBlockLoro>) => {
+  const updateSheetBlockBPs = (sheetModelContent: LoroMovableList<SheetBlockLoro>) => {
     const newSheetBlockBPs: SheetContentBlockBP[] = [];
 
     // Iterate over the blocks

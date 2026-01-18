@@ -33,6 +33,7 @@ import { useGoogleFonts } from '../../../../ui/hooks/useFonts/useFonts';
 import { ContentLanguage } from '../../../data/ContentLanguage';
 import { t } from 'i18next';
 import { ColabApprovalState } from '../../../../api/ColabriAPI';
+import ColabTextEditorOutlined from '../../ColabTextEditor/ColabTextEditorOutlined';
 
 export type StatementElementBlockProps = {
   bp: StatementElementBlockBP;
@@ -321,22 +322,21 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
               </StmtElementHeaderWrapper>
             </Stack>
             {textElementContainerId != null && (
-              <ColabTextEditorOutline showOutlines={showOutlines}>
-                <ColabTextEditor
-                  loro={loroDoc as any as LoroDocType}
-                  ephStoreMgr={ephStoreMgr}
-                  containerId={textElementContainerId}
-                  spellCheck={{
-                    enabled: true,
-                    supported: language?.spellCheck || false,
-                    orgId: organization?.id || '',
-                    langCode: language?.spellCheckLangCode,
-                  }}
-                  canEdit={canEdit}
-                  txtDir={language?.textDirection}
-                  customFonts={customFonts}
-                />
-              </ColabTextEditorOutline>
+              <ColabTextEditorOutlined
+                showOutlines={showOutlines}
+                loro={loroDoc as any as LoroDocType}
+                ephStoreMgr={ephStoreMgr}
+                containerId={textElementContainerId}
+                spellCheck={{
+                  enabled: true,
+                  supported: language?.spellCheck || false,
+                  orgId: organization?.id || '',
+                  langCode: language?.spellCheckLangCode,
+                }}
+                canEdit={canEdit}
+                txtDir={language?.textDirection}
+                customFonts={customFonts}
+              />
             )}
           </Stack>
         </DocEditorBlock>

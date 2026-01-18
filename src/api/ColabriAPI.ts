@@ -155,8 +155,8 @@ export interface ColabModelProperties {
 }
 
 export interface ColabSheetBlockDictionary {
-  colabSheetStatementGridBlock?: ColabSheetStatementGridBlock;
-  colabSheetTextBlock?: ColabSheetTextBlock;
+  "statement-grid"?: ColabSheetStatementGridBlock;
+  text?: ColabSheetTextBlock;
 }
 
 export interface ColabSheetModel {
@@ -169,6 +169,7 @@ export interface ColabSheetModel {
 export interface ColabSheetStatementGridBlock {
   acls: Record<string, string[]>;
   rows: ColabSheetStatementGridRow[];
+  title: TextElement;
   type: ColabSheetBlockType;
 }
 
@@ -180,7 +181,9 @@ export interface ColabSheetStatementGridRow {
 
 export interface ColabSheetTextBlock {
   acls: Record<string, string[]>;
+  approvals: Record<string, ColabApproval>;
   textElement: TextElement;
+  title: TextElement;
   type: ColabSheetBlockType;
 }
 
