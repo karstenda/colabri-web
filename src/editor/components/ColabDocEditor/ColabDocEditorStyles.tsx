@@ -73,23 +73,14 @@ export const EditorContentWrapper = styled(Box)(({ theme }) => ({
   overflowY: 'auto',
 }));
 
-export const EditorContentLeftColumn = styled(Box)(({}) => ({
-  flexGrow: 0.9,
-}));
-
 export const EditorContentMainColumn = styled(Box)(({}) => ({
-  flexGrow: 0,
   width: '100%',
-  maxWidth: '800px',
 }));
 
 export const EditorContentBlockTrack = styled(Box)(({}) => ({
   paddingLeft: '30px',
   width: '100%',
-}));
-
-export const EditorContentRightColumn = styled(Box)(({}) => ({
-  flexGrow: 1,
+  alignItems: 'center',
 }));
 
 const TypographyDocName = (

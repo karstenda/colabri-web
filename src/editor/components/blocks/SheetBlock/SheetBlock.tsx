@@ -67,16 +67,16 @@ const SheetBlock = ({ bp }: SheetBlockProps) => {
    * Bind this statement block to the LoroMap to listen for changes
    */
   const bindToLoro = (loroDoc: SheetLoroDoc) => {
-    const sheetModelContent = loroDoc.getMovableList('content');
+    const blocksListLoro = loroDoc.getMovableList('content');
 
     // Subscribe to changes in the container
     const listener = loroDoc.subscribe((e: LoroEventBatch) => {
       // Iterate over the events
       e.events.forEach((event) => {
         // Check if the event is for our statement model content
-        if (event.target === sheetModelContent.id) {
+        if (event.target === blocksListLoro.id) {
           // This means that we need to regenerate our StatementElementBPs
-          updateSheetBlockBPs(sheetModelContent);
+          updateSheetBlockBPs(blocksListLoro);
         }
       });
     });
@@ -85,7 +85,9 @@ const SheetBlock = ({ bp }: SheetBlockProps) => {
   };
 
   // Update the StatementElementBPs based on the current content
-  const updateSheetBlockBPs = (sheetModelContent: LoroMovableList<SheetBlockLoro>) => {
+  const updateSheetBlockBPs = (
+    sheetModelContent: LoroMovableList<SheetBlockLoro>,
+  ) => {
     const newSheetBlockBPs: SheetContentBlockBP[] = [];
 
     // Iterate over the blocks
@@ -126,7 +128,7 @@ const SheetBlock = ({ bp }: SheetBlockProps) => {
   // Get the actual component
   return (
     <>
-      <Stack spacing={2}>
+      <Stack spacing={2} sx={{ alignItems: 'center' }}>
         {sheetContentBlockBPs == null && (
           <Skeleton variant="rounded" width="100%" height={100} />
         )}

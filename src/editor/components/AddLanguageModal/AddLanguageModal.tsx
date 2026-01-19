@@ -82,8 +82,8 @@ export const AddLanguageModal: React.FC<AddLanguageModalProps> = ({
             multiple={true}
             value={selectedLanguages}
             onChange={handleChange}
-            label="Select Languages"
-            placeholder="Choose one or more languages to add"
+            label={t('languages.selectLanguages')}
+            placeholder={t('languages.selectPlaceholder')}
             filterOptions={filterOptions}
           />
         </Box>

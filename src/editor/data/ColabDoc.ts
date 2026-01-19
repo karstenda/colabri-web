@@ -53,6 +53,7 @@ export type AclLoroMap = LoroMap<Record<Permission, LoroList<string>>>;
 export type DocPropertiesLoro = LoroMap<{
   type: string;
   contentType: string;
+  masterLangCode?: string;
   langCodes?: LoroList<string>;
   countryCodes?: LoroList<string>;
 }>;
@@ -81,7 +82,7 @@ export type SheetStatementGridBlockSchema = {
   type: ColabSheetBlockType;
   acls: AclLoroMap;
   title: TextElementLoro;
-  rows: LoroList<SheetStatementGridRowLoro>;
+  rows: LoroMovableList<SheetStatementGridRowLoro>;
 };
 
 export type SheetStatementGridBlockLoro =

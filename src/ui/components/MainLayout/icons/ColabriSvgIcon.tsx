@@ -1,12 +1,7 @@
-import { useColorScheme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
+import { useColorScheme } from '../../../hooks/useColorScheme/useColorScheme';
 
 const ColabriSvgIcon = ({ expanded, ...restProps }: { expanded: boolean }) => {
-  const { mode } = useColorScheme();
-
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const preferredMode = prefersDarkMode ? 'dark' : 'light';
-  const paletteMode = !mode || mode === 'system' ? preferredMode : mode;
+  const { mode: paletteMode } = useColorScheme();
 
   return (
     <svg

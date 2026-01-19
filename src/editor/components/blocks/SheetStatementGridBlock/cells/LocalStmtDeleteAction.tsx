@@ -11,22 +11,18 @@ import { StatementGridEditorRow } from '../StatementGridEditor';
 
 export type LocalStmtDeleteActionProps = {
   row: StatementGridEditorRow;
+  onRemove: () => Promise<void>;
 };
 
 const LocalStmtDeleteAction = (props: LocalStmtDeleteActionProps) => {
   const { t } = useTranslation();
-
-  const handleRowDelete = (row: StatementGridEditorRow) => () => {
-    // Implement the delete logic here
-    console.log(`Delete row with id: ${row.id}`);
-  };
 
   return (
     <GridActionsCellItem
       key="delete-item"
       icon={<DeleteIcon />}
       label={t('common.delete')}
-      onClick={handleRowDelete(props.row)}
+      onClick={props.onRemove}
     />
   );
 };

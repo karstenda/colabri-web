@@ -1,19 +1,23 @@
-import { LoroList, LoroMap } from 'loro-crdt';
+import { ContainerID, LoroList, LoroMap, LoroMovableList } from 'loro-crdt';
 import { useTranslation } from 'react-i18next';
 import { useOrganization } from '../../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
 import {
+  SheetStatementGridBlockLoro,
   SheetStatementGridRowLoro,
   StmtDocSchema,
+  TextElementLoro,
 } from '../../../data/ColabDoc';
 import { DataGrid } from '@mui/x-data-grid';
 import {
   ColabSheetStatementGridRow,
   StatementGridRowType,
 } from '../../../../api/ColabriAPI';
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, use } from 'react';
 import {
   GridColDef,
   GridFilterModel,
+  GridSlotsComponent,
+  GridSlotsComponentsProps,
   GridSortModel,
 } from '@mui/x-data-grid/models';
 import { GridColumnVisibilityModel } from '@mui/x-data-grid';
@@ -23,9 +27,18 @@ import { useColabDoc } from '../../../context/ColabDocContext/ColabDocProvider';
 import getStmtLangColumn from './columns/StmtLangColumn';
 import { useContentLanguages } from '../../../../ui/hooks/useContentLanguages/useContentLanguage';
 import getStmtActionsColumn from './columns/StmtActionsColumn';
+import StatementGridEditorToolbar from './StatementGridEditorToolbar';
+import { useDialogs } from '../../../../ui/hooks/useDialogs/useDialogs';
+import AddStatementModal, {
+  AddStatementModalPayload,
+  NewStatementData,
+} from './AddStatementModal';
+import { ConnectedSheetDoc } from '../../../data/ConnectedColabDoc';
 
 export type StatementGridEditorProps = {
-  stmtGridRowLoroList: LoroList<SheetStatementGridRowLoro>;
+  containerId: ContainerID;
+  isHovered?: boolean;
+  isFocused?: boolean;
 };
 
 export type StatementGridEditorRow = {
@@ -36,32 +49,45 @@ export type StatementGridEditorRow = {
 };
 
 const StatementGridEditor: React.FC<StatementGridEditorProps> = ({
-  stmtGridRowLoroList,
+  containerId,
+  isHovered,
+  isFocused,
 }) => {
   const { colabDoc } = useColabDoc();
   const { t } = useTranslation();
   const organization = useOrganization();
   const { languages } = useContentLanguages(organization?.id);
+  const dialogs = useDialogs();
 
-  // Convert LoroList into array of type StatementGridEditorRow and set is state
+  if (!(colabDoc instanceof ConnectedSheetDoc)) {
+    throw new Error(
+      'StatementGridEditor can only be used with connected sheet docs.',
+    );
+  }
+
+  // Get the LoroDoc and Controller
+  const loroDoc = colabDoc?.getLoroDoc();
+  const controller = colabDoc?.getDocController();
+
+  // Create state for canEdit and canManage
+  const [canAdd, setCanAdd] = useState<boolean>(false);
+  const [canManage, setCanManage] = useState<boolean>(false);
+
+  // Create state for the rows
   const [statementRows, setStatementRows] = useState<StatementGridEditorRow[]>(
-    () => {
-      const initStatementRows: StatementGridEditorRow[] = [];
-      for (let i = 0; i < stmtGridRowLoroList.length; i++) {
-        const row = stmtGridRowLoroList.get(i);
-        initStatementRows.push({
-          id: row.id,
-          type: row.get('type'),
-          statementRef: row.get('statementRef'),
-          statement: row.get('statement'),
-        });
-      }
-      return initStatementRows;
-    },
+    [],
   );
 
   // Create state for the columns
   const [columns, setColumns] = useState<any[]>([]);
+
+  // Wether to show outlines on the title
+  const showTitleOutlines = (isFocused || isHovered) && canManage;
+
+  // Create state for the title container
+  const [titleContainerId, setTitleContainerId] = useState<
+    ContainerID | undefined
+  >(undefined);
 
   // Create states for filter, sort, and column visibility
   const [filterModel, setFilterModel] = useState<GridFilterModel>({
@@ -71,37 +97,173 @@ const StatementGridEditor: React.FC<StatementGridEditorProps> = ({
   const [columnVisibilityModel, setColumnVisibilityModel] =
     useState<GridColumnVisibilityModel>({});
 
-  // Handle updating columns
-  const updateColumns = useCallback(() => {
-    const newColumns: GridColDef<StatementGridEditorRow>[] = [
-      getStmtNameColumn(t),
-      getStmtActionsColumn(t),
-    ];
+  // On load of loroDoc or containerId
+  useEffect(() => {
+    if (loroDoc && containerId) {
+      // Update the state
+      setCanManage(controller.canManageBlock(containerId));
+      setCanAdd(controller.canAddRemoveToBlock(containerId));
 
-    const propertiesMap = colabDoc?.getLoroDoc().getMap('properties');
-    if (!propertiesMap) {
-      setColumns(newColumns);
-      return;
+      // Target the container
+      const container = loroDoc.getContainerById(
+        containerId,
+      ) as SheetStatementGridBlockLoro;
+      if (!container) {
+        throw new Error(
+          `Container with id ${containerId} not found in LoroDoc.`,
+        );
+      }
+
+      // Target the title container
+      const titleLoro = container.get('title') as TextElementLoro;
+
+      // Target the rows
+      const stmtGridRowLoroList = container.get(
+        'rows',
+      ) as LoroMovableList<SheetStatementGridRowLoro>;
+
+      // Target the global properties map
+      const propertiesMap = loroDoc?.getMap('properties');
+
+      // Update state for the columns
+      updateColumns(propertiesMap);
+
+      // Update state for the rows
+      updateRows(stmtGridRowLoroList);
+
+      // Update state for the title container
+      setTitleContainerId(titleLoro.id);
+
+      // Subscribe to changes in the rows list
+      const unsubscribeRows = controller.subscribeToRowListChanges(
+        containerId,
+        () => {
+          // On any row change, update the rows
+          updateRows(stmtGridRowLoroList);
+        },
+      );
+
+      // Subscribe to ACL changes in the loroDoc
+      const unsubscribeAcls = controller.subscribeToBlockAclChanges(
+        containerId,
+        () => {
+          // On any ACL change, update the canEdit state
+          setCanManage(controller.canManageBlock(containerId));
+          setCanAdd(controller.canAddRemoveToBlock(containerId));
+
+          // This can affect the columns (actions column), so update them too
+          updateColumns(propertiesMap);
+        },
+      );
+
+      // Return unsubscribe function
+      return () => {
+        unsubscribeAcls();
+        unsubscribeRows();
+      };
     }
+  }, [loroDoc, controller, containerId, languages]);
 
-    const langCodesLoro = propertiesMap.get('langCodes');
-    if (langCodesLoro) {
-      for (let i = 0; i < langCodesLoro.length; i++) {
-        const langCode = langCodesLoro.get(i);
-        const language = languages?.find((lang) => lang.code === langCode);
-        if (language) {
-          newColumns.push(getStmtLangColumn(language, t));
+  // Handle updating columns
+  const updateColumns = useCallback(
+    (propertiesMap: LoroMap<any> | undefined) => {
+      // Always display the name column and actions column
+      const newColumns: GridColDef<StatementGridEditorRow>[] = [
+        getStmtNameColumn(t),
+      ];
+
+      // If canManage or canAdd, show actions column
+      if (canManage || canAdd) {
+        newColumns.push(getStmtActionsColumn(t, handleStatementRemove));
+      }
+
+      if (!propertiesMap) {
+        setColumns(newColumns);
+        return;
+      }
+
+      const langCodesLoro = propertiesMap.get('langCodes');
+      if (langCodesLoro) {
+        for (let i = 0; i < langCodesLoro.length; i++) {
+          const langCode = langCodesLoro.get(i);
+          const language = languages?.find((lang) => lang.code === langCode);
+          if (language) {
+            newColumns.push(getStmtLangColumn(language, t));
+          }
         }
       }
+
+      setColumns(newColumns);
+    },
+    [loroDoc, languages, canManage, canAdd, t],
+  );
+
+  const updateRows = useCallback(
+    (stmtGridRowLoroList: LoroMovableList<SheetStatementGridRowLoro>) => {
+      // Create state for the rows
+      const stmtRows: StatementGridEditorRow[] = [];
+      for (let i = 0; i < stmtGridRowLoroList.length; i++) {
+        const row = stmtGridRowLoroList.get(i);
+        stmtRows.push({
+          id: row.id,
+          type: row.get('type'),
+          statementRef: row.get('statementRef'),
+          statement: row.get('statement'),
+        });
+      }
+      setStatementRows(stmtRows);
+    },
+    [],
+  );
+
+  const handleStatementAdd = useCallback(async () => {
+    const propertiesMap = loroDoc?.getMap('properties');
+    const docLangCodes: string[] =
+      propertiesMap?.get('langCodes')?.toArray() || [];
+    const docLanguages = languages.filter((lang) =>
+      docLangCodes.includes(lang.code),
+    );
+
+    // Get new statement data from the modal
+    const newStatementData = await dialogs.open<
+      AddStatementModalPayload,
+      NewStatementData | undefined
+    >(AddStatementModal, {
+      docLanguages: docLanguages,
+    });
+
+    if (newStatementData && controller) {
+      // Add the new statement via the controller
+      const ok = controller.addStatementToStatementGridBlock(
+        containerId,
+        newStatementData,
+      );
+      if (ok) {
+        controller.commit();
+      }
     }
+  }, [loroDoc, controller, languages, containerId, dialogs]);
 
-    setColumns(newColumns);
-  }, [colabDoc, languages, t]);
+  const handleStatementRemove = useCallback(
+    async (stmtRowContainerId: ContainerID) => {
+      // Confirm the deletion of the statement
+      const confirm = await dialogs.confirm(
+        t('editor.sheetStatementGridBlock.removeStatementConfirm'),
+      );
 
-  // Make sure we update the columns when colabDoc or organization changes
-  useEffect(() => {
-    updateColumns();
-  }, [updateColumns]);
+      if (confirm && controller) {
+        // Add the new statement via the controller
+        const ok = controller.removeStatementFromStatementGridBlock(
+          containerId,
+          stmtRowContainerId,
+        );
+        if (ok) {
+          controller.commit();
+        }
+      }
+    },
+    [loroDoc, controller, containerId, dialogs],
+  );
 
   const handleRowClick = useCallback(
     (params: { row: StatementGridEditorRow }) => {
@@ -130,7 +292,7 @@ const StatementGridEditor: React.FC<StatementGridEditorProps> = ({
     [],
   );
 
-  const gridSlotProps = useMemo(
+  const gridSlotProps = useMemo<GridSlotsComponentsProps>(
     () => ({
       loadingOverlay: {
         variant: 'circular-progress' as const,
@@ -140,13 +302,25 @@ const StatementGridEditor: React.FC<StatementGridEditorProps> = ({
         size: 'small' as const,
       },
       toolbar: {
-        quickFilterProps: {
-          debounceMs: 500,
-        },
-        showQuickFilter: true,
-        csvOptions: { disableToolbarButton: true },
-        printOptions: { disableToolbarButton: true },
+        canAdd: canAdd,
+        canManage: canManage,
+        titleContainerId: titleContainerId,
+        showOutlines: showTitleOutlines,
+        handleStatementAdd: handleStatementAdd,
       },
+    }),
+    [
+      titleContainerId,
+      showTitleOutlines,
+      canAdd,
+      canManage,
+      handleStatementAdd,
+    ],
+  );
+
+  const gridSlots = useMemo(
+    () => ({
+      toolbar: StatementGridEditorToolbar,
     }),
     [],
   );
@@ -171,6 +345,7 @@ const StatementGridEditor: React.FC<StatementGridEditorProps> = ({
         onRowClick={handleRowClick}
         sx={gridSx}
         slotProps={gridSlotProps}
+        slots={gridSlots}
       />
     </>
   );

@@ -31,8 +31,13 @@ const ColabTextEditorOutlined = (props: ColabTextEditorOutlinedProps) => {
 
   const editorRef = useRef<ColabTextEditorHandle>(null);
 
-  const handleOutlineClick = () => {
-    editorRef.current?.view?.focus();
+  const handleOutlineClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    // Check if the focus is already inside the editor
+    if (editorRef.current?.view?.hasFocus()) {
+      return;
+    } else {
+      editorRef.current?.view?.focus();
+    }
   };
 
   return (

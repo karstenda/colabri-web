@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box } from '@mui/material';
-import { useColorScheme, useTheme } from '@mui/material/styles';
+import { useColorScheme } from '../../hooks/useColorScheme/useColorScheme';
+import { useTheme } from '@mui/material/styles';
 import MainFrame from '../../components/MainLayout/MainFrame';
 
 const termsAndConditionsSrc = new URL(

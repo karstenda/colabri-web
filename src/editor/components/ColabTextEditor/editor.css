@@ -19,6 +19,7 @@
   line-height: 1.2;
   outline: none;
   margin: 4px;
+  min-width: 1px;
 }
 
 .ProseMirror p {

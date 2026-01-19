@@ -114,7 +114,7 @@
       },
       "languages": {
         "title": "Select Languages",
-        "description": "Choose the languages you;re supporting."
+        "description": "Choose the languages you're supporting."
       },
       "products": {
         "title": "Create Example Product",
@@ -202,6 +202,9 @@
     "addLanguageModal": {
       "title": "Add Languages to Document"
     },
+    "addStatementModal": {
+      "title": "Add Statement to Document"
+    },
     "addBlockModal": {
       "title": "Add Blocks to Document"
     },
@@ -215,7 +218,9 @@
     "sheetStatementGridBlock": {
       "name": "Statements",
       "description": "A block to add and manage multiple statements on your sheet.",
-      "noStatement": "Ooops! No statement found."
+      "noStatement": "Ooops! No statement found.",
+      "addButton": "Add Statement",
+      "removeStatementConfirm": "Are you sure you want to remove this statement from this block?"
     },
     "errors": {
       "authFailed": "Oops! We couldn’t open this document. Please make sure you have access. You may need the document owner to grant you permission."
@@ -224,6 +229,8 @@
   "languages": {
     "title": "Languages",
     "addLanguage": "Add Language",
+    "selectLanguages": "Languages",
+    "selectPlaceholder": "Select languages to add...",
     "columns": {
       "name": "Name",
       "code": "Code",
@@ -246,8 +253,6 @@
     "addModal": {
       "title": "Add Languages",
       "description": "Select languages to add to this organization.",
-      "selectLabel": "Languages",
-      "selectPlaceholder": "Select languages to add...",
       "submit": "Add Languages"
     },
     "selector": {

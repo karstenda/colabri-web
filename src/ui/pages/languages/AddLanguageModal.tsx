@@ -77,8 +77,8 @@ export function AddLanguageModal({ open, onClose }: AddLanguageModalProps) {
             multiple
             value={selectedLanguages}
             onChange={handleSelectionChange}
-            label={t('languages.addModal.selectLabel')}
-            placeholder={t('languages.addModal.selectPlaceholder')}
+            label={t('languages.selectLanguages')}
+            placeholder={t('languages.selectPlaceholder')}
           />
         </Stack>
       </DialogContent>

@@ -42,30 +42,28 @@ const SheetStatementGridBlock: React.FC<SheetStatementGridBlockProps> = ({
     );
   }
 
-  // Get the rows LoroList
-  const stmtGridRowLoroList = container.get('rows');
-
   // Create state for canEdit and canManage
-  const [canEdit, setCanEdit] = useState<boolean>(true);
+  const [canAdd, setCanAdd] = useState<boolean>(false);
   const [canManage, setCanManage] = useState<boolean>(false);
 
-  // Create state for hover and focus
-  const [focus, setFocus] = useState(false);
+  // State to track focus and hover
+  const [isFocused, setIsFocused] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [showWide, setShowWide] = useState<boolean>(false);
 
   useEffect(() => {
     if (controller && bp.containerId && loroDoc) {
-      // Update the canEdit state
-      setCanEdit(controller.canEditBlock(bp.containerId));
-      setCanManage(controller.hasManagePermission());
+      // Update the state
+      setCanManage(controller.canManageBlock(bp.containerId));
+      setCanAdd(controller.canAddRemoveToBlock(bp.containerId));
 
       // Subscribe to ACL changes in the loroDoc
       const aclUnsubscribe = controller.subscribeToBlockAclChanges(
         bp.containerId,
         () => {
           // On any ACL change, update the canEdit state
-          setCanEdit(controller.canEditBlock(bp.containerId));
-          setCanManage(controller.hasManagePermission());
+          setCanManage(controller.canManageBlock(bp.containerId));
+          setCanAdd(controller.canAddRemoveToBlock(bp.containerId));
         },
       );
 
@@ -78,7 +76,12 @@ const SheetStatementGridBlock: React.FC<SheetStatementGridBlockProps> = ({
 
   // Handle focus change from DocEditorBlock
   const handleFocusChange = (hasFocus: boolean) => {
-    setFocus(hasFocus);
+    setIsFocused(hasFocus);
+    if (hasFocus) {
+      setShowWide(true);
+    } else {
+      setShowWide(false);
+    }
   };
   const handleHoverChange = (isHovered: boolean) => {
     setIsHovered(isHovered);
@@ -94,10 +97,15 @@ const SheetStatementGridBlock: React.FC<SheetStatementGridBlockProps> = ({
       onFocusChange={handleFocusChange}
       onHoverChange={handleHoverChange}
       showManageControls={canManage}
-      readOnly={!canEdit}
+      readOnly={!canManage && !canAdd}
       sx={{ padding: '0px' }}
+      displayMode={showWide ? 'wide' : 'default'}
     >
-      <StatementGridEditor stmtGridRowLoroList={stmtGridRowLoroList} />
+      <StatementGridEditor
+        containerId={bp.containerId}
+        isHovered={isHovered}
+        isFocused={isFocused}
+      />
     </DocEditorSheetBlock>
   );
 };

@@ -42,7 +42,7 @@ export default function SheetMenu({}: SheetMenuProps) {
   const activeBlock = useActiveBlock();
   // Check if a sheetBlock is focussed
   const isSheetBlockFocused =
-    activeBlock?.blockType === 'StatementElementBlock' ||
+    activeBlock?.blockType === 'SheetTextBlock' ||
     activeBlock?.blockType === 'SheetStatementGridBlock';
 
   // The refs to control menu state
@@ -125,6 +125,12 @@ export default function SheetMenu({}: SheetMenuProps) {
       orgId: organization?.id || '',
       acls: sheetBlockAcls,
       docAcls: docAcls,
+      availablePermissions: new Set<Permission>([
+        Permission.Edit,
+        Permission.Approve,
+        Permission.Manage,
+      ]),
+      defaultPermission: Permission.Edit,
     });
 
     // If a new ACL map was returned, update the document

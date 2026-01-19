@@ -16,7 +16,6 @@ import { useEffect, useState } from 'react';
 import { ContainerID, LoroMap } from 'loro-crdt';
 import DocEditorBlock from '../DocEditorBlock';
 import {
-  ColabTextEditorOutline,
   SheetTextBlockHeaderLeft,
   SheetTextBlockHeaderRight,
   SheetTextBlockHeaderWrapper,
@@ -249,7 +248,7 @@ const SheetTextBlock: React.FC<SheetTextBlockProps> = ({ bp }) => {
       <>
         <DocEditorSheetBlock
           blockId={bp.id}
-          blockType={'StatementElementBlock'}
+          blockType={'SheetTextBlock'}
           loroContainerId={bp.containerId}
           loroDoc={loroDoc}
           controller={controller}
@@ -263,7 +262,11 @@ const SheetTextBlock: React.FC<SheetTextBlockProps> = ({ bp }) => {
               <SheetTextBlockHeaderWrapper>
                 <SheetTextBlockHeaderLeft>
                   {titleContainerId != null && (
-                    <Typography variant="h6">
+                    <Typography
+                      variant="h6"
+                      component="div"
+                      sx={{ width: '100%' }}
+                    >
                       <ColabTextEditorOutlined
                         showOutlines={showOutlines}
                         loro={loroDoc as any as LoroDocType}

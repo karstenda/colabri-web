@@ -24,6 +24,7 @@ export const SheetTextBlockHeaderLeft = styled(Box)(({ theme }) => ({
   flexDirection: 'row',
   alignItems: 'center',
   gap: theme.spacing(1),
+  minWidth: 0,
 }));
 
 export const SheetTextBlockHeaderRight = styled(Box)(({ theme }) => ({
@@ -31,20 +32,4 @@ export const SheetTextBlockHeaderRight = styled(Box)(({ theme }) => ({
   flexDirection: 'row',
   alignItems: 'center',
   gap: theme.spacing(1),
-}));
-
-export const ColabTextEditorOutline = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'showOutlines',
-})<{ showOutlines?: boolean }>(({ theme, showOutlines }) => ({
-  padding: '4px',
-  border: showOutlines
-    ? `1px solid ${(theme.vars || theme).palette.grey[100]}`
-    : `1px solid transparent`,
-  borderRadius: '4px',
-  transition: 'border 0.2s ease-in-out',
-  ...theme.applyStyles('dark', {
-    border: showOutlines
-      ? `1px solid ${(theme.vars || theme).palette.grey[700]}`
-      : `1px solid transparent`,
-  }),
 }));

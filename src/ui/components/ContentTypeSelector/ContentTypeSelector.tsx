@@ -14,59 +14,16 @@ import { ContentType, DocumentType } from '../../../api/ColabriAPI';
 import { useContentTypes } from '../../hooks/useTemplates/useTemplates';
 
 export interface ContentTypeSelectorProps {
-  /**
-   * Organization ID to fetch content types from
-   */
   orgId: string;
-
-  /**
-   * Currently selected content type code(s)
-   */
   value?: string | string[];
-
-  /**
-   * Callback when selection changes
-   */
   onChange?: (value: string | string[] | null) => void;
-
-  /**
-   * Whether to allow multiple selections
-   */
   multiple?: boolean;
-
-  /**
-   * Filter content types by document type
-   */
   docTypeFilter?: DocumentType;
-
-  /**
-   * Placeholder text for the input
-   */
   placeholder?: string;
-
-  /**
-   * Label for the input field
-   */
   label?: string;
-
-  /**
-   * Whether the field is disabled
-   */
   disabled?: boolean;
-
-  /**
-   * Whether the field is required
-   */
   required?: boolean;
-
-  /**
-   * Error state
-   */
   error?: boolean;
-
-  /**
-   * Helper text to display below the input
-   */
   helperText?: string;
 }
 
@@ -152,8 +109,8 @@ export default function ContentTypeSelector({
         ? value
         : [value]
       : Array.isArray(value)
-      ? value[0]
-      : value;
+        ? value[0]
+        : value;
 
     if (!codes) return multiple ? [] : null;
 
@@ -236,33 +193,37 @@ export default function ContentTypeSelector({
           }}
         />
       )}
-      renderOption={(props, option) => (
-        <Box
-          component="li"
-          {...props}
-          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-        >
-          <Avatar
-            sx={{
-              width: 32,
-              height: 32,
-              bgcolor: theme.palette.grey[400],
-            }}
+      renderOption={(props, option) => {
+        const { key, ...otherProps } = props;
+        return (
+          <Box
+            component="li"
+            key={key}
+            {...otherProps}
+            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
           >
-            <ArticleIcon fontSize="small" />
-          </Avatar>
-          <Box>
-            <Typography variant="body2">
-              {getContentTypeDisplayName(option)}
-            </Typography>
-            {option.description && (
-              <Typography variant="caption" color="text.secondary">
-                {option.description}
+            <Avatar
+              sx={{
+                width: 32,
+                height: 32,
+                bgcolor: theme.palette.grey[400],
+              }}
+            >
+              <ArticleIcon fontSize="small" />
+            </Avatar>
+            <Box>
+              <Typography variant="body2">
+                {getContentTypeDisplayName(option)}
               </Typography>
-            )}
+              {option.description && (
+                <Typography variant="caption" color="text.secondary">
+                  {option.description}
+                </Typography>
+              )}
+            </Box>
           </Box>
-        </Box>
-      )}
+        );
+      }}
       renderValue={(selected) => {
         if (!selected) return '';
 

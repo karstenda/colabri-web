@@ -15,7 +15,6 @@ import { useEffect, useState } from 'react';
 import { ContainerID, LoroMap } from 'loro-crdt';
 import DocEditorBlock from '../DocEditorBlock';
 import {
-  ColabTextEditorOutline,
   StmtElementHeaderLeft,
   StmtElementHeaderRight,
   StmtElementHeaderWrapper,
@@ -215,6 +214,11 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
       orgId: organization?.id || '',
       acls: stmtElementAcls,
       docAcls: docAcls,
+      availablePermissions: new Set<Permission>([
+        Permission.Edit,
+        Permission.Approve,
+      ]),
+      defaultPermission: Permission.Edit,
     });
 
     // If a new ACL map was returned, update the document

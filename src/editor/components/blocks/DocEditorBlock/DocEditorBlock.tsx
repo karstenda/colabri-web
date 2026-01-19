@@ -21,6 +21,7 @@ export type DocEditorBlockProps = BoxProps & {
   readOnly?: boolean;
   showUpDownControls?: boolean;
   showManageControls?: boolean;
+  displayMode?: 'default' | 'wide';
   onFocusChange?: (hasFocus: boolean) => void;
   onHoverChange?: (isHovered: boolean) => void;
   onManageBlock?: () => void;
@@ -38,6 +39,7 @@ const DocEditorBlock = ({
   readOnly = false,
   showUpDownControls = true,
   showManageControls = true,
+  displayMode = 'default',
   onFocusChange,
   onHoverChange,
   onManageBlock,
@@ -151,6 +153,10 @@ const DocEditorBlock = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       {...boxProps}
+      sx={{
+        maxWidth: displayMode === 'wide' ? '100%' : '800px',
+        ...boxProps.sx,
+      }}
     >
       <DocEditorBlockControls controls={controls} show={focus} />
       {children}

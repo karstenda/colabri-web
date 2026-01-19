@@ -23,6 +23,8 @@ export type ManagePermissionModalPayload = {
   title?: string;
   acls: Record<Permission, string[]>;
   docAcls: Record<Permission, string[]>;
+  availablePermissions: Set<Permission>;
+  defaultPermission: Permission;
 };
 
 export interface ManagePermissionModalProps
@@ -85,12 +87,9 @@ const ManagePermissionModal = ({
         <Box sx={{ pt: 2 }}>
           <PermissionEditor
             permissions={{
-              default: new Set<Permission>([
-                Permission.Edit,
-                Permission.Approve,
-              ]),
+              default: payload.availablePermissions,
             }}
-            defaultPermission={Permission.Edit}
+            defaultPermission={payload.defaultPermission}
             aclMap={acls}
             aclFixedMap={docAcls}
             onAclChange={setNewAcls}

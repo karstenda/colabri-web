@@ -143,6 +143,11 @@ export default function StatementMenu({}: StatementMenuProps) {
       orgId: organization?.id || '',
       acls: stmtElementAcls,
       docAcls: docAcls,
+      availablePermissions: new Set<Permission>([
+        Permission.Edit,
+        Permission.Approve,
+      ]),
+      defaultPermission: Permission.Edit,
     });
 
     // If a new ACL map was returned, update the document

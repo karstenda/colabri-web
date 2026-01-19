@@ -3,9 +3,7 @@ import { useColabDoc } from '../../context/ColabDocContext/ColabDocProvider';
 import { LoroMap } from 'loro-crdt';
 import ColabEphemeralStoreManager from './EphemeralStoreManager';
 import {
-  EditorContentLeftColumn,
   EditorContentMainColumn,
-  EditorContentRightColumn,
   EditorContentWrapper,
   EditorHeaderWrapper,
   EditorTopHeaderLeftStack,
@@ -185,8 +183,6 @@ export default function ColabDocEditor() {
               </EditorToolbarWrapper>
             </EditorHeaderWrapper>
             <EditorContentWrapper>
-              <EditorContentLeftColumn></EditorContentLeftColumn>
-
               {/* Main Editor Area */}
               <EditorContentMainColumn>
                 <EditorContentBlockTrack>
@@ -200,7 +196,6 @@ export default function ColabDocEditor() {
                   )}
                 </EditorContentBlockTrack>
               </EditorContentMainColumn>
-              <EditorContentRightColumn></EditorContentRightColumn>
             </EditorContentWrapper>
           </EditorWrapper>
         </ColabDocEditorProvider>

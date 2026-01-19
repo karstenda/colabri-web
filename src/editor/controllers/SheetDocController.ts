@@ -4,25 +4,31 @@ import {
   LoroEventBatch,
   LoroList,
   LoroMap,
+  LoroMovableList,
 } from 'loro-crdt';
 import {
   AclLoroMap,
   SheetBlockLoro,
   SheetLoroDoc,
   SheetStatementGridBlockLoro,
+  SheetStatementGridRowLoro,
   SheetTextBlockLoro,
+  StmtDocSchema,
+  StmtElementLoro,
   StmtLoroDoc,
+  TextElementLoro,
   UserApprovalLoro,
 } from '../data/ColabDoc';
 import { Permission } from '../../ui/data/Permission';
 import ColabDocController from './ColabDocController';
-import { pathStartsWith } from '../util/LoroPathUtil';
+import { pathEquals, pathStartsWith } from '../util/LoroPathUtil';
 import {
   ColabSheetTextBlock,
   ColabSheetStatementGridBlock,
   ColabApprovalState,
   ColabSheetBlockType,
   ColabApprovalType,
+  StatementGridRowType,
 } from '../../api/ColabriAPI';
 
 export type ColabSheetBlock =
@@ -67,7 +73,7 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
   }
 
   /**
-   * Get the Sheet Blocks in the document
+   * Wether the user has edit permission for the block
    * @param containerId
    */
   canEditBlock(containerId: ContainerID): boolean {
@@ -94,6 +100,61 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
     for (const prpl of this.authPrpls) {
       const editPrpls = elementAclMap[Permission.Edit] || [];
       if (editPrpls.includes(prpl)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Wether the user has manage permission for the block
+   * @param containerId
+   */
+  canManageBlock(containerId: ContainerID): boolean {
+    // Check if the user has global manage permission
+    const canDocManage = this.hasManagePermission();
+    if (canDocManage) {
+      return true;
+    }
+
+    // Check if the user has manage permission on the element
+    const elementAclMap = this.getBlockAclMap(containerId);
+    for (const prpl of this.authPrpls) {
+      const managePrpls = elementAclMap[Permission.Manage] || [];
+      if (managePrpls.includes(prpl)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Wether the user has add/remove permission on the block
+   * @param containerId
+   */
+  canAddRemoveToBlock(containerId: ContainerID): boolean {
+    // Check if the user has global manage permission
+    const canDocManage = this.hasManagePermission();
+    if (canDocManage) {
+      return true;
+    }
+    const canDocAddRemove = this.hasAddRemovePermission();
+    if (canDocAddRemove) {
+      return true;
+    }
+
+    // Check if the user has manage permission on the element
+    const elementAclMap = this.getBlockAclMap(containerId);
+    for (const prpl of this.authPrpls) {
+      const managePrpls = elementAclMap[Permission.Manage] || [];
+      if (managePrpls.includes(prpl)) {
+        return true;
+      }
+    }
+    // Check if the user has add/remove permission on the element
+    for (const prpl of this.authPrpls) {
+      const addRemovePrpls = elementAclMap[Permission.AddRemove] || [];
+      if (addRemovePrpls.includes(prpl)) {
         return true;
       }
     }
@@ -407,8 +468,14 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
       blockMap.setContainer('acls', new LoroMap());
       blockMap.setContainer('approvals', new LoroMap());
 
+      // Set the title element
+      const titleElementMap = blockMap.getOrCreateContainer(
+        'title',
+        new LoroMap(),
+      );
+      titleElementMap.set('nodeName', 'doc');
+
       // Set the text element
-      // Create the textElement
       const textElementMap = blockMap.getOrCreateContainer(
         'textElement',
         new LoroMap(),
@@ -426,7 +493,14 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
       // Initialize the block
       blockMap.set('type', 'statement-grid' as ColabSheetBlockType);
       blockMap.setContainer('acls', new LoroMap());
-      blockMap.setContainer('rows', new LoroMap());
+      blockMap.setContainer('rows', new LoroMovableList());
+
+      // Set the title element
+      const titleElementMap = blockMap.getOrCreateContainer(
+        'title',
+        new LoroMap(),
+      );
+      titleElementMap.set('nodeName', 'doc');
 
       return blockMap.id;
     }
@@ -464,7 +538,6 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
    * @returns
    */
   shiftBlock(containerId: ContainerID, direction: 'up' | 'down'): boolean {
-
     // Get the position of the container
     const position = this.getContentListPosition(containerId);
 
@@ -489,6 +562,183 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
   }
 
   /**
+   * Add a new statement to the statement grid block
+   *
+   * @param containerId
+   * @param newStatementData
+   * @returns
+   */
+  addStatementToStatementGridBlock(
+    containerId: ContainerID,
+    newStatementData: {
+      contentType: string;
+      langCodes: string[];
+    },
+    position?: number,
+  ): boolean {
+    // Get the statement grid block
+    const blockMap = this.loroDoc.getContainerById(
+      containerId,
+    ) as SheetStatementGridBlockLoro;
+    if (!blockMap) {
+      throw new Error(`Could not find block for container ID ${containerId}`);
+    }
+
+    // Get the rows list
+    const rowList = blockMap.get('rows');
+    if (!rowList) {
+      throw new Error(
+        `Could not find rows list for statement grid block ${containerId}`,
+      );
+    }
+
+    // Ensure position is valid
+    if (position === undefined || position < 0 || position > rowList.length) {
+      position = rowList.length;
+    } else {
+      position = position + 1;
+    }
+
+    // Get the statement map
+    const statementMap = this.getStatementMap(newStatementData);
+
+    // Insert the statement map into a new row
+    const rowMap: SheetStatementGridRowLoro = new LoroMap();
+    rowMap.setContainer('statement', statementMap);
+    rowMap.set('type', StatementGridRowType.StatementGridRowTypeLocal);
+
+    // Insert the row into the list
+    rowList.insertContainer(position, rowMap);
+    return true;
+  }
+
+  /**
+   * Helper function to create a statement map from new statement data
+   * @param newStatementData
+   */
+  private getStatementMap(newStatementData: {
+    contentType: string;
+    langCodes: string[];
+  }): LoroMap<StmtDocSchema> {
+    // Create the statement as a loro map
+    const statementMap = new LoroMap<StmtDocSchema>();
+
+    // Set properties
+    const stmtPropertiesMap = statementMap.getOrCreateContainer(
+      'properties',
+      new LoroMap(),
+    );
+    stmtPropertiesMap.set('type', 'colab-statement');
+    stmtPropertiesMap.set('contentType', newStatementData.contentType);
+
+    // Set type and content type
+    const stmtDocAclsMap = statementMap.getOrCreateContainer(
+      'acls',
+      new LoroMap(),
+    );
+
+    // Set the content map
+    const stmtDocContentMap = statementMap.getOrCreateContainer(
+      'content',
+      new LoroMap(),
+    );
+
+    // Iterate over the languages and create empty content for each
+    for (const langCode of newStatementData.langCodes) {
+      const langElementMap: StmtElementLoro =
+        stmtDocContentMap.getOrCreateContainer(langCode, new LoroMap());
+
+      langElementMap.getOrCreateContainer('acls', new LoroMap());
+
+      langElementMap.getOrCreateContainer('approvals', new LoroMap());
+
+      const textElementMap: TextElementLoro =
+        langElementMap.getOrCreateContainer('textElement', new LoroMap());
+
+      textElementMap.set('nodeName', 'doc');
+      textElementMap.getOrCreateContainer('children', new LoroList());
+    }
+
+    return statementMap;
+  }
+
+  /**
+   * Remove a statement from the statement grid block
+   *
+   * @param blockContainerId
+   * @param stmtRowContainerId
+   */
+  removeStatementFromStatementGridBlock(
+    blockContainerId: ContainerID,
+    stmtRowContainerId: ContainerID,
+  ): boolean {
+    // Get the statement grid block
+    const blockMap = this.loroDoc.getContainerById(
+      blockContainerId,
+    ) as SheetStatementGridBlockLoro;
+    if (!blockMap) {
+      throw new Error(
+        `Could not find block for container ID ${blockContainerId}`,
+      );
+    }
+
+    // Get the rows list
+    const rowList = blockMap.get('rows');
+    if (!rowList) {
+      throw new Error(
+        `Could not find rows list for statement grid block ${blockContainerId}`,
+      );
+    }
+
+    // Find the position of the statement row
+    let position = -1;
+    for (let i = 0; i < rowList.length; i++) {
+      const row = rowList.get(i);
+      if (row instanceof LoroMap && row.id === stmtRowContainerId) {
+        position = i;
+        break;
+      }
+    }
+
+    if (position === -1) {
+      console.warn(
+        `Could not find statement row with container ID: ${stmtRowContainerId}`,
+      );
+      return false;
+    }
+
+    // Delete the statement row
+    rowList.delete(position, 1);
+    return true;
+  }
+
+  /**
+   * Subscribe to row list changes for the statement grid block.
+   *
+   * @param containerId
+   * @param callback
+   * @returns
+   */
+  subscribeToRowListChanges(
+    containerId: ContainerID,
+    callback: (event: LoroEventBatch) => void,
+  ) {
+    return this.loroDoc.subscribe((event: LoroEventBatch) => {
+      const blockPath = this.loroDoc.getPathToContainer(containerId);
+      if (!blockPath) {
+        // Probably because the block container was deleted
+        return;
+      }
+      for (const ev of event.events) {
+        if (pathEquals(ev.path, [...blockPath, 'rows'])) {
+          callback(event);
+          break;
+        }
+      }
+    });
+  }
+
+  /**
    * Subscribe to ACL changes for the statement element.
    *
    * @param langCode
@@ -502,7 +752,8 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
     return this.loroDoc.subscribe((event: LoroEventBatch) => {
       const blockPath = this.loroDoc.getPathToContainer(containerId);
       if (!blockPath) {
-        throw new Error(`Could not find block for container ID ${containerId}`);
+        // Probably because the block container was deleted
+        return;
       }
 
       for (const ev of event.events) {

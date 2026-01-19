@@ -27,6 +27,8 @@ export const StyledDocEditorBlock = styled(Box, {
     prop !== 'hasFocus' && prop !== 'isHovered' && prop !== 'readOnly',
 })<{ hasFocus?: boolean; isHovered?: boolean; readOnly: boolean }>(
   ({ theme, hasFocus, readOnly }) => ({
+    width: '100%',
+    maxWidth: '800px',
     backgroundColor: !readOnly
       ? (theme.vars || theme).palette.background.default
       : (theme.vars || theme).palette.background.paper,
