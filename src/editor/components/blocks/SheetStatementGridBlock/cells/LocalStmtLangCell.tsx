@@ -49,20 +49,43 @@ const LocalStmtLangCell = (props: LocalStmtLangCellProps) => {
     );
   }
   return (
-    <CellWrapper padding="0px">
-      <ColabTextEditor
-        loro={loroDoc as any as LoroDocType}
-        ephStoreMgr={ephStoreMgr}
-        containerId={containerId}
-        canEdit={false}
-        spellCheck={{
-          enabled: false,
-          supported: false,
-          orgId: '',
-          langCode: undefined,
+    <Box
+      sx={{
+        padding: '0px',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+      }}
+    >
+      <Box
+        sx={{
+          height: '100%',
+          flexGrow: 0,
+          minWidth: '8px',
+          backgroundColor: '#44cf69',
         }}
-      />
-    </CellWrapper>
+      ></Box>
+      <Box
+        sx={{
+          height: '100%',
+          padding: '8px',
+        }}
+      >
+        <ColabTextEditor
+          loro={loroDoc as any as LoroDocType}
+          ephStoreMgr={ephStoreMgr}
+          containerId={containerId}
+          canEdit={false}
+          spellCheck={{
+            enabled: false,
+            supported: false,
+            orgId: '',
+            langCode: undefined,
+          }}
+        />
+      </Box>
+    </Box>
   );
 };
 

@@ -38,6 +38,10 @@ import PrivacyPolicyPage from './pages/legal/PrivacyPolicyPage';
 import TermsAndConditionsPage from './pages/legal/TermsAndConditionsPage';
 import SheetListPage from './pages/sheets/SheetListPage';
 import SheetCreatePage from './pages/sheets/SheetCreatePage';
+import ProductListPage from './pages/products/ProductListPage';
+import ProductShowPage from './pages/products/ProductShowPage';
+import ProductCreatePage from './pages/products/ProductCreatePage';
+import ProductEditPage from './pages/products/ProductEditPage';
 
 const router = createHashRouter([
   {
@@ -128,19 +132,19 @@ const router = createHashRouter([
         Component: GroupEditPage,
       },
       {
-        path: 'org/:orgId/attributes',
+        path: 'org/:orgId/config/attributes',
         Component: AttributeListPage,
       },
       {
-        path: 'org/:orgId/attributes/:attributeId',
+        path: 'org/:orgId/config/attributes/:attributeId',
         Component: AttributeShowPage,
       },
       {
-        path: 'org/:orgId/attributes/new',
+        path: 'org/:orgId/config/attributes/new',
         Component: AttributeCreatePage,
       },
       {
-        path: 'org/:orgId/attributes/:attributeId/edit',
+        path: 'org/:orgId/config/attributes/:attributeId/edit',
         Component: AttributeEditPage,
       },
       {
@@ -190,6 +194,22 @@ const router = createHashRouter([
       {
         path: 'org/:orgId/config/countries/',
         Component: CountryListPage,
+      },
+      {
+        path: 'org/:orgId/config/products/',
+        Component: ProductListPage,
+      },
+      {
+        path: 'org/:orgId/config/products/:productId',
+        Component: ProductShowPage,
+      },
+      {
+        path: 'org/:orgId/config/products/new',
+        Component: ProductCreatePage,
+      },
+      {
+        path: 'org/:orgId/config/products/:productId/edit',
+        Component: ProductEditPage,
       },
       {
         path: 'org/:orgId/*',

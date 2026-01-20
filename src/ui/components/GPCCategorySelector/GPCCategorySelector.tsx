@@ -1,8 +1,9 @@
 import { Stack } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import GPCSelector from '../GPCSelector/GPCSelector';
 import { GPCNode } from '../../../api/ColabriAPI';
 import { useTranslation } from 'react-i18next';
+import { useGPCNodes } from '../../hooks/useGPC/useGPC';
 
 export type GPCCategoryValue = {
   gpcSegment?: GPCNode;
@@ -40,6 +41,95 @@ const GPCCategorySelector = (props: GPCCategorySelectorProps) => {
     props.gpcCategoryValue,
   );
 
+  let hasMissingDescription = false;
+  if (props.showGPCSegment && !gpcCategoryValue.gpcSegment?.description) {
+    hasMissingDescription = true;
+  }
+  if (props.showGPCFamily && !gpcCategoryValue.gpcFamily?.description) {
+    hasMissingDescription = true;
+  }
+  if (props.showGPCClass && !gpcCategoryValue.gpcClass?.description) {
+    hasMissingDescription = true;
+  }
+  if (props.showGPCBrick && !gpcCategoryValue.gpcBrick?.description) {
+    hasMissingDescription = true;
+  }
+  if (props.showGPCAttribute && !gpcCategoryValue.gpcAttribute?.description) {
+    hasMissingDescription = true;
+  }
+  if (props.showGPCValue && !gpcCategoryValue.gpcValue?.description) {
+    hasMissingDescription = true;
+  }
+
+  gpcCategoryValue.gpcSegment?.code;
+
+  const { nodes } = useGPCNodes({
+    queryScope: 'gpcValue',
+    gpcSegmentCode: gpcCategoryValue.gpcSegment?.code,
+    gpcFamilyCode: gpcCategoryValue.gpcFamily?.code,
+    gpcClassCode: gpcCategoryValue.gpcClass?.code,
+    gpcBrickCode: gpcCategoryValue.gpcBrick?.code,
+    gpcAttributeCode: gpcCategoryValue.gpcAttribute?.code,
+    gpcValueCode: gpcCategoryValue.gpcValue?.code,
+    queryValue: '',
+    limit: 50,
+    enabled: hasMissingDescription,
+  });
+
+  useEffect(() => {
+    if (nodes && nodes.length > 0) {
+      const gpcNode = nodes[0];
+
+      // Create a new GPCCategoryValue object
+      const newGPCValue = {} as GPCCategoryValue;
+
+      // Set the new value of this scope
+      if (gpcNode.scope) {
+        newGPCValue[gpcNode.scope] = gpcNode;
+      }
+
+      // Check if there are parent scopes to set
+      const parentScopes: (keyof GPCCategoryValue)[] = [];
+      gpcNode?.parentNodes?.forEach((parentNode) => {
+        switch (parentNode.scope) {
+          case 'gpcSegment':
+            newGPCValue.gpcSegment = parentNode;
+            parentScopes.push('gpcSegment');
+            break;
+          case 'gpcFamily':
+            newGPCValue.gpcFamily = parentNode;
+            parentScopes.push('gpcFamily');
+            break;
+          case 'gpcClass':
+            newGPCValue.gpcClass = parentNode;
+            parentScopes.push('gpcClass');
+            break;
+          case 'gpcBrick':
+            newGPCValue.gpcBrick = parentNode;
+            parentScopes.push('gpcBrick');
+            break;
+          case 'gpcAttribute':
+            newGPCValue.gpcAttribute = parentNode;
+            parentScopes.push('gpcAttribute');
+            break;
+          case 'gpcValue':
+            newGPCValue.gpcValue = parentNode;
+            parentScopes.push('gpcValue');
+            break;
+        }
+      });
+
+      // Update the state
+      setGpcCategoryValue(newGPCValue);
+    }
+  }, [nodes]);
+
+  /**
+   * When a GPC node is changed
+   *
+   * @param scope
+   * @param node
+   */
   const handleGPCChange = (
     scope: keyof GPCCategoryValue,
     node: string | string[] | GPCNode | GPCNode[] | null,
@@ -172,7 +262,7 @@ const GPCCategorySelector = (props: GPCCategorySelectorProps) => {
             break;
         }
 
-        props.onChange?.(newGPCValue, [scope, ...parentScopes]);
+        props.onChange?.(newGPCValue, [...parentScopes]);
 
         return newGPCValue;
       }

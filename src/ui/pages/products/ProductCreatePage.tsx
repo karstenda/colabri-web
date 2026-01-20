@@ -1,33 +1,36 @@
 import * as React from 'react';
 import { useNavigate } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import useNotifications from '../../hooks/useNotifications/useNotifications';
-import { validate as validateAttribute } from './AttributeFormValidate';
-import { useCreateAttribute } from '../../hooks/useAttributes/useAttributes';
-import AttributeForm, {
+import { validate as validateProduct } from './ProductFormValidate';
+import { useCreateProduct } from '../../hooks/useProducts/useProducts';
+import ProductForm, {
   type FormFieldValue,
-  type AttributeFormState,
-} from './AttributeForm';
+  type ProductFormState,
+  formValuesToCreateRequest,
+} from './ProductForm';
 import PageContainer from '../../components/MainLayout/PageContainer';
 import { useUserOrganizationContext } from '../../context/UserOrganizationContext/UserOrganizationProvider';
 
-export default function AttributeCreatePage() {
+export default function ProductCreatePage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const notifications = useNotifications();
 
   const { organization } = useUserOrganizationContext();
 
-  const { createAttribute } = useCreateAttribute(organization?.id || '');
+  const { createProduct } = useCreateProduct(organization?.id || '');
 
-  const [formState, setFormState] = React.useState<AttributeFormState>(() => ({
-    values: { config: {} },
+  const [formState, setFormState] = React.useState<ProductFormState>(() => ({
+    values: { attributeValues: {} },
     errors: {},
   }));
   const formValues = formState.values;
   const formErrors = formState.errors;
 
   const setFormValues = React.useCallback(
-    (newFormValues: Partial<AttributeFormState['values']>) => {
+    (newFormValues: Partial<ProductFormState['values']>) => {
       setFormState((previousState) => ({
         ...previousState,
         values: newFormValues,
@@ -37,7 +40,7 @@ export default function AttributeCreatePage() {
   );
 
   const setFormErrors = React.useCallback(
-    (newFormErrors: Partial<AttributeFormState['errors']>) => {
+    (newFormErrors: Partial<ProductFormState['errors']>) => {
       setFormState((previousState) => ({
         ...previousState,
         errors: newFormErrors,
@@ -47,18 +50,36 @@ export default function AttributeCreatePage() {
   );
 
   const handleFormFieldChange = React.useCallback(
-    (name: keyof AttributeFormState['values'], value: FormFieldValue) => {
+    (name: keyof ProductFormState['values'], value: FormFieldValue) => {
+      let newFormValues: Partial<ProductFormState['values']>;
+
+      if (
+        name === 'attributeValues' &&
+        typeof value === 'object' &&
+        value !== null &&
+        'attributeName' in value
+      ) {
+        // Handle attribute value change
+        newFormValues = {
+          ...formValues,
+          attributeValues: {
+            ...formValues.attributeValues,
+            [value.attributeName]: value.value,
+          },
+        };
+      } else {
+        newFormValues = { ...formValues, [name]: value };
+      }
+
       const validateField = async (
-        values: Partial<AttributeFormState['values']>,
+        values: Partial<ProductFormState['values']>,
       ) => {
-        const { issues } = validateAttribute(values);
+        const { issues } = validateProduct(values);
         setFormErrors({
           ...formErrors,
           [name]: issues?.find((issue) => issue.path?.[0] === name)?.message,
         });
       };
-
-      const newFormValues = { ...formValues, [name]: value };
 
       setFormValues(newFormValues);
       validateField(newFormValues);
@@ -67,11 +88,11 @@ export default function AttributeCreatePage() {
   );
 
   const handleFormReset = React.useCallback(() => {
-    setFormValues({ config: {} });
+    setFormValues({ attributeValues: {} });
   }, [setFormValues]);
 
   const handleFormSubmit = React.useCallback(async () => {
-    const { issues } = validateAttribute(formValues);
+    const { issues } = validateProduct(formValues);
     if (issues && issues.length > 0) {
       setFormErrors(
         Object.fromEntries(
@@ -83,21 +104,17 @@ export default function AttributeCreatePage() {
     setFormErrors({});
 
     try {
-      await createAttribute({
-        name: formValues.name as string,
-        type: formValues.type as any,
-        config: formValues.config || {},
-      });
+      await createProduct(formValuesToCreateRequest(formValues));
 
-      notifications.show('Attribute created successfully.', {
+      notifications.show(t('products.createSuccess'), {
         severity: 'success',
         autoHideDuration: 3000,
       });
 
-      navigate('/org/' + organization?.id + '/config/attributes');
+      navigate('/org/' + organization?.id + '/config/products');
     } catch (createError) {
       notifications.show(
-        `Failed to create attribute. Reason: ${(createError as Error).message}`,
+        t('products.createError', { reason: (createError as Error).message }),
         {
           severity: 'error',
           autoHideDuration: 3000,
@@ -110,29 +127,30 @@ export default function AttributeCreatePage() {
     navigate,
     notifications,
     setFormErrors,
-    createAttribute,
+    createProduct,
     organization,
+    t,
   ]);
 
   return (
     <PageContainer
-      title="New Attribute"
+      title={t('products.new')}
       breadcrumbs={[
         {
-          title: 'Attributes',
-          path: '/org/' + organization?.id + '/attributes',
+          title: t('products.title'),
+          path: '/org/' + organization?.id + '/config/products',
         },
-        { title: 'New' },
+        { title: t('common.new') },
       ]}
     >
-      <AttributeForm
+      <ProductForm
         formState={formState}
         formMode="create"
         onFieldChange={handleFormFieldChange}
         onSubmit={handleFormSubmit}
         onReset={handleFormReset}
-        submitButtonLabel="Create"
-        backButtonPath={'/org/' + organization?.id + '/attributes'}
+        submitButtonLabel={t('common.create')}
+        backButtonPath={'/org/' + organization?.id + '/products'}
       />
     </PageContainer>
   );

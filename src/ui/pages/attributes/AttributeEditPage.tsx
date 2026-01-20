@@ -5,7 +5,10 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { useNavigate, useParams } from 'react-router';
 import useNotifications from '../../hooks/useNotifications/useNotifications';
 import { validate as validateAttribute } from './AttributeFormValidate';
-import { useAttribute, useUpdateAttribute } from '../../hooks/useAttributes/useAttributes';
+import {
+  useAttribute,
+  useUpdateAttribute,
+} from '../../hooks/useAttributes/useAttributes';
 import AttributeForm, {
   type FormFieldValue,
   type AttributeFormState,
@@ -14,12 +17,16 @@ import PageContainer from '../../components/MainLayout/PageContainer';
 import { useUserOrganizationContext } from '../../context/UserOrganizationContext/UserOrganizationProvider';
 
 type AttributeEditFormProps = {
-    initialValues: Partial<AttributeFormState['values']>;
-    onSubmit: (formValues: Partial<AttributeFormState['values']>) => Promise<void>;
+  initialValues: Partial<AttributeFormState['values']>;
+  onSubmit: (
+    formValues: Partial<AttributeFormState['values']>,
+  ) => Promise<void>;
 };
 
-function AttributeEditForm({ initialValues, onSubmit }: AttributeEditFormProps) {
-
+function AttributeEditForm({
+  initialValues,
+  onSubmit,
+}: AttributeEditFormProps) {
   const { attributeId } = useParams();
   const navigate = useNavigate();
 
@@ -57,7 +64,9 @@ function AttributeEditForm({ initialValues, onSubmit }: AttributeEditFormProps) 
 
   const handleFormFieldChange = React.useCallback(
     (name: keyof AttributeFormState['values'], value: FormFieldValue) => {
-      const validateField = async (values: Partial<AttributeFormState['values']>) => {
+      const validateField = async (
+        values: Partial<AttributeFormState['values']>,
+      ) => {
         const { issues } = validateAttribute(values);
         setFormErrors({
           ...formErrors,
@@ -81,7 +90,9 @@ function AttributeEditForm({ initialValues, onSubmit }: AttributeEditFormProps) 
     const { issues } = validateAttribute(formValues);
     if (issues && issues.length > 0) {
       setFormErrors(
-        Object.fromEntries(issues.map((issue) => [issue.path?.[0], issue.message])),
+        Object.fromEntries(
+          issues.map((issue) => [issue.path?.[0], issue.message]),
+        ),
       );
       return;
     }
@@ -94,7 +105,7 @@ function AttributeEditForm({ initialValues, onSubmit }: AttributeEditFormProps) 
         autoHideDuration: 3000,
       });
 
-      navigate(`/org/${organization?.id}/attributes/${attributeId}`);
+      navigate(`/org/${organization?.id}/config/attributes/${attributeId}`);
     } catch (editError) {
       notifications.show(
         `Failed to edit attribute. Reason: ${(editError as Error).message}`,
@@ -105,7 +116,15 @@ function AttributeEditForm({ initialValues, onSubmit }: AttributeEditFormProps) 
       );
       throw editError;
     }
-  }, [formValues, navigate, notifications, onSubmit, setFormErrors, organization, attributeId]);
+  }, [
+    formValues,
+    navigate,
+    notifications,
+    onSubmit,
+    setFormErrors,
+    organization,
+    attributeId,
+  ]);
 
   return (
     <AttributeForm
@@ -115,7 +134,7 @@ function AttributeEditForm({ initialValues, onSubmit }: AttributeEditFormProps) 
       onSubmit={handleFormSubmit}
       onReset={handleFormReset}
       submitButtonLabel="Save"
-      backButtonPath={`/org/${organization?.id}/attributes/${attributeId}`}
+      backButtonPath={`/org/${organization?.id}/config/attributes/${attributeId}`}
     />
   );
 }
@@ -126,31 +145,32 @@ export default function AttributeEditPage() {
   const { organization } = useUserOrganizationContext();
 
   const { attribute, isLoading, error } = useAttribute(
-    organization?.id || '', 
-    attributeId || '', 
-    organization !== undefined && attributeId !== undefined
+    organization?.id || '',
+    attributeId || '',
+    organization !== undefined && attributeId !== undefined,
   );
 
   const { updateAttribute } = useUpdateAttribute(organization?.id || '');
 
-  const initialFormState: Partial<AttributeFormState['values']> = React.useMemo(() => {
-    return {
-      ...attribute,
-    };
-  }, [attribute]);
+  const initialFormState: Partial<AttributeFormState['values']> =
+    React.useMemo(() => {
+      return {
+        ...attribute,
+      };
+    }, [attribute]);
 
   const handleSubmit = React.useCallback(
     async (formValues: Partial<AttributeFormState['values']>) => {
-        if (attributeId) {
-            await updateAttribute({ 
-              attributeId, 
-              data: {
-                name: formValues.name as string,
-                type: formValues.type as any,
-                config: formValues.config || {},
-              }
-            });
-        }
+      if (attributeId) {
+        await updateAttribute({
+          attributeId,
+          data: {
+            name: formValues.name as string,
+            type: formValues.type as any,
+            config: formValues.config || {},
+          },
+        });
+      }
     },
     [attributeId, updateAttribute],
   );
@@ -162,8 +182,15 @@ export default function AttributeEditPage() {
       <PageContainer
         title={pageTitle}
         breadcrumbs={[
-          { title: 'Attributes', path: '/org/'+organization?.id+'/attributes' },
-          { title: attribute?.name || '', path: '/org/'+organization?.id+'/attributes/' + attributeId },
+          {
+            title: 'Attributes',
+            path: '/org/' + organization?.id + '/config/attributes',
+          },
+          {
+            title: attribute?.name || '',
+            path:
+              '/org/' + organization?.id + '/config/attributes/' + attributeId,
+          },
           { title: 'Edit' },
         ]}
       >
@@ -189,7 +216,10 @@ export default function AttributeEditPage() {
       <PageContainer
         title={pageTitle}
         breadcrumbs={[
-          { title: 'Attributes', path: '/org/'+organization?.id+'/attributes' },
+          {
+            title: 'Attributes',
+            path: '/org/' + organization?.id + '/config/attributes',
+          },
           { title: 'Edit' },
         ]}
       >
@@ -204,12 +234,22 @@ export default function AttributeEditPage() {
     <PageContainer
       title={pageTitle}
       breadcrumbs={[
-        { title: 'Attributes', path: '/org/'+organization?.id+'/attributes' },
-        { title: attribute?.name || '', path: '/org/'+organization?.id+'/attributes/' + attributeId },
+        {
+          title: 'Attributes',
+          path: '/org/' + organization?.id + '/config/attributes',
+        },
+        {
+          title: attribute?.name || '',
+          path:
+            '/org/' + organization?.id + '/config/attributes/' + attributeId,
+        },
         { title: 'Edit' },
       ]}
     >
-      <AttributeEditForm initialValues={initialFormState} onSubmit={handleSubmit} />
+      <AttributeEditForm
+        initialValues={initialFormState}
+        onSubmit={handleSubmit}
+      />
     </PageContainer>
   );
 }

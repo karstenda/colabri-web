@@ -27,7 +27,13 @@
     "firstName": "First Name",
     "lastName": "Last Name",
     "refresh": "Refresh",
-    "actions": "Actions"
+    "actions": "Actions",
+    "new": "New",
+    "created": "Created",
+    "updated": "Updated",
+    "metadata": "Metadata",
+    "createdAt": "Created Date",
+    "updatedAt": "Updated Date"
   },
   "navigation": {
     "home": "Home",
@@ -148,10 +154,20 @@
   "product": {
     "form": {
       "gpcSectionTitle": "Global Product Classification",
-      "obhSectionTitle": "Product Brand Hierarchy"
+      "obhSectionTitle": "Product Brand Hierarchy",
+      "placeholders": {
+        "gpcSegment": "Select GPC Segment",
+        "gpcFamily": "Select GPC Family",
+        "gpcClass": "Select GPC Class",
+        "gpcBrick": "Select GPC Brick"
+      }
     }
   },
   "gpc": {
+    "segment": "GPC Segment",
+    "family": "GPC Family",
+    "class": "GPC Class",
+    "brick": "GPC Brick",
     "name": {
       "segment": "GPC Segment",
       "family": "GPC Family",
@@ -295,6 +311,16 @@
   "products": {
     "title": "Products",
     "addProduct": "Add Product",
+    "new": "New Product",
+    "edit": "Edit {{name}}",
+    "deleteConfirmTitle": "Delete product?",
+    "deleteConfirmMessage": "Do you wish to delete the product \"{{name}}\"?",
+    "deleteSuccess": "Product deleted successfully.",
+    "deleteError": "Failed to delete product. Reason: {{reason}}",
+    "createSuccess": "Product created successfully.",
+    "createError": "Failed to create product. Reason: {{reason}}",
+    "editSuccess": "Product updated successfully.",
+    "editError": "Failed to update product. Reason: {{reason}}",
     "form": {
       "details": "Product Details"
     }

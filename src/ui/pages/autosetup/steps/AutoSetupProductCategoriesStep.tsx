@@ -5,12 +5,12 @@ import Typography from '@mui/material/Typography';
 import { Stack } from '@mui/material';
 import OrgProductForm, {
   FormFieldValue,
-  ProductFormState,
-} from '../../../components/ProductForm/ProductForm';
+  AutoSetupProductFormState,
+} from '../components/AutoSetupProductForm/AutoSetupProductForm';
 import { useCreateProduct } from '../../../hooks/useProducts/useProducts';
 import { useOrganization } from '../../../context/UserOrganizationContext/UserOrganizationProvider';
 import { CreateAttributeValueRequest } from '../../../../api/ColabriAPI';
-import { validate } from '../../../components/ProductForm/ProductFormValidate';
+import { validate } from '../components/AutoSetupProductForm/AutoSetupProductFormValidate';
 import useNotifications from '../../../hooks/useNotifications/useNotifications';
 
 export type AutoSetupProductCategoriesStepProps = {
@@ -32,10 +32,11 @@ const AutoSetupProductCategoriesStep = forwardRef<
   const [isSubmitting, setIsSubmitting] = useState(false);
   const notifications = useNotifications();
 
-  const [productFormState, setProductFormState] = useState<ProductFormState>({
-    values: {},
-    errors: {},
-  });
+  const [productFormState, setProductFormState] =
+    useState<AutoSetupProductFormState>({
+      values: {},
+      errors: {},
+    });
 
   // When moving to the next step, save the selected languages
   useImperativeHandle(ref, () => ({
@@ -45,10 +46,14 @@ const AutoSetupProductCategoriesStep = forwardRef<
 
       // Set the issues
       setProductFormState((prev) => {
-        const newState = { ...prev, errors: {} as ProductFormState['errors'] };
+        const newState = {
+          ...prev,
+          errors: {} as AutoSetupProductFormState['errors'],
+        };
         for (const issue of issues) {
-          newState.errors[issue.path[0] as keyof ProductFormState['errors']] =
-            issue.message;
+          newState.errors[
+            issue.path[0] as keyof AutoSetupProductFormState['errors']
+          ] = issue.message;
         }
         return newState;
       });
@@ -108,7 +113,7 @@ const AutoSetupProductCategoriesStep = forwardRef<
 
   // Handle form field changes
   const handleFormFieldChange = (
-    name: keyof ProductFormState['values'],
+    name: keyof AutoSetupProductFormState['values'],
     value: FormFieldValue,
   ) => {
     // Update the product form state

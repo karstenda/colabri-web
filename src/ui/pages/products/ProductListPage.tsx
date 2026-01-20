@@ -19,18 +19,20 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { useDialogs } from '../../hooks/useDialogs/useDialogs';
 import useNotifications from '../../hooks/useNotifications/useNotifications';
 import {
-  useAttributes,
-  useDeleteAttribute,
-} from '../../hooks/useAttributes/useAttributes';
-import { Attribute } from '../../../api/ColabriAPI';
+  useProducts,
+  useDeleteProduct,
+} from '../../hooks/useProducts/useProducts';
+import { OrgProduct } from '../../../api/ColabriAPI';
 import PageContainer from '../../components/MainLayout/PageContainer';
 import { useUserOrganizationContext } from '../../context/UserOrganizationContext/UserOrganizationProvider';
 
-export default function AttributeListPage() {
+export default function ProductListPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const dialogs = useDialogs();
   const notifications = useNotifications();
@@ -41,12 +43,12 @@ export default function AttributeListPage() {
   });
   const [sortModel, setSortModel] = React.useState<GridSortModel>([]);
 
-  const { deleteAttribute, isPending: isDeletePending } = useDeleteAttribute(
+  const { deleteProduct, isPending: isDeletePending } = useDeleteProduct(
     organization?.id || '',
   );
 
-  // Use React Query hook for fetching attributes
-  const { attributes, isLoading, error, refetch } = useAttributes(
+  // Use React Query hook for fetching products
+  const { products, isLoading, error, refetch } = useProducts(
     organization?.id || '',
   );
 
@@ -58,47 +60,47 @@ export default function AttributeListPage() {
 
   const handleRowClick = React.useCallback<GridEventListener<'rowClick'>>(
     ({ row }) => {
-      navigate(`/org/${organization?.id}/config/attributes/${row.id}`);
+      navigate(`/org/${organization?.id}/config/products/${row.id}`);
     },
     [navigate, organization],
   );
 
   const handleCreateClick = React.useCallback(() => {
-    navigate(`/org/${organization?.id}/config/attributes/new`);
+    navigate(`/org/${organization?.id}/config/products/new`);
   }, [navigate, organization]);
 
   const handleRowEdit = React.useCallback(
-    (attribute: Attribute) => () => {
-      navigate(
-        `/org/${organization?.id}/config/attributes/${attribute.id}/edit`,
-      );
+    (product: OrgProduct) => () => {
+      navigate(`/org/${organization?.id}/config/products/${product.id}/edit`);
     },
     [navigate, organization],
   );
 
   const handleRowDelete = React.useCallback(
-    (attribute: Attribute) => async () => {
+    (product: OrgProduct) => async () => {
       const confirmed = await dialogs.confirm(
-        `Do you wish to delete the attribute "${attribute.name}"?`,
+        t('products.deleteConfirmMessage', { name: product.name }),
         {
-          title: `Delete attribute?`,
+          title: t('products.deleteConfirmTitle'),
           severity: 'error',
-          okText: 'Delete',
-          cancelText: 'Cancel',
+          okText: t('common.delete'),
+          cancelText: t('common.cancel'),
         },
       );
 
       if (confirmed) {
         try {
-          await deleteAttribute(attribute.id!);
+          await deleteProduct(product.id!);
 
-          notifications.show('Attribute deleted successfully.', {
+          notifications.show(t('products.deleteSuccess'), {
             severity: 'success',
             autoHideDuration: 3000,
           });
         } catch (deleteError) {
           notifications.show(
-            `Failed to delete attribute. Reason: ${(deleteError as Error).message}`,
+            t('products.deleteError', {
+              reason: (deleteError as Error).message,
+            }),
             {
               severity: 'error',
               autoHideDuration: 3000,
@@ -107,36 +109,22 @@ export default function AttributeListPage() {
         }
       }
     },
-    [dialogs, notifications, deleteAttribute],
+    [dialogs, notifications, deleteProduct, t],
   );
 
   const columns = React.useMemo<GridColDef[]>(
     () => [
-      { field: 'name', headerName: 'Name', flex: 1, minWidth: 200 },
-      {
-        field: 'type',
-        headerName: 'Type',
-        width: 150,
-        valueFormatter: (value) => {
-          const typeMap: Record<string, string> = {
-            string: 'String',
-            number: 'Number',
-            boolean: 'Boolean',
-            date: 'Date',
-          };
-          return typeMap[value] || value;
-        },
-      },
+      { field: 'name', headerName: t('common.name'), flex: 1, minWidth: 200 },
       {
         field: 'createdAt',
-        headerName: 'Created',
+        headerName: t('common.created'),
         type: 'date',
         valueGetter: (value) => value && new Date(value),
         width: 140,
       },
       {
         field: 'updatedAt',
-        headerName: 'Updated',
+        headerName: t('common.updated'),
         type: 'date',
         valueGetter: (value) => value && new Date(value),
         width: 140,
@@ -151,22 +139,22 @@ export default function AttributeListPage() {
           <GridActionsCellItem
             key="edit-item"
             icon={<EditIcon />}
-            label="Edit"
+            label={t('common.edit')}
             onClick={handleRowEdit(row)}
           />,
           <GridActionsCellItem
             key="delete-item"
             icon={<DeleteIcon />}
-            label="Delete"
+            label={t('common.delete')}
             onClick={handleRowDelete(row)}
           />,
         ],
       },
     ],
-    [handleRowEdit, handleRowDelete],
+    [handleRowEdit, handleRowDelete, t],
   );
 
-  const pageTitle = 'Attributes';
+  const pageTitle = t('products.title');
 
   return (
     <PageContainer
@@ -174,7 +162,11 @@ export default function AttributeListPage() {
       breadcrumbs={[{ title: pageTitle }]}
       actions={
         <Stack direction="row" alignItems="center" spacing={1}>
-          <Tooltip title="Reload data" placement="right" enterDelay={1000}>
+          <Tooltip
+            title={t('common.refresh')}
+            placement="right"
+            enterDelay={1000}
+          >
             <div>
               <IconButton
                 size="small"
@@ -190,7 +182,7 @@ export default function AttributeListPage() {
             onClick={handleCreateClick}
             startIcon={<AddIcon />}
           >
-            Create
+            {t('common.create')}
           </Button>
         </Stack>
       }
@@ -202,7 +194,7 @@ export default function AttributeListPage() {
           </Box>
         ) : (
           <DataGrid
-            rows={attributes}
+            rows={products}
             columns={columns}
             sortingMode="client"
             filterMode="client"

@@ -7,10 +7,10 @@ import { useTranslation } from 'react-i18next';
 import Divider from '@mui/material/Divider';
 import GPCCategorySelector, {
   GPCCategoryValue,
-} from '../GPCCategorySelector/GPCCategorySelector';
+} from '../../../../components/GPCCategorySelector/GPCCategorySelector';
 import { useTheme } from '@mui/material/styles';
 
-export type ProductFormEntries = {
+export type AutoSetupProductFormEntries = {
   name?: string;
   attributeValues?: {
     GPC_SEGMENT?: string;
@@ -26,8 +26,8 @@ export type ProductFormEntries = {
   };
 };
 
-export interface ProductFormState {
-  values: ProductFormEntries;
+export interface AutoSetupProductFormState {
+  values: AutoSetupProductFormEntries;
   errors: {
     name?: string;
     attributeValues?: {
@@ -47,22 +47,22 @@ export interface ProductFormState {
 
 export type FormFieldValue = string | { attributeName: string; value: string };
 
-type CreateProductFormProps = {
-  formState: ProductFormState;
+type AutoSetupProductFormProps = {
+  formState: AutoSetupProductFormState;
   placeholders?: Record<string, string>;
   onFieldChange: (
-    name: keyof ProductFormState['values'],
+    name: keyof AutoSetupProductFormState['values'],
     value: FormFieldValue,
   ) => void;
   isSubmitting?: boolean;
 };
 
-const ProductForm = ({
+const AutoSetupProductForm = ({
   formState,
   placeholders,
   onFieldChange,
   isSubmitting,
-}: CreateProductFormProps) => {
+}: AutoSetupProductFormProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -77,7 +77,7 @@ const ProductForm = ({
         return;
       } else {
         onFieldChange(
-          field as keyof ProductFormState['values'],
+          field as keyof AutoSetupProductFormState['values'],
           event.target.value,
         );
       }
@@ -314,4 +314,4 @@ const ProductForm = ({
   );
 };
 
-export default ProductForm;
+export default AutoSetupProductForm;

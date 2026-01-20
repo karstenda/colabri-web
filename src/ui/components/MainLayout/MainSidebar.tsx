@@ -17,6 +17,7 @@ import LanguageIcon from '@mui/icons-material/Language';
 import FlagCircleIcon from '@mui/icons-material/FlagCircle';
 import LocalLibraryIcon from '@mui/icons-material/LocalLibrary';
 import ConstructionIcon from '@mui/icons-material/Construction';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import TitleIcon from '@mui/icons-material/Title';
 import { matchPath, useLocation } from 'react-router';
 import MainSidebarContext from '../../context/MainSidebarContext';
@@ -398,13 +399,25 @@ export default function MainSidebar({
                         }
                       />
                       <MainSidebarPageItem
+                        id="config-products"
+                        title="Products"
+                        icon={<ShoppingCartIcon />}
+                        href={`/org/${organization?.id}/config/products`}
+                        selected={
+                          !!matchPath(
+                            `/org/${organization?.id}/config/products/*`,
+                            pathname,
+                          )
+                        }
+                      />
+                      <MainSidebarPageItem
                         id="config-attributes"
                         title="Attributes"
                         icon={<LabelIcon />}
-                        href={`/org/${organization?.id}/attributes`}
+                        href={`/org/${organization?.id}/config/attributes`}
                         selected={
                           !!matchPath(
-                            `/org/${organization?.id}/attributes/*`,
+                            `/org/${organization?.id}/config/attributes/*`,
                             pathname,
                           )
                         }

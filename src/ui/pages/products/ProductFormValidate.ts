@@ -3,7 +3,7 @@
 import { ProductFormEntries } from './ProductForm';
 
 type ValidationResult = {
-  issues: { message: string; path: string[] }[];
+  issues: { message: string; path: (keyof ProductFormEntries | string)[] }[];
 };
 
 export function validate(

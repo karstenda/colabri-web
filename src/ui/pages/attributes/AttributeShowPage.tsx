@@ -41,7 +41,7 @@ export default function AttributeShowPage() {
   const { deleteAttribute } = useDeleteAttribute(organization?.id || '');
 
   const handleAttributeEdit = React.useCallback(() => {
-    navigate(`/org/${organization?.id}/attributes/${attributeId}/edit`);
+    navigate(`/org/${organization?.id}/config/attributes/${attributeId}/edit`);
   }, [navigate, attributeId, organization]);
 
   const handleAttributeDelete = React.useCallback(async () => {
@@ -63,7 +63,7 @@ export default function AttributeShowPage() {
       try {
         await deleteAttribute(attributeId as string);
 
-        navigate(`/org/${organization?.id}/attributes/`);
+        navigate(`/org/${organization?.id}/config/attributes/`);
 
         notifications.show('Attribute deleted successfully.', {
           severity: 'success',
@@ -92,7 +92,7 @@ export default function AttributeShowPage() {
   ]);
 
   const handleBack = React.useCallback(() => {
-    navigate(`/org/${organization?.id}/attributes`);
+    navigate(`/org/${organization?.id}/config/attributes`);
   }, [navigate, organization]);
 
   const renderShow = React.useMemo(() => {
@@ -202,7 +202,7 @@ export default function AttributeShowPage() {
       breadcrumbs={[
         {
           title: 'Attributes',
-          path: '/org/' + organization?.id + '/attributes',
+          path: '/org/' + organization?.id + '/config/attributes',
         },
         { title: pageTitle },
       ]}
