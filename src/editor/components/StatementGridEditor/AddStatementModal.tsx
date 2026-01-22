@@ -11,12 +11,12 @@ import {
 import {
   LanguageSelector,
   LanguageOption,
-} from '../../../../ui/components/LanguageSelector/LanguageSelector';
-import { useOrganization } from '../../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
-import type { OrgContentLanguage } from '../../../../api/ColabriAPI';
-import { DialogProps } from '../../../../ui/hooks/useDialogs/useDialogs';
+} from '../../../ui/components/LanguageSelector/LanguageSelector';
+import { useOrganization } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
+import type { OrgContentLanguage } from '../../../api/ColabriAPI';
+import { DialogProps } from '../../../ui/hooks/useDialogs/useDialogs';
 import { useTranslation } from 'react-i18next';
-import { ContentTypeSelector } from '../../../../ui/components/ContentTypeSelector';
+import { ContentTypeSelector } from '../../../ui/components/ContentTypeSelector';
 
 export interface NewStatementData {
   contentType: string;

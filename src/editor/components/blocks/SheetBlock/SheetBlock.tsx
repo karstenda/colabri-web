@@ -128,7 +128,11 @@ const SheetBlock = ({ bp }: SheetBlockProps) => {
   // Get the actual component
   return (
     <>
-      <Stack spacing={2} sx={{ alignItems: 'center' }}>
+      <Stack
+        spacing={2}
+        sx={{ alignItems: 'center' }}
+        className="EditorBackground"
+      >
         {sheetContentBlockBPs == null && (
           <Skeleton variant="rounded" width="100%" height={100} />
         )}

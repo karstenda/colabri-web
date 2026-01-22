@@ -1,16 +1,10 @@
-import { LoroMap } from 'loro-crdt';
-import { StmtDocSchema } from '../../../../data/ColabDoc';
-import ColabTextEditor from '../../../ColabTextEditor/ColabTextEditor';
-import { ConnectedSheetDoc } from '../../../../data/ConnectedColabDoc';
-import { LoroDocType } from 'loro-prosemirror';
-import { useColabDoc } from '../../../../context/ColabDocContext/ColabDocProvider';
 import { GridActionsCellItem } from '@mui/x-data-grid/components';
 import { useTranslation } from 'react-i18next';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { StatementGridEditorRow } from '../StatementGridEditor';
+import { StatementGridEditorTableRow } from '../../StatementGridEditorTable';
 
 export type LocalStmtDeleteActionProps = {
-  row: StatementGridEditorRow;
+  row: StatementGridEditorTableRow;
   onRemove: () => Promise<void>;
 };
 

@@ -69,7 +69,6 @@ export const EditorContentWrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'row',
   flexGrow: 1,
-  padding: theme.spacing(2),
   overflowY: 'auto',
 }));
 
@@ -78,7 +77,10 @@ export const EditorContentMainColumn = styled(Box)(({}) => ({
 }));
 
 export const EditorContentBlockTrack = styled(Box)(({}) => ({
-  paddingLeft: '30px',
+  paddingLeft: '50px',
+  paddingRight: '10px',
+  paddingBottom: '20px',
+  paddingTop: '20px',
   width: '100%',
   alignItems: 'center',
 }));

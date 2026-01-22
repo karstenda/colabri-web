@@ -1,11 +1,10 @@
 import { SheetStatementGridBlockBP } from './SheetStatementGridBlockBP';
 import { useTranslation } from 'react-i18next';
 import React, { useEffect, useState } from 'react';
-import StatementGridEditor from './StatementGridEditor';
+import StatementGridEditor from '../../StatementGridEditor/StatementGridEditor';
 import { ConnectedSheetDoc } from '../../../data/ConnectedColabDoc';
 import { useColabDoc } from '../../../context/ColabDocContext/ColabDocProvider';
 import { SheetStatementGridBlockLoro } from '../../../data/ColabDoc';
-import DocEditorBlock from '../DocEditorBlock';
 import DocEditorSheetBlock from '../DocEditorBlock/DocEditorSheetBlock';
 
 export type SheetStatementGridBlockProps = {
@@ -92,8 +91,7 @@ const SheetStatementGridBlock: React.FC<SheetStatementGridBlockProps> = ({
       blockId={bp.id}
       blockType={'SheetStatementGridBlock'}
       loroContainerId={bp.containerId}
-      loroDoc={loroDoc}
-      controller={controller}
+      colabDoc={colabDoc}
       onFocusChange={handleFocusChange}
       onHoverChange={handleHoverChange}
       showManageControls={canManage}

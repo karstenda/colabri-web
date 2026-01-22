@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react';
 import ColabDocEditorContext, {
   ActiveBlockRef,
+  ActiveStatementElementRef,
   ToolbarSetup,
 } from './ColabDocEditorContext';
 import { EditorView } from 'prosemirror-view';
@@ -80,6 +81,16 @@ export function useSetActiveBlock() {
   return context.setActiveBlock;
 }
 
+export function useActiveStatementElement() {
+  const context = useToolbarContext();
+  return context.activeStatementElement;
+}
+
+export function useSetActiveStatementElement() {
+  const context = useToolbarContext();
+  return context.setActiveStatementElement;
+}
+
 type ColabDocEditorProviderProps = {
   children: ReactNode;
 };
@@ -101,6 +112,10 @@ export default function ColabDocEditorProvider({
     null,
   );
 
+  // The currently active statement element
+  const [activeStatementElement, setActiveStatementElement] =
+    React.useState<ActiveStatementElementRef | null>(null);
+
   // Intialize the state that will keep track of toolbar setups
   const [toolbarSetups, setToolbarSetups] = React.useState<ToolbarSetups>({});
 
@@ -113,6 +128,8 @@ export default function ColabDocEditorProvider({
         setActiveEditorView,
         activeBlock,
         setActiveBlock,
+        activeStatementElement,
+        setActiveStatementElement,
         toolbarSetups,
         setToolbarSetups,
       }}

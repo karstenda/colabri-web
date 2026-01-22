@@ -11,7 +11,7 @@ import {
 } from '../../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
 import { useColabDoc } from '../../../context/ColabDocContext/ColabDocProvider';
 import { LoroDocType } from 'loro-prosemirror';
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { ContainerID, LoroMap } from 'loro-crdt';
 import DocEditorBlock from '../DocEditorBlock';
 import {
@@ -33,6 +33,8 @@ import { ContentLanguage } from '../../../data/ContentLanguage';
 import { t } from 'i18next';
 import { ColabApprovalState } from '../../../../api/ColabriAPI';
 import ColabTextEditorOutlined from '../../ColabTextEditor/ColabTextEditorOutlined';
+import { useSetActiveStatementElement } from '../../../context/ColabDocEditorContext/ColabDocEditorProvider';
+import StatementApprovalDropdown from '../../ApprovalDropdown/StmtApprovalDropdown';
 
 export type StatementElementBlockProps = {
   bp: StatementElementBlockBP;
@@ -51,6 +53,9 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
   const organization = useOrganization();
   const userId = useOrgUserId();
   const approvalKey = organization?.id + '/u/' + userId;
+
+  // Hook to set the active statement element
+  const setActiveStatementElement = useSetActiveStatementElement();
 
   // Get the configured languages
   const { languages, isLoading: isLanguagesLoading } = useContentLanguages(
@@ -121,23 +126,6 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
 
   // State to track whether the user can edit this statement element
   const [canEdit, setCanEdit] = useState<boolean>(false);
-  // State to track approval info
-  const [approvalState, setApprovalState] = useState<ColabApprovalState>(
-    controller
-      ? controller.getStatementElementState(bp.langCode)
-      : ColabApprovalState.Draft,
-  );
-  const [canApprove, setCanApprove] = useState<boolean>(
-    controller ? controller.hasApprovePermission(bp.langCode) : false,
-  );
-  const [canManage, setCanManage] = useState<boolean>(
-    controller ? controller.hasManagePermission() : false,
-  );
-  const [hasRejected, setHasRejected] = useState<boolean>(
-    controller
-      ? controller.hasRejectedApproval(bp.langCode, approvalKey)
-      : false,
-  );
 
   // State to track focus and hover
   const [focus, setFocus] = useState(false);
@@ -148,10 +136,6 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
     if (controller && bp.langCode && loroDoc) {
       // Update the canEdit state
       setCanEdit(controller.canEditStatementElement(bp.langCode));
-      setApprovalState(controller.getStatementElementState(bp.langCode));
-      setCanApprove(controller.hasApprovePermission(bp.langCode));
-      setCanManage(controller.hasManagePermission());
-      setHasRejected(controller.hasRejectedApproval(bp.langCode, approvalKey));
 
       // Subscribe to ACL changes in the loroDoc
       const aclUnsubscribe = controller.subscribeToStatementElementAclChanges(
@@ -159,8 +143,6 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
         () => {
           // On any ACL change, update the canEdit state
           setCanEdit(controller.canEditStatementElement(bp.langCode));
-          setCanApprove(controller.hasApprovePermission(bp.langCode));
-          setCanManage(controller.hasManagePermission());
         },
       );
       // Subscribe to approval changes in the loroDoc
@@ -168,13 +150,6 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
         controller.subscribeToStatementElementApprovalChanges(
           bp.langCode,
           () => {
-            // On any approval change, update the canEdit state
-            setCanEdit(controller.canEditStatementElement(bp.langCode));
-            setApprovalState(controller.getStatementElementState(bp.langCode));
-            setHasRejected(
-              controller.hasRejectedApproval(bp.langCode, approvalKey),
-            );
-
             // On any approval change, update the canEdit state
             setCanEdit(controller.canEditStatementElement(bp.langCode));
           },
@@ -190,7 +165,18 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
 
   // Handle focus change from DocEditorBlock
   const handleFocusChange = (hasFocus: boolean) => {
+    // Set the focus state
     setFocus(hasFocus);
+
+    if (hasFocus) {
+      // Set the active statement element in the editor context
+      setActiveStatementElement({
+        langCode: bp.langCode,
+        colabDoc: colabDoc,
+      });
+    } else {
+      setActiveStatementElement(null);
+    }
   };
   const handleHoverChange = (isHovered: boolean) => {
     setIsHovered(isHovered);
@@ -237,45 +223,6 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
     }
   };
 
-  const handleApprove = () => {
-    if (!controller) {
-      return;
-    }
-    const hasApproved = controller.approveStatementElement(
-      bp.langCode,
-      approvalKey,
-    );
-    if (hasApproved) {
-      controller.commit();
-      setApprovalState(controller.getStatementElementState(bp.langCode));
-    }
-  };
-
-  const handleReject = () => {
-    if (!controller) {
-      return;
-    }
-    const hasRejected = controller.rejectStatementElement(
-      bp.langCode,
-      approvalKey,
-    );
-    if (hasRejected) {
-      controller.commit();
-      setApprovalState(controller.getStatementElementState(bp.langCode));
-    }
-  };
-
-  const handleRevert = () => {
-    if (!controller) {
-      return;
-    }
-    const hasReverted = controller.revertStatementElementToDraft(bp.langCode);
-    if (hasReverted) {
-      controller.commit();
-      setApprovalState(controller.getStatementElementState(bp.langCode));
-    }
-  };
-
   if (!loroDoc || !ephStoreMgr) {
     return <div>Loading...</div>;
   } else {
@@ -285,8 +232,7 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
           blockId={bp.id}
           blockType={'StatementElementBlock'}
           loroContainerId={bp.containerId}
-          loroDoc={loroDoc}
-          controller={controller}
+          colabDoc={colabDoc}
           onFocusChange={handleFocusChange}
           onHoverChange={handleHoverChange}
           showUpDownControls={false}
@@ -313,14 +259,9 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
                   )}
                 </StmtElementHeaderLeft>
                 <StmtElementHeaderRight>
-                  <ApprovalDropdown
-                    state={approvalState}
-                    canApprove={canApprove}
-                    canManage={canManage}
-                    hasRejected={hasRejected}
-                    onApprove={handleApprove}
-                    onReject={handleReject}
-                    onRevert={handleRevert}
+                  <StatementApprovalDropdown
+                    langCode={bp?.langCode}
+                    controller={controller}
                   />
                 </StmtElementHeaderRight>
               </StmtElementHeaderWrapper>

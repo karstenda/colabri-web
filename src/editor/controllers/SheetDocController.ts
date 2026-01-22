@@ -30,6 +30,9 @@ import {
   ColabApprovalType,
   StatementGridRowType,
 } from '../../api/ColabriAPI';
+import StatementController from './StatementController';
+import StatementEmbedController from './StatementLocalController';
+import StatementLocalController from './StatementLocalController';
 
 export type ColabSheetBlock =
   | ColabSheetTextBlock
@@ -46,6 +49,41 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
     authPrpls?: Set<string>,
   ) {
     super(loroDoc, orgId, owner, userId, authPrpls);
+  }
+
+  /**
+   * Get an embedded statement controller for an embedded statement in a given row container ID
+   * @param rowContainerId
+   * @returns
+   */
+  getLocalStatementController(
+    containerId: ContainerID,
+  ): StatementLocalController {
+    const stmtRootMap = this.loroDoc.getContainerById(
+      containerId,
+    ) as LoroMap<StmtDocSchema>;
+    if (!stmtRootMap) {
+      throw new Error(
+        `Could not find statement map for row container ID ${containerId}`,
+      );
+    }
+
+    // Try to figure out which block this statement belongs to
+    const blockMap = stmtRootMap.parent()?.parent()?.parent() as SheetBlockLoro;
+    if (blockMap === undefined || !(blockMap instanceof LoroMap)) {
+      throw new Error("Could not find parent block for statement's row");
+    }
+
+    return new StatementLocalController(
+      this.loroDoc,
+      this,
+      blockMap.id,
+      stmtRootMap,
+      this.orgId,
+      this.owner,
+      this.userId,
+      this.authPrpls,
+    );
   }
 
   /**

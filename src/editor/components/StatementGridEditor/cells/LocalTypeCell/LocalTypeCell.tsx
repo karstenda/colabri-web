@@ -1,14 +1,15 @@
 import { LoroMap } from 'loro-crdt';
 import { StmtDocSchema } from '../../../../data/ColabDoc';
-import CellWrapper from './CellWrapper';
+import CellWrapper from '../CellWrapper';
 import ContentTag from '../../../ContentTag/ContentTag';
 import { Skeleton } from '@mui/material';
 
 export type LocalNameCellProps = {
   statement: LoroMap<StmtDocSchema>;
+  hasFocus: boolean;
 };
 
-const LocalNameCell = ({ statement }: LocalNameCellProps) => {
+const LocalTypeCell = ({ statement, hasFocus }: LocalNameCellProps) => {
   const contentTypeCode = statement?.get('properties')?.get('contentType');
 
   return (
@@ -32,4 +33,4 @@ const LocalNameCell = ({ statement }: LocalNameCellProps) => {
   );
 };
 
-export default LocalNameCell;
+export default LocalTypeCell;

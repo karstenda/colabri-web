@@ -1,62 +1,62 @@
 import { ContainerID, LoroList, LoroMap, LoroMovableList } from 'loro-crdt';
 import { useTranslation } from 'react-i18next';
-import { useOrganization } from '../../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
+import { useOrganization } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
 import {
   SheetStatementGridBlockLoro,
   SheetStatementGridRowLoro,
   StmtDocSchema,
   TextElementLoro,
-} from '../../../data/ColabDoc';
+} from '../../data/ColabDoc';
 import { DataGrid } from '@mui/x-data-grid';
-import {
-  ColabSheetStatementGridRow,
-  StatementGridRowType,
-} from '../../../../api/ColabriAPI';
+import { StatementGridRowType } from '../../../api/ColabriAPI';
 import { useState, useMemo, useCallback, useEffect, use } from 'react';
 import {
   GridColDef,
   GridFilterModel,
-  GridSlotsComponent,
   GridSlotsComponentsProps,
   GridSortModel,
 } from '@mui/x-data-grid/models';
 import { GridColumnVisibilityModel } from '@mui/x-data-grid';
 import { gridClasses } from '@mui/x-data-grid';
-import getStmtNameColumn from './columns/StmtNameColumn';
-import { useColabDoc } from '../../../context/ColabDocContext/ColabDocProvider';
-import getStmtLangColumn from './columns/StmtLangColumn';
-import { useContentLanguages } from '../../../../ui/hooks/useContentLanguages/useContentLanguage';
+import getStmtTypeColumn from './columns/StmtTypeColumn';
+import { useColabDoc } from '../../context/ColabDocContext/ColabDocProvider';
+import { useContentLanguages } from '../../../ui/hooks/useContentLanguages/useContentLanguage';
 import getStmtActionsColumn from './columns/StmtActionsColumn';
 import StatementGridEditorToolbar from './StatementGridEditorToolbar';
-import { useDialogs } from '../../../../ui/hooks/useDialogs/useDialogs';
+import { useDialogs } from '../../../ui/hooks/useDialogs/useDialogs';
 import AddStatementModal, {
   AddStatementModalPayload,
   NewStatementData,
 } from './AddStatementModal';
-import { ConnectedSheetDoc } from '../../../data/ConnectedColabDoc';
+import { ConnectedSheetDoc } from '../../data/ConnectedColabDoc';
+import { useTheme } from '@mui/material/styles';
+import getStmtEditColumn from './columns/StmtEditColumn';
+import { useSetActiveCell } from './context/StatementGridEditorContextProvider';
 
-export type StatementGridEditorProps = {
+export type StatementGridEditorTableProps = {
   containerId: ContainerID;
   isHovered?: boolean;
   isFocused?: boolean;
 };
 
-export type StatementGridEditorRow = {
+export type StatementGridEditorTableRow = {
   id: string;
   type: StatementGridRowType;
   statementRef?: string;
   statement?: LoroMap<StmtDocSchema>;
 };
 
-const StatementGridEditor: React.FC<StatementGridEditorProps> = ({
+const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
   containerId,
   isHovered,
   isFocused,
 }) => {
   const { colabDoc } = useColabDoc();
   const { t } = useTranslation();
+  const theme = useTheme();
   const organization = useOrganization();
   const { languages } = useContentLanguages(organization?.id);
+  const setActiveCell = useSetActiveCell();
   const dialogs = useDialogs();
 
   if (!(colabDoc instanceof ConnectedSheetDoc)) {
@@ -74,9 +74,9 @@ const StatementGridEditor: React.FC<StatementGridEditorProps> = ({
   const [canManage, setCanManage] = useState<boolean>(false);
 
   // Create state for the rows
-  const [statementRows, setStatementRows] = useState<StatementGridEditorRow[]>(
-    [],
-  );
+  const [statementRows, setStatementRows] = useState<
+    StatementGridEditorTableRow[]
+  >([]);
 
   // Create state for the columns
   const [columns, setColumns] = useState<any[]>([]);
@@ -164,12 +164,19 @@ const StatementGridEditor: React.FC<StatementGridEditorProps> = ({
     }
   }, [loroDoc, controller, containerId, languages]);
 
+  useEffect(() => {
+    // If the entire grid editor is not focused, clear the active cell
+    if (!isFocused) {
+      setActiveCell(null);
+    }
+  }, [isFocused]);
+
   // Handle updating columns
   const updateColumns = useCallback(
     (propertiesMap: LoroMap<any> | undefined) => {
       // Always display the name column and actions column
-      const newColumns: GridColDef<StatementGridEditorRow>[] = [
-        getStmtNameColumn(t),
+      const newColumns: GridColDef<StatementGridEditorTableRow>[] = [
+        getStmtTypeColumn(t),
       ];
 
       // If canManage or canAdd, show actions column
@@ -188,7 +195,7 @@ const StatementGridEditor: React.FC<StatementGridEditorProps> = ({
           const langCode = langCodesLoro.get(i);
           const language = languages?.find((lang) => lang.code === langCode);
           if (language) {
-            newColumns.push(getStmtLangColumn(language, t));
+            newColumns.push(getStmtEditColumn(language, t));
           }
         }
       }
@@ -201,7 +208,7 @@ const StatementGridEditor: React.FC<StatementGridEditorProps> = ({
   const updateRows = useCallback(
     (stmtGridRowLoroList: LoroMovableList<SheetStatementGridRowLoro>) => {
       // Create state for the rows
-      const stmtRows: StatementGridEditorRow[] = [];
+      const stmtRows: StatementGridEditorTableRow[] = [];
       for (let i = 0; i < stmtGridRowLoroList.length; i++) {
         const row = stmtGridRowLoroList.get(i);
         stmtRows.push({
@@ -266,8 +273,15 @@ const StatementGridEditor: React.FC<StatementGridEditorProps> = ({
   );
 
   const handleRowClick = useCallback(
-    (params: { row: StatementGridEditorRow }) => {
+    (params: { row: StatementGridEditorTableRow }) => {
       console.log('Row clicked:', params.row);
+    },
+    [],
+  );
+
+  const handleCellClick = useCallback(
+    (params: { row: StatementGridEditorTableRow; field: string }) => {
+      setActiveCell({ rowId: params.row.id, field: params.field });
     },
     [],
   );
@@ -287,6 +301,10 @@ const StatementGridEditor: React.FC<StatementGridEditorProps> = ({
       },
       [`& .${gridClasses.row}:hovered`]: {
         backgroundColor: 'transparent',
+      },
+      [`& .${gridClasses.cell}`]: {
+        padding: 0,
+        backgroundColor: (theme.vars || theme).palette.background.paper,
       },
     }),
     [],
@@ -343,6 +361,7 @@ const StatementGridEditor: React.FC<StatementGridEditorProps> = ({
         filterModel={filterModel}
         onFilterModelChange={setFilterModel}
         onRowClick={handleRowClick}
+        onCellClick={handleCellClick}
         sx={gridSx}
         slotProps={gridSlotProps}
         slots={gridSlots}
@@ -351,4 +370,4 @@ const StatementGridEditor: React.FC<StatementGridEditorProps> = ({
   );
 };
 
-export default StatementGridEditor;
+export default StatementGridEditorTable;

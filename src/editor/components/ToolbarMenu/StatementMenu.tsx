@@ -1,38 +1,39 @@
 import { Stack, SvgIcon, Tooltip } from '@mui/material';
 import { ToolbarButton, ToolbarMenuDivider } from './ToolbarMenuStyles';
 import { useColabDoc } from '../../context/ColabDocContext/ColabDocProvider';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AddLanguageModal, AddLanguageModalPayload } from '../AddLanguageModal';
 import { useContentLanguages } from '../../../ui/hooks/useContentLanguages/useContentLanguage';
 import { useOrganization } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
 import { OrgContentLanguage } from '../../../api/ColabriAPI';
 import { useDialogs } from '../../../ui/hooks/useDialogs/useDialogs';
-import { useActiveBlock } from '../../context/ColabDocEditorContext/ColabDocEditorProvider';
-import { StmtLoroDoc } from '../../data/ColabDoc';
 import { Permission } from '../../../ui/data/Permission';
 import { useTranslation } from 'react-i18next';
 import ManagePermissionModal, {
   ManagePermissionModalPayload,
 } from '../ManagePermissionModal/ManagePermissionModal';
-import { LoroMap } from 'loro-crdt';
-import { ConnectedStmtDoc } from '../../data/ConnectedColabDoc';
+import {
+  ConnectedSheetDoc,
+  ConnectedStmtDoc,
+} from '../../data/ConnectedColabDoc';
 import LanguageAddIcon from '../icons/LanguageAddIcon';
 import LanguageRemoveIcon from '../icons/LanguageRemoveIcon';
 import LanguageSettingsIcon from '../icons/LanguageSettingsIcon';
+import StatementLocalController from '../../controllers/StatementLocalController';
+import StatementDocController from '../../controllers/StatementDocController';
+import { ActiveStatementElementRef } from '../../context/ColabDocEditorContext/ColabDocEditorContext';
+import ApprovalDropdown from '../ApprovalDropdown/ApprovalDropdown';
+import StatementApprovalDropdown from '../ApprovalDropdown/StmtApprovalDropdown';
 
-export type StatementMenuProps = {};
+export type StatementMenuProps = {
+  activeStatementElementRef?: ActiveStatementElementRef | null;
+};
 
-export default function StatementMenu({}: StatementMenuProps) {
+export default function StatementMenu({
+  activeStatementElementRef,
+}: StatementMenuProps) {
   // Get the translation hook
   const { t } = useTranslation();
-
-  // Get the document
-  const { colabDoc } = useColabDoc();
-  if (!(colabDoc instanceof ConnectedStmtDoc)) {
-    throw new Error(
-      'StatementMenu can only be used with connected statement docs.',
-    );
-  }
 
   // Get the current organization
   const organization = useOrganization();
@@ -43,12 +44,6 @@ export default function StatementMenu({}: StatementMenuProps) {
   // Get the languages in the organization
   const { languages } = useContentLanguages(organization?.id);
 
-  // Get the focussed block
-  const activeBlock = useActiveBlock();
-  // Check if a statementElementBlock is focussed
-  const isStatementElementBlockFocused =
-    activeBlock?.blockType === 'StatementElementBlock';
-
   // The refs to control menu state
   const showMenuRef = useRef<boolean>(false);
   const disabled = useRef<boolean>(true);
@@ -56,64 +51,86 @@ export default function StatementMenu({}: StatementMenuProps) {
   // State to track whether the user can add/remove languages or manage the statement
   const [canAddRemove, setCanAddRemove] = useState<boolean>(false);
   const [canManage, setCanManage] = useState<boolean>(false);
+  const [canApprove, setCanApprove] = useState<boolean>(false);
 
-  // Get the loroDoc
-  const loroDoc = colabDoc.getLoroDoc();
-  const controller = colabDoc.getDocController();
+  // The main active document
+  const { colabDoc } = useColabDoc();
+
+  // Get the controller for the statement.
+  let stmtController: StatementDocController | StatementLocalController | null =
+    null;
+  // Check if there's an active statement element ref
+  if (activeStatementElementRef) {
+    const refColabDoc = activeStatementElementRef.colabDoc;
+    // If it's a statement doc, just get the main controller
+    if (refColabDoc instanceof ConnectedStmtDoc) {
+      stmtController = refColabDoc.getDocController() as StatementDocController;
+    }
+    // If it's a sheet doc, get the local statement controller
+    else if (refColabDoc instanceof ConnectedSheetDoc) {
+      const sheetController = refColabDoc.getDocController();
+      const stmtContainerId = activeStatementElementRef.stmtContainerId;
+      if (!stmtContainerId) {
+        throw new Error(
+          'ActiveStatementElementRef is missing stmtContainerId for local statement controller.',
+        );
+      }
+      stmtController = sheetController.getLocalStatementController(
+        stmtContainerId,
+      ) as StatementLocalController;
+    }
+  }
+  // No active statement element ref, then we can only assume the main doc is a statement doc
+  else {
+    if (colabDoc instanceof ConnectedStmtDoc) {
+      stmtController = colabDoc.getDocController() as StatementDocController;
+    } else {
+      throw new Error(
+        'StatementMenu can only be used with connected statement docs.',
+      );
+    }
+  }
+  const controller: StatementDocController | StatementLocalController | null =
+    stmtController;
+
+  // Check if the language is added
+  let isLanguageAdded: boolean;
+  if (!activeStatementElementRef || !controller) {
+    isLanguageAdded = false;
+  } else {
+    isLanguageAdded = controller.hasLangCode(
+      activeStatementElementRef.langCode,
+    );
+  }
 
   // When the colabDoc is loaded.
   useEffect(() => {
-    if (!colabDoc && !loroDoc) {
+    if (
+      !colabDoc ||
+      !controller ||
+      !activeStatementElementRef ||
+      !isLanguageAdded
+    ) {
       return;
     }
+    const langCode = activeStatementElementRef.langCode;
 
-    // Check the document type
-    const type = loroDoc?.getMap('properties')?.get('type');
-    if (type === 'colab-statement') {
-      // Enable the menu
-      showMenuRef.current = true;
-      disabled.current = false;
-    }
+    // Enable the menu
+    showMenuRef.current = true;
+    disabled.current = false;
 
     // Check permissions
     setCanAddRemove(controller.hasAddRemovePermission());
     setCanManage(controller.hasManagePermission());
+    setCanApprove(controller.hasApprovePermission(langCode));
     // Subscribe to ACL changes in the loroDoc
-    controller.subscribeToDocAclChanges(() => {
+    controller.subscribeToStatementElementAclChanges(langCode, () => {
       // On any ACL change, update the canEdit state
       setCanAddRemove(controller.hasAddRemovePermission());
       setCanManage(controller.hasManagePermission());
+      setCanApprove(controller.hasApprovePermission(langCode));
     });
-  }, [colabDoc, controller, loroDoc]);
-
-  /**
-   * Get the focussed language
-   * @returns
-   */
-  const getFocusedLangCode = (): string | undefined => {
-    // Make sure we have a focussed block
-    if (!activeBlock || !activeBlock.loroContainerId || !activeBlock.loroDoc) {
-      return;
-    }
-
-    // Figure out which statement element is focussed
-    // Get the content map
-    const loroDoc = activeBlock.loroDoc as StmtLoroDoc;
-    const contentLoroMap = loroDoc.getMap('content');
-
-    // Iterate over the entries until the loroContainerId from the active block is found.
-    let focussedLangCode: string | undefined = undefined;
-    contentLoroMap.entries().forEach(([langCode, stmtElement]) => {
-      if (stmtElement instanceof LoroMap) {
-        if (stmtElement.id === activeBlock.loroContainerId) {
-          // Found the focussed language
-          focussedLangCode = langCode;
-          return;
-        }
-      }
-    });
-    return focussedLangCode;
-  };
+  }, [colabDoc, controller, activeStatementElementRef, isLanguageAdded]);
 
   /**
    * Handle the opening of the Manage Statement modal
@@ -125,7 +142,7 @@ export default function StatementMenu({}: StatementMenuProps) {
     e.preventDefault();
 
     // Get the focussed language
-    const langCode = getFocusedLangCode();
+    const langCode = activeStatementElementRef?.langCode;
     if (!langCode || !controller) {
       return;
     }
@@ -152,23 +169,29 @@ export default function StatementMenu({}: StatementMenuProps) {
 
     // If a new ACL map was returned, update the document
     if (newStmtElementAclMaps) {
-      // Create the StatementDocController
-      const stmtDocController = colabDoc.getDocController();
-
       // Patch the document ACL map with the new ACLs
-      stmtDocController.patchStmtElementAclMap(langCode, newStmtElementAclMaps);
+      controller.patchStmtElementAclMap(langCode, newStmtElementAclMaps);
 
       // Commit the changes
-      stmtDocController.commit();
+      controller.commit();
     }
   };
 
   /**
    * Handle the Add Language button clicked
    */
-  const handleAddLanguageClicked = async () => {
+  const handleAddLanguageClicked = async (
+    e: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    // Prevent default behavior
+    e.preventDefault();
+
+    if (!controller) {
+      return;
+    }
+
     // Figure out the existing languages
-    const langCodes = loroDoc?.getMap('content')?.keys();
+    const langCodes = controller.getLangCodes();
 
     // Map them to language objects
     const existingLanguages = languages.filter((lang) =>
@@ -183,13 +206,11 @@ export default function StatementMenu({}: StatementMenuProps) {
       existingLanguages: existingLanguages,
     });
 
-    // Create the StatementDocController
-    const stmtDocController = colabDoc.getDocController();
     // Iterate over the languages and add them
     constentLanguages.forEach((lang) => {
-      stmtDocController.addLanguage(lang.code);
+      controller.addLanguage(lang.code);
     });
-    stmtDocController.commit();
+    controller.commit();
   };
 
   /**
@@ -202,8 +223,13 @@ export default function StatementMenu({}: StatementMenuProps) {
   ) => {
     // Prevent default behavior
     e.preventDefault();
+
+    if (!controller) {
+      return;
+    }
+
     // Get the focussed language
-    const langCode = getFocusedLangCode();
+    const { langCode } = activeStatementElementRef || {};
     if (!langCode) {
       return;
     }
@@ -225,13 +251,12 @@ export default function StatementMenu({}: StatementMenuProps) {
       return;
     }
 
-    // Create the StatementDocController
-    const stmtDocController = colabDoc.getDocController();
     // Remove the language
-    stmtDocController.removeLanguage(langCode);
-    stmtDocController.commit();
+    controller.removeLanguage(langCode);
+    controller.commit();
   };
 
+  // Start rendering
   if (showMenuRef.current === false) {
     return <></>;
   } else {
@@ -240,20 +265,26 @@ export default function StatementMenu({}: StatementMenuProps) {
         {canAddRemove && (
           <>
             <ToolbarMenuDivider />
-            <Tooltip title={t('editor.toolbar.addLanguageTooltip')}>
+            <Tooltip
+              title={t('editor.toolbar.addLanguageTooltip')}
+              placement="top"
+            >
               <span>
                 <ToolbarButton
                   disabled={disabled.current}
-                  onClick={handleAddLanguageClicked}
+                  onMouseDown={handleAddLanguageClicked}
                 >
                   <LanguageAddIcon width={'100%'} height={'100%'} />
                 </ToolbarButton>
               </span>
             </Tooltip>
-            <Tooltip title={t('editor.toolbar.removeLanguageTooltip')}>
+            <Tooltip
+              title={t('editor.toolbar.removeLanguageTooltip')}
+              placement="top"
+            >
               <span>
                 <ToolbarButton
-                  disabled={disabled.current || !isStatementElementBlockFocused}
+                  disabled={disabled.current || !activeStatementElementRef}
                   onMouseDown={handleRemoveLanguageClicked}
                 >
                   <SvgIcon component={LanguageRemoveIcon} />
@@ -265,15 +296,32 @@ export default function StatementMenu({}: StatementMenuProps) {
 
         {canManage && (
           <>
-            <ToolbarMenuDivider />
-            <Tooltip title={t('editor.toolbar.manageLanguageTooltip')}>
+            <Tooltip
+              title={t('editor.toolbar.manageLanguageTooltip')}
+              placement="top"
+            >
               <span>
                 <ToolbarButton
-                  disabled={disabled.current || !isStatementElementBlockFocused}
+                  disabled={disabled.current || !activeStatementElementRef}
                   onMouseDown={handleManageStatementElementClicked}
                 >
                   <LanguageSettingsIcon />
                 </ToolbarButton>
+              </span>
+            </Tooltip>
+          </>
+        )}
+        {canApprove && isLanguageAdded && (
+          <>
+            <Tooltip
+              title={t('editor.toolbar.manageLanguageTooltip')}
+              placement="top"
+            >
+              <span>
+                <StatementApprovalDropdown
+                  langCode={activeStatementElementRef?.langCode}
+                  controller={stmtController}
+                />
               </span>
             </Tooltip>
           </>

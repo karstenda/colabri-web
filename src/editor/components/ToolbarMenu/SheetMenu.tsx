@@ -88,7 +88,7 @@ export default function SheetMenu({}: SheetMenuProps) {
    */
   const getFocusedBlockContainerId = (): ContainerID | undefined => {
     // Make sure we have a focussed block
-    if (!activeBlock || !activeBlock.loroContainerId || !activeBlock.loroDoc) {
+    if (!activeBlock || !activeBlock.loroContainerId || !activeBlock.colabDoc) {
       return;
     }
 
@@ -244,7 +244,6 @@ export default function SheetMenu({}: SheetMenuProps) {
 
         {canManage && (
           <>
-            <ToolbarMenuDivider />
             <Tooltip title={t('editor.toolbar.manageBlockTooltip')}>
               <span>
                 <ToolbarButton

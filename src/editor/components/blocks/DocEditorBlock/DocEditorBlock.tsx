@@ -8,16 +8,17 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { ContainerID, LoroDoc } from 'loro-crdt';
-import ColabDocController from '../../../controllers/ColabDocController';
-import { ColabLoroDoc } from '../../../data/ColabDoc';
 import { StyledDocEditorBlock } from './DocEditorBlockStyles';
+import {
+  ConnectedSheetDoc,
+  ConnectedStmtDoc,
+} from '../../../data/ConnectedColabDoc';
 
 export type DocEditorBlockProps = BoxProps & {
   blockId: string;
   blockType: string;
   loroContainerId: ContainerID;
-  loroDoc: LoroDoc;
-  controller: ColabDocController<ColabLoroDoc>;
+  colabDoc: ConnectedSheetDoc | ConnectedStmtDoc;
   readOnly?: boolean;
   showUpDownControls?: boolean;
   showManageControls?: boolean;
@@ -34,8 +35,7 @@ const DocEditorBlock = ({
   blockId,
   blockType,
   loroContainerId,
-  loroDoc,
-  controller,
+  colabDoc,
   readOnly = false,
   showUpDownControls = true,
   showManageControls = true,
@@ -53,6 +53,16 @@ const DocEditorBlock = ({
   // State to track focus
   const [focus, setFocus] = useState(false);
 
+  // Ref to track current focus value for event handlers (avoids stale closure)
+  const focusRef = useRef(focus);
+  focusRef.current = focus;
+
+  // Refs for callback props to avoid stale closures and effect re-runs
+  const onFocusChangeRef = useRef(onFocusChange);
+  onFocusChangeRef.current = onFocusChange;
+  const onHoverChangeRef = useRef(onHoverChange);
+  onHoverChangeRef.current = onHoverChange;
+
   // State to track hover
   const [isHovered, setIsHovered] = useState(false);
 
@@ -62,6 +72,10 @@ const DocEditorBlock = ({
   // State to track whether the user can manage or add/remove languages
   const [canManage, setCanManage] = useState<boolean>(false);
   const [canAddRemove, setCanAddRemove] = useState<boolean>(false);
+
+  // Get the LoroDoc and controller
+  const loroDoc = colabDoc.getLoroDoc();
+  const controller = colabDoc.getDocController();
 
   const controls = [] as DocEditorBlockControl[];
   if (showUpDownControls && canAddRemove) {
@@ -110,42 +124,70 @@ const DocEditorBlock = ({
   // Track focus state with click events
   useEffect(() => {
     const handleClick = (event: MouseEvent) => {
-      if (!editorContentBlockRef.current) return;
+      // Return early if ref isn't set yet (component not fully mounted)
+      if (!editorContentBlockRef.current) {
+        return;
+      }
 
-      const isClickInside = editorContentBlockRef.current.contains(
-        event.target as Node,
-      );
-
-      if (isClickInside && !focus) {
-        setFocus(true);
-        setActiveBlockId({ id: blockId, blockType, loroContainerId, loroDoc });
-        onFocusChange?.(true);
-      } else if (!isClickInside && focus) {
+      // Check if the EditorBackground was clicked
+      const isClickOnBackground = (
+        event.target as HTMLElement
+      ).classList.contains('EditorBackground');
+      if (isClickOnBackground) {
+        // Clicked on background, so remove focus
         setFocus(false);
         setActiveBlockId(null);
-        onFocusChange?.(false);
+        onFocusChangeRef.current?.(false);
+        return;
+      }
+
+      // Check if a DocEditorBlock was clicked
+      const isClickInsideDocEditorBlock =
+        (event.target as HTMLElement).closest('.DocEditorBlock') !== null;
+
+      // If so ... was it this block?
+      if (isClickInsideDocEditorBlock) {
+        const isClickInside = editorContentBlockRef.current.contains(
+          event.target as Node,
+        );
+
+        // Update the state accordingly (use ref to get current focus value)
+        if (isClickInside && !focusRef.current) {
+          setFocus(true);
+          setActiveBlockId({
+            id: blockId,
+            blockType,
+            loroContainerId,
+            colabDoc,
+          });
+          onFocusChangeRef.current?.(true);
+        } else if (!isClickInside && focusRef.current) {
+          setFocus(false);
+          onFocusChangeRef.current?.(false);
+        }
       }
     };
 
-    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('mousedown', handleClick, true);
 
     return () => {
-      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('mousedown', handleClick, true);
     };
-  }, [focus, blockId, setActiveBlockId, onFocusChange]);
+  }, [blockId, blockType, loroContainerId, colabDoc, setActiveBlockId]);
 
   const handleMouseEnter = () => {
     setIsHovered(true);
-    onHoverChange?.(true);
+    onHoverChangeRef.current?.(true);
   };
 
   const handleMouseLeave = () => {
     setIsHovered(false);
-    onHoverChange?.(false);
+    onHoverChangeRef.current?.(false);
   };
 
   return (
     <StyledDocEditorBlock
+      className="DocEditorBlock"
       ref={editorContentBlockRef}
       hasFocus={focus}
       isHovered={isHovered}

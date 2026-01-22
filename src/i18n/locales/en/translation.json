@@ -32,6 +32,7 @@
     "created": "Created",
     "updated": "Updated",
     "metadata": "Metadata",
+    "na": "N/A",
     "createdAt": "Created Date",
     "updatedAt": "Updated Date"
   },
@@ -239,12 +240,13 @@
       "removeStatementConfirm": "Are you sure you want to remove this statement from this block?"
     },
     "errors": {
-      "authFailed": "Oops! We couldn’t open this document. Please make sure you have access. You may need the document owner to grant you permission."
+      "authFailed": "Oops! We couldn't open this document. Please make sure you have access. You may need the document owner to grant you permission."
     }
   },
   "languages": {
     "title": "Languages",
     "addLanguage": "Add Language",
+    "noLanguage": "Not Added",
     "selectLanguages": "Languages",
     "selectPlaceholder": "Select languages to add...",
     "columns": {

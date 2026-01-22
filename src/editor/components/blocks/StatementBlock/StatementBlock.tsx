@@ -111,7 +111,11 @@ const StatementBlock = ({ bp }: StatementBlockProps) => {
   // Get the
   return (
     <>
-      <Stack spacing={2} sx={{ alignItems: 'center' }}>
+      <Stack
+        spacing={2}
+        sx={{ alignItems: 'center' }}
+        className="EditorBackground"
+      >
         {smtmElementsBPs == null && (
           <Skeleton variant="rounded" width="100%" height={100} />
         )}

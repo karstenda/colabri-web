@@ -182,10 +182,10 @@ export default function ColabDocEditor() {
                 <ToolbarMenu docType={colabDoc?.getDocType()} />
               </EditorToolbarWrapper>
             </EditorHeaderWrapper>
-            <EditorContentWrapper>
+            <EditorContentWrapper className="EditorBackground">
               {/* Main Editor Area */}
-              <EditorContentMainColumn>
-                <EditorContentBlockTrack>
+              <EditorContentMainColumn className="EditorBackground">
+                <EditorContentBlockTrack className="EditorBackground">
                   {colabDoc?.getDocType() ===
                     DocumentType.DocumentTypeColabStatement && (
                     <StatementBlock bp={{}} />

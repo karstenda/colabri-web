@@ -250,8 +250,7 @@ const SheetTextBlock: React.FC<SheetTextBlockProps> = ({ bp }) => {
           blockId={bp.id}
           blockType={'SheetTextBlock'}
           loroContainerId={bp.containerId}
-          loroDoc={loroDoc}
-          controller={controller}
+          colabDoc={colabDoc}
           onFocusChange={handleFocusChange}
           onHoverChange={handleHoverChange}
           showManageControls={canManage}

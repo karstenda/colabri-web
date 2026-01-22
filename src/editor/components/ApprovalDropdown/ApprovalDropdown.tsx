@@ -132,7 +132,18 @@ const ApprovalDropdown: React.FC<ApprovalDropdownProps> = ({
         ref={anchorRef}
         aria-label="Button group with a nested menu"
       >
-        <StatusButton state={state} hasDropdown={options.length > 0}>
+        <StatusButton
+          state={state}
+          hasDropdown={options.length > 0}
+          onPointerDown={(e: React.MouseEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onMouseDown={(e: React.MouseEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+        >
           {getStateLabel(state)}
         </StatusButton>
         {options.length > 0 && (

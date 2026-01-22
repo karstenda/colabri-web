@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { useColabDoc } from '../../../context/ColabDocContext/ColabDocProvider';
+import { useColabDoc } from '../../context/ColabDocContext/ColabDocProvider';
 import Button from '@mui/material/Button';
 import { GridSlotProps, Toolbar } from '@mui/x-data-grid';
 import { styled, useTheme } from '@mui/material/styles';
-import OutlinedColabTextEditor from '../../ColabTextEditor/ColabTextEditorOutlined';
+import OutlinedColabTextEditor from '../ColabTextEditor/ColabTextEditorOutlined';
 import { useEffect } from 'react';
 import { ContainerID, LoroDoc } from 'loro-crdt';
 import { LoroDocType } from 'loro-prosemirror';

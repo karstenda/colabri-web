@@ -1,5 +1,8 @@
 import FormattingMenu from './FormattingMenu';
-import { useActiveToolbarSetup } from '../../context/ColabDocEditorContext/ColabDocEditorProvider';
+import {
+  useActiveStatementElement,
+  useActiveToolbarSetup,
+} from '../../context/ColabDocEditorContext/ColabDocEditorProvider';
 import UndoRedoMenu from './UndoRedoMenu';
 import { ToolbarMenuDivider } from './ToolbarMenuStyles';
 import StatementMenu from './StatementMenu';
@@ -13,7 +16,15 @@ export type ToolbarMenuProps = {
 
 export default function ToolbarMenu({ docType }: ToolbarMenuProps) {
   const toolbarSetup = useActiveToolbarSetup();
+  const activeStatementElementRef = useActiveStatementElement();
   const compactView = useMediaQuery('(max-width:800px)');
+
+  const showStmtControls =
+    docType === DocumentType.DocumentTypeColabStatement ||
+    activeStatementElementRef != null;
+
+  const showSheetControls = docType === DocumentType.DocumentTypeColabSheet;
+
   return (
     <>
       {!compactView && (
@@ -23,8 +34,10 @@ export default function ToolbarMenu({ docType }: ToolbarMenuProps) {
         </>
       )}
       <FormattingMenu setup={toolbarSetup?.formatting || {}} />
-      {docType === DocumentType.DocumentTypeColabStatement && <StatementMenu />}
-      {docType === DocumentType.DocumentTypeColabSheet && <SheetMenu />}
+      {showStmtControls && (
+        <StatementMenu activeStatementElementRef={activeStatementElementRef} />
+      )}
+      {showSheetControls && <SheetMenu />}
     </>
   );
 }
