@@ -1,7 +1,15 @@
-import { Stack, Tooltip } from '@mui/material';
+import {
+  Stack,
+  Tooltip,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+} from '@mui/material';
 import { ToolbarButton, ToolbarMenuDivider } from './ToolbarMenuStyles';
 import { useColabDoc } from '../../context/ColabDocContext/ColabDocProvider';
 import { useEffect, useRef, useState } from 'react';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useOrganization } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
 import { ColabSheetBlockType } from '../../../api/ColabriAPI';
 import { useDialogs } from '../../../ui/hooks/useDialogs/useDialogs';
@@ -53,6 +61,10 @@ export default function SheetMenu({}: SheetMenuProps) {
   const [canAddRemove, setCanAddRemove] = useState<boolean>(false);
   const [canManage, setCanManage] = useState<boolean>(false);
 
+  // State for the dropdown menu anchor
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const isMenuOpen = Boolean(menuAnchorEl);
+
   // Get the loroDoc
   const loroDoc = colabDoc.getLoroDoc();
   const controller = colabDoc.getDocController();
@@ -98,13 +110,26 @@ export default function SheetMenu({}: SheetMenuProps) {
   };
 
   /**
+   * Handle opening the Sheet dropdown menu
+   */
+  const handleOpenMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setMenuAnchorEl(e.currentTarget);
+  };
+
+  /**
+   * Handle closing the Sheet dropdown menu
+   */
+  const handleCloseMenu = () => {
+    setMenuAnchorEl(null);
+  };
+
+  /**
    * Handle the opening of the Manage Block modal
    */
-  const handleManageSheetBlockClicked = async (
-    e: React.MouseEvent<HTMLButtonElement>,
-  ) => {
-    // Prevent default behavior
-    e.preventDefault();
+  const handleManageSheetBlockClicked = async () => {
+    // Close the menu
+    handleCloseMenu();
 
     // Get the focussed language
     const containerId = getFocusedBlockContainerId();
@@ -147,9 +172,12 @@ export default function SheetMenu({}: SheetMenuProps) {
   };
 
   /**
-   * Handle the Add Language button clicked
+   * Handle the Add Block button clicked
    */
   const handleAddBlockClicked = async () => {
+    // Close the menu
+    handleCloseMenu();
+
     // Get the SheetDocController
     const sheetDocController = colabDoc.getDocController();
 
@@ -179,15 +207,13 @@ export default function SheetMenu({}: SheetMenuProps) {
   };
 
   /**
-   * Handle the Remove Language button clicked
-   * @param e
+   * Handle the Remove Block button clicked
    * @returns
    */
-  const handleRemoveBlockClicked = async (
-    e: React.MouseEvent<HTMLButtonElement>,
-  ) => {
-    // Prevent default behavior
-    e.preventDefault();
+  const handleRemoveBlockClicked = async () => {
+    // Close the menu
+    handleCloseMenu();
+
     // Get the focussed block
     const containerId = getFocusedBlockContainerId();
     if (!containerId) {
@@ -214,46 +240,68 @@ export default function SheetMenu({}: SheetMenuProps) {
   if (showMenuRef.current === false) {
     return <></>;
   } else {
+    const showSheetDropdown = canAddRemove || canManage;
+
     return (
       <Stack direction="row" spacing={'2px'}>
-        {canAddRemove && (
+        {showSheetDropdown && (
           <>
             <ToolbarMenuDivider />
-            <Tooltip title={t('editor.toolbar.addBlockTooltip')}>
+            <Tooltip
+              title={t('editor.toolbar.sheetMenuTooltip')}
+              placement="top"
+            >
               <span>
                 <ToolbarButton
                   disabled={disabled.current}
-                  onMouseDown={handleAddBlockClicked}
+                  onMouseDown={handleOpenMenu}
+                  aria-controls={isMenuOpen ? 'sheet-menu' : undefined}
+                  aria-haspopup="true"
+                  aria-expanded={isMenuOpen ? 'true' : undefined}
+                  endIcon={<KeyboardArrowDownIcon />}
                 >
-                  <BlockAddIcon />
+                  {t('sheets.blocks')}
                 </ToolbarButton>
               </span>
             </Tooltip>
-            <Tooltip title={t('editor.toolbar.removeBlockTooltip')}>
-              <span>
-                <ToolbarButton
-                  disabled={disabled.current || !isSheetBlockFocused}
-                  onMouseDown={handleRemoveBlockClicked}
-                >
-                  <BlockRemoveIcon />
-                </ToolbarButton>
-              </span>
-            </Tooltip>
-          </>
-        )}
-
-        {canManage && (
-          <>
-            <Tooltip title={t('editor.toolbar.manageBlockTooltip')}>
-              <span>
-                <ToolbarButton
-                  disabled={disabled.current || !isSheetBlockFocused}
-                  onMouseDown={handleManageSheetBlockClicked}
-                >
-                  <BlockSettingsIcon />
-                </ToolbarButton>
-              </span>
-            </Tooltip>
+            <Menu
+              id="sheet-menu"
+              anchorEl={menuAnchorEl}
+              open={isMenuOpen}
+              onClose={handleCloseMenu}
+              slotProps={{ list: { 'aria-labelledby': 'sheet-menu-button' } }}
+            >
+              {canAddRemove && (
+                <MenuItem onClick={handleAddBlockClicked}>
+                  <ListItemIcon>
+                    <BlockAddIcon />
+                  </ListItemIcon>
+                  <ListItemText>
+                    {t('editor.toolbar.addBlockTooltip')}
+                  </ListItemText>
+                </MenuItem>
+              )}
+              {canAddRemove && isSheetBlockFocused && (
+                <MenuItem onClick={handleRemoveBlockClicked}>
+                  <ListItemIcon>
+                    <BlockRemoveIcon />
+                  </ListItemIcon>
+                  <ListItemText>
+                    {t('editor.toolbar.removeBlockTooltip')}
+                  </ListItemText>
+                </MenuItem>
+              )}
+              {canManage && isSheetBlockFocused && (
+                <MenuItem onClick={handleManageSheetBlockClicked}>
+                  <ListItemIcon>
+                    <BlockSettingsIcon />
+                  </ListItemIcon>
+                  <ListItemText>
+                    {t('editor.toolbar.manageBlockTooltip')}
+                  </ListItemText>
+                </MenuItem>
+              )}
+            </Menu>
           </>
         )}
       </Stack>

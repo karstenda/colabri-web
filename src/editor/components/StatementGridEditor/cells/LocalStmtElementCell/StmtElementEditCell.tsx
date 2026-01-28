@@ -98,7 +98,7 @@ const StmtElementEditCell = (props: StmtElementEditCellProps) => {
         sx={{
           height: '100%',
           flexGrow: 0,
-          minWidth: '8px',
+          minWidth: '10px',
           backgroundColor: getApprovalColor(props.approvalState, mode, false),
           borderColor: hasFocus
             ? (theme.vars || theme).palette.primary.main

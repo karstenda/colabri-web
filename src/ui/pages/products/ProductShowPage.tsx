@@ -104,7 +104,7 @@ export default function ProductShowPage() {
       const attrValue = Object.values(product.attributeValues).find(
         (av) => av.attribute?.name === attributeName,
       );
-      return attrValue?.value ? String(attrValue.value) : '-';
+      return attrValue?.value ? String(attrValue.value.display) : '-';
     },
     [product],
   );

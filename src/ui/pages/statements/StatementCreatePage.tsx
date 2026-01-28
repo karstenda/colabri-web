@@ -90,23 +90,7 @@ export default function StatementCreate() {
           type: ColabModelType.ColabModelStatementType,
           contentType: formValues.contentType,
         },
-        content: {
-          en: {
-            textElement: {
-              nodeName: 'doc',
-              children: [
-                {
-                  nodeName: 'paragraph',
-                  children: ['This is set during creation.'],
-                  attributes: {},
-                },
-              ],
-              attributes: {},
-            },
-            acls: {},
-            approvals: {},
-          },
-        },
+        content: {},
         acls: {},
       } as ColabStatementModel;
 

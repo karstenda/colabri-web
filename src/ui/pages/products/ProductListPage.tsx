@@ -3,6 +3,7 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import {
@@ -29,9 +30,12 @@ import {
 import { OrgProduct } from '../../../api/ColabriAPI';
 import PageContainer from '../../components/MainLayout/PageContainer';
 import { useUserOrganizationContext } from '../../context/UserOrganizationContext/UserOrganizationProvider';
+import Avatar from '@mui/material/Avatar';
+import { useTheme } from '@mui/material/styles';
 
 export default function ProductListPage() {
   const navigate = useNavigate();
+  const theme = useTheme();
   const { t } = useTranslation();
 
   const dialogs = useDialogs();
@@ -114,6 +118,31 @@ export default function ProductListPage() {
 
   const columns = React.useMemo<GridColDef[]>(
     () => [
+      {
+        field: 'Icon',
+        headerName: '',
+        width: 50,
+        renderCell: () => (
+          <div
+            style={{ display: 'flex', alignItems: 'center', height: '100%' }}
+          >
+            <Avatar
+              sx={{
+                width: 35,
+                height: 35,
+                bgcolor: theme.palette.grey[400],
+              }}
+            >
+              <ShoppingCartIcon sx={{ fontSize: 20 }} />
+            </Avatar>
+          </div>
+        ),
+        sortable: false,
+        filterable: false,
+        disableColumnMenu: true,
+        resizable: false,
+        disableReorder: true,
+      },
       { field: 'name', headerName: t('common.name'), flex: 1, minWidth: 200 },
       {
         field: 'createdAt',

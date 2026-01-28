@@ -106,7 +106,7 @@ export default function SheetCreatePage() {
             approvals: {},
             title: {
               nodeName: 'doc',
-              children: ['Title'],
+              children: [formValues.name || 'Untitled Sheet'],
             },
             textElement: {
               nodeName: 'doc',
@@ -125,37 +125,9 @@ export default function SheetCreatePage() {
             acls: {},
             title: {
               nodeName: 'doc',
-              children: ['Title 2'],
+              children: ['Artwork Content'],
             },
-            rows: [
-              {
-                type: StatementGridRowType.StatementGridRowTypeLocal,
-                statement: {
-                  properties: {
-                    type: ColabModelType.ColabModelStatementType,
-                    contentType: 'MARKETING_COPY',
-                  },
-                  acls: {},
-                  content: {
-                    en: {
-                      acls: {},
-                      approvals: {},
-                      textElement: {
-                        nodeName: 'doc',
-                        children: [
-                          {
-                            nodeName: 'paragraph',
-                            children: ['This is set during creation.'],
-                            attributes: {},
-                          },
-                        ],
-                        attributes: {},
-                      },
-                    },
-                  },
-                },
-              },
-            ],
+            rows: [],
           },
         ],
         acls: {},

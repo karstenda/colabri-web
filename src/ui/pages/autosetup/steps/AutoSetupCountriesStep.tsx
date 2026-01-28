@@ -54,11 +54,15 @@ const AutoSetupCountriesStep = forwardRef<
             if (countryLangCodes.has(lBaseCode)) {
               // If it's a generic language, add it.
               if (lCountryCode == null) {
-                targetLanguages.push(l);
+                if (targetLanguages.indexOf(l) === -1) {
+                  targetLanguages.push(l);
+                }
               }
               // If the language has a country code, match both base and country code
               else if (lCountryCode === countryCode) {
-                targetLanguages.push(l);
+                if (targetLanguages.indexOf(l) === -1) {
+                  targetLanguages.push(l);
+                }
               }
             }
           }

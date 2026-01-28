@@ -1,7 +1,16 @@
-import { Stack, SvgIcon, Tooltip } from '@mui/material';
+import {
+  Stack,
+  SvgIcon,
+  Tooltip,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  Box,
+} from '@mui/material';
 import { ToolbarButton, ToolbarMenuDivider } from './ToolbarMenuStyles';
 import { useColabDoc } from '../../context/ColabDocContext/ColabDocProvider';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AddLanguageModal, AddLanguageModalPayload } from '../AddLanguageModal';
 import { useContentLanguages } from '../../../ui/hooks/useContentLanguages/useContentLanguage';
 import { useOrganization } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
@@ -22,8 +31,8 @@ import LanguageSettingsIcon from '../icons/LanguageSettingsIcon';
 import StatementLocalController from '../../controllers/StatementLocalController';
 import StatementDocController from '../../controllers/StatementDocController';
 import { ActiveStatementElementRef } from '../../context/ColabDocEditorContext/ColabDocEditorContext';
-import ApprovalDropdown from '../ApprovalDropdown/ApprovalDropdown';
 import StatementApprovalDropdown from '../ApprovalDropdown/StmtApprovalDropdown';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 export type StatementMenuProps = {
   activeStatementElementRef?: ActiveStatementElementRef | null;
@@ -52,6 +61,10 @@ export default function StatementMenu({
   const [canAddRemove, setCanAddRemove] = useState<boolean>(false);
   const [canManage, setCanManage] = useState<boolean>(false);
   const [canApprove, setCanApprove] = useState<boolean>(false);
+
+  // State for the dropdown menu anchor
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const isMenuOpen = Boolean(menuAnchorEl);
 
   // The main active document
   const { colabDoc } = useColabDoc();
@@ -133,13 +146,26 @@ export default function StatementMenu({
   }, [colabDoc, controller, activeStatementElementRef, isLanguageAdded]);
 
   /**
+   * Handle opening the Statement dropdown menu
+   */
+  const handleOpenMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setMenuAnchorEl(e.currentTarget);
+  };
+
+  /**
+   * Handle closing the Statement dropdown menu
+   */
+  const handleCloseMenu = () => {
+    setMenuAnchorEl(null);
+  };
+
+  /**
    * Handle the opening of the Manage Statement modal
    */
-  const handleManageStatementElementClicked = async (
-    e: React.MouseEvent<HTMLButtonElement>,
-  ) => {
-    // Prevent default behavior
-    e.preventDefault();
+  const handleManageStatementElementClicked = async () => {
+    // Close the menu
+    handleCloseMenu();
 
     // Get the focussed language
     const langCode = activeStatementElementRef?.langCode;
@@ -180,11 +206,9 @@ export default function StatementMenu({
   /**
    * Handle the Add Language button clicked
    */
-  const handleAddLanguageClicked = async (
-    e: React.MouseEvent<HTMLButtonElement>,
-  ) => {
-    // Prevent default behavior
-    e.preventDefault();
+  const handleAddLanguageClicked = async () => {
+    // Close the menu
+    handleCloseMenu();
 
     if (!controller) {
       return;
@@ -218,11 +242,9 @@ export default function StatementMenu({
    * @param e
    * @returns
    */
-  const handleRemoveLanguageClicked = async (
-    e: React.MouseEvent<HTMLButtonElement>,
-  ) => {
-    // Prevent default behavior
-    e.preventDefault();
+  const handleRemoveLanguageClicked = async () => {
+    // Close the menu
+    handleCloseMenu();
 
     if (!controller) {
       return;
@@ -260,69 +282,88 @@ export default function StatementMenu({
   if (showMenuRef.current === false) {
     return <></>;
   } else {
+    const showStatementDropdown = canAddRemove || canManage;
+
     return (
-      <Stack direction="row" spacing={'2px'}>
-        {canAddRemove && (
+      <Stack direction="row" spacing={'2px'} sx={{ alignItems: 'center' }}>
+        {showStatementDropdown && (
           <>
             <ToolbarMenuDivider />
             <Tooltip
-              title={t('editor.toolbar.addLanguageTooltip')}
+              title={t('editor.toolbar.statementMenuTooltip')}
               placement="top"
             >
               <span>
                 <ToolbarButton
                   disabled={disabled.current}
-                  onMouseDown={handleAddLanguageClicked}
+                  onMouseDown={handleOpenMenu}
+                  aria-controls={isMenuOpen ? 'statement-menu' : undefined}
+                  aria-haspopup="true"
+                  aria-expanded={isMenuOpen ? 'true' : undefined}
+                  endIcon={<KeyboardArrowDownIcon />}
                 >
-                  <LanguageAddIcon width={'100%'} height={'100%'} />
+                  {t('languages.title')}
                 </ToolbarButton>
               </span>
             </Tooltip>
-            <Tooltip
-              title={t('editor.toolbar.removeLanguageTooltip')}
-              placement="top"
+            <Menu
+              id="statement-menu"
+              anchorEl={menuAnchorEl}
+              open={isMenuOpen}
+              onClose={handleCloseMenu}
+              slotProps={{
+                list: { 'aria-labelledby': 'statement-menu-button' },
+              }}
             >
-              <span>
-                <ToolbarButton
-                  disabled={disabled.current || !activeStatementElementRef}
-                  onMouseDown={handleRemoveLanguageClicked}
-                >
-                  <SvgIcon component={LanguageRemoveIcon} />
-                </ToolbarButton>
-              </span>
-            </Tooltip>
-          </>
-        )}
-
-        {canManage && (
-          <>
-            <Tooltip
-              title={t('editor.toolbar.manageLanguageTooltip')}
-              placement="top"
-            >
-              <span>
-                <ToolbarButton
-                  disabled={disabled.current || !activeStatementElementRef}
-                  onMouseDown={handleManageStatementElementClicked}
-                >
-                  <LanguageSettingsIcon />
-                </ToolbarButton>
-              </span>
-            </Tooltip>
+              {canAddRemove && (
+                <MenuItem onClick={handleAddLanguageClicked}>
+                  <ListItemIcon>
+                    <LanguageAddIcon width={20} height={20} />
+                  </ListItemIcon>
+                  <ListItemText>
+                    {t('editor.toolbar.addLanguageTooltip')}
+                  </ListItemText>
+                </MenuItem>
+              )}
+              {canAddRemove && activeStatementElementRef && (
+                <MenuItem onClick={handleRemoveLanguageClicked}>
+                  <ListItemIcon>
+                    <SvgIcon
+                      component={LanguageRemoveIcon}
+                      sx={{ fontSize: 20 }}
+                    />
+                  </ListItemIcon>
+                  <ListItemText>
+                    {t('editor.toolbar.removeLanguageTooltip')}
+                  </ListItemText>
+                </MenuItem>
+              )}
+              {canManage && activeStatementElementRef && (
+                <MenuItem onClick={handleManageStatementElementClicked}>
+                  <ListItemIcon>
+                    <LanguageSettingsIcon />
+                  </ListItemIcon>
+                  <ListItemText>
+                    {t('editor.toolbar.manageLanguageTooltip')}
+                  </ListItemText>
+                </MenuItem>
+              )}
+            </Menu>
           </>
         )}
         {canApprove && isLanguageAdded && (
           <>
+            <ToolbarMenuDivider />
             <Tooltip
-              title={t('editor.toolbar.manageLanguageTooltip')}
+              title={t('editor.toolbar.statementApprovalTooltip')}
               placement="top"
             >
-              <span>
+              <Box sx={{ paddingLeft: '8px', paddingRight: '8px' }}>
                 <StatementApprovalDropdown
                   langCode={activeStatementElementRef?.langCode}
                   controller={stmtController}
                 />
-              </span>
+              </Box>
             </Tooltip>
           </>
         )}

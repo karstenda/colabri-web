@@ -9,20 +9,21 @@ import GPCCategorySelector, {
   GPCCategoryValue,
 } from '../../../../components/GPCCategorySelector/GPCCategorySelector';
 import { useTheme } from '@mui/material/styles';
+import { AttributeValueStruct } from '../../../../../api/ColabriAPI';
 
 export type AutoSetupProductFormEntries = {
   name?: string;
   attributeValues?: {
-    GPC_SEGMENT?: string;
-    GPC_FAMILY?: string;
-    GPC_CLASS?: string;
-    GPC_BRICK?: string;
-    OBH_DIVISION?: string;
-    OBH_BRAND?: string;
-    OBH_SUBBRAND?: string;
-    OBH_PRODUCT?: string;
-    OBH_VARIANT?: string;
-    OBH_SIZE?: string;
+    GPC_SEGMENT?: AttributeValueStruct;
+    GPC_FAMILY?: AttributeValueStruct;
+    GPC_CLASS?: AttributeValueStruct;
+    GPC_BRICK?: AttributeValueStruct;
+    OBH_DIVISION?: AttributeValueStruct;
+    OBH_BRAND?: AttributeValueStruct;
+    OBH_SUBBRAND?: AttributeValueStruct;
+    OBH_PRODUCT?: AttributeValueStruct;
+    OBH_VARIANT?: AttributeValueStruct;
+    OBH_SIZE?: AttributeValueStruct;
   };
 };
 
@@ -45,7 +46,9 @@ export interface AutoSetupProductFormState {
   };
 }
 
-export type FormFieldValue = string | { attributeName: string; value: string };
+export type FormFieldValue =
+  | string
+  | { attributeName: string; value: AttributeValueStruct | undefined };
 
 type AutoSetupProductFormProps = {
   formState: AutoSetupProductFormState;
@@ -72,7 +75,10 @@ const AutoSetupProductForm = ({
       if (field.startsWith('OBH_')) {
         onFieldChange('attributeValues', {
           attributeName: field,
-          value: event.target.value,
+          value: {
+            display: event.target.value,
+            value: event.target.value,
+          },
         });
         return;
       } else {
@@ -108,9 +114,24 @@ const AutoSetupProductForm = ({
           default:
             attributeName = '';
         }
+
+        // Prepare display value
+        let display = '';
+        if (selectedGpcCategoryValue[f]) {
+          display =
+            selectedGpcCategoryValue[f]?.code +
+            ' - ' +
+            selectedGpcCategoryValue[f].description;
+        }
+
         onFieldChange('attributeValues', {
           attributeName: attributeName,
-          value: selectedGpcCategoryValue[f]?.code || '',
+          value: {
+            display: display,
+            value: {
+              code: selectedGpcCategoryValue[f]?.code || '',
+            },
+          },
         });
       }
     },
@@ -165,7 +186,9 @@ const AutoSetupProductForm = ({
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
             <TextField
-              value={formState.values.attributeValues?.OBH_DIVISION ?? ''}
+              value={
+                formState.values.attributeValues?.OBH_DIVISION?.display ?? ''
+              }
               disabled={isSubmitting}
               onChange={handleTextFieldChange}
               name="OBH_DIVISION"
@@ -181,7 +204,7 @@ const AutoSetupProductForm = ({
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
             <TextField
-              value={formState.values.attributeValues?.OBH_BRAND ?? ''}
+              value={formState.values.attributeValues?.OBH_BRAND?.display ?? ''}
               disabled={isSubmitting}
               onChange={handleTextFieldChange}
               name="OBH_BRAND"
@@ -197,7 +220,9 @@ const AutoSetupProductForm = ({
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
             <TextField
-              value={formState.values.attributeValues?.OBH_SUBBRAND ?? ''}
+              value={
+                formState.values.attributeValues?.OBH_SUBBRAND?.display ?? ''
+              }
               disabled={isSubmitting}
               onChange={handleTextFieldChange}
               name="OBH_SUBBRAND"
@@ -213,7 +238,9 @@ const AutoSetupProductForm = ({
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
             <TextField
-              value={formState.values.attributeValues?.OBH_PRODUCT ?? ''}
+              value={
+                formState.values.attributeValues?.OBH_PRODUCT?.display ?? ''
+              }
               disabled={isSubmitting}
               onChange={handleTextFieldChange}
               name="OBH_PRODUCT"
@@ -229,7 +256,9 @@ const AutoSetupProductForm = ({
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
             <TextField
-              value={formState.values.attributeValues?.OBH_VARIANT ?? ''}
+              value={
+                formState.values.attributeValues?.OBH_VARIANT?.display ?? ''
+              }
               disabled={isSubmitting}
               onChange={handleTextFieldChange}
               name="OBH_VARIANT"
@@ -245,7 +274,7 @@ const AutoSetupProductForm = ({
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
             <TextField
-              value={formState.values.attributeValues?.OBH_SIZE ?? ''}
+              value={formState.values.attributeValues?.OBH_SIZE?.display ?? ''}
               disabled={isSubmitting}
               onChange={handleTextFieldChange}
               name="OBH_SIZE"
@@ -276,16 +305,33 @@ const AutoSetupProductForm = ({
             <GPCCategorySelector
               gpcCategoryValue={{
                 gpcSegment: {
-                  code: formState.values.attributeValues?.GPC_SEGMENT ?? '',
+                  description:
+                    formState.values.attributeValues?.GPC_SEGMENT?.display ??
+                    '',
+                  code:
+                    formState.values.attributeValues?.GPC_SEGMENT?.value
+                      ?.code ?? '',
                 },
                 gpcFamily: {
-                  code: formState.values.attributeValues?.GPC_FAMILY ?? '',
+                  description:
+                    formState.values.attributeValues?.GPC_FAMILY?.display ?? '',
+                  code:
+                    formState.values.attributeValues?.GPC_FAMILY?.value?.code ??
+                    '',
                 },
                 gpcClass: {
-                  code: formState.values.attributeValues?.GPC_CLASS ?? '',
+                  description:
+                    formState.values.attributeValues?.GPC_CLASS?.display ?? '',
+                  code:
+                    formState.values.attributeValues?.GPC_CLASS?.value?.code ??
+                    '',
                 },
                 gpcBrick: {
-                  code: formState.values.attributeValues?.GPC_BRICK ?? '',
+                  description:
+                    formState.values.attributeValues?.GPC_BRICK?.display ?? '',
+                  code:
+                    formState.values.attributeValues?.GPC_BRICK?.value?.code ??
+                    '',
                 },
               }}
               placeholderGPCSegment={t(

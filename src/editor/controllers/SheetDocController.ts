@@ -16,6 +16,7 @@ import {
   StmtDocSchema,
   StmtElementLoro,
   StmtLoroDoc,
+  StmtRefSchema,
   TextElementLoro,
   UserApprovalLoro,
 } from '../data/ColabDoc';
@@ -29,6 +30,7 @@ import {
   ColabSheetBlockType,
   ColabApprovalType,
   StatementGridRowType,
+  StatementDocument,
 } from '../../api/ColabriAPI';
 import StatementController from './StatementController';
 import StatementEmbedController from './StatementLocalController';
@@ -608,12 +610,32 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
    */
   addStatementToStatementGridBlock(
     containerId: ContainerID,
+    type: 'reference' | 'new',
     newStatementData: {
-      contentType: string;
-      langCodes: string[];
+      statements?: StatementDocument[];
+      contentType?: string;
+      langCodes?: string[];
     },
     position?: number,
   ): boolean {
+    // Validate the new statement data
+    if (
+      type === 'new' &&
+      (newStatementData.contentType === undefined ||
+        newStatementData.langCodes === undefined)
+    ) {
+      console.warn(
+        'Invalid new statement data provided, when creating new statements',
+      );
+      return false;
+    }
+    if (type === 'reference' && newStatementData.statements === undefined) {
+      console.warn(
+        'Invalid new statement data provided, when referencing statements',
+      );
+      return false;
+    }
+
     // Get the statement grid block
     const blockMap = this.loroDoc.getContainerById(
       containerId,
@@ -637,27 +659,52 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
       position = position + 1;
     }
 
-    // Get the statement map
-    const statementMap = this.getStatementMap(newStatementData);
+    if (type === 'reference') {
+      // Insert each referenced statement
+      for (const stmtDoc of newStatementData.statements!) {
+        // Create the statement as a loro map
+        const statementRefMap = new LoroMap<StmtRefSchema>();
+        statementRefMap.set('docId', stmtDoc.id);
+        statementRefMap.set('versionV', JSON.stringify(stmtDoc.versionV));
 
-    // Insert the statement map into a new row
-    const rowMap: SheetStatementGridRowLoro = new LoroMap();
-    rowMap.setContainer('statement', statementMap);
-    rowMap.set('type', StatementGridRowType.StatementGridRowTypeLocal);
+        // Insert the statement map into a new row
+        const rowMap: SheetStatementGridRowLoro = new LoroMap();
+        rowMap.setContainer('statementRef', statementRefMap);
+        rowMap.set('type', StatementGridRowType.StatementGridRowTypeReference);
 
-    // Insert the row into the list
-    rowList.insertContainer(position, rowMap);
-    return true;
+        // Insert the row into the list
+        rowList.insertContainer(position, rowMap);
+      }
+      return true;
+    }
+    // When we need to create a new statement
+    else if (type === 'new') {
+      // Get the statement map
+      const statementMap = this.getStatementMap(
+        newStatementData.contentType!,
+        newStatementData.langCodes!,
+      );
+
+      // Insert the statement map into a new row
+      const rowMap: SheetStatementGridRowLoro = new LoroMap();
+      rowMap.setContainer('statement', statementMap);
+      rowMap.set('type', StatementGridRowType.StatementGridRowTypeLocal);
+
+      // Insert the row into the list
+      rowList.insertContainer(position, rowMap);
+      return true;
+    }
+    return false;
   }
 
   /**
    * Helper function to create a statement map from new statement data
    * @param newStatementData
    */
-  private getStatementMap(newStatementData: {
-    contentType: string;
-    langCodes: string[];
-  }): LoroMap<StmtDocSchema> {
+  private getStatementMap(
+    contentType: string,
+    langCodes: string[],
+  ): LoroMap<StmtDocSchema> {
     // Create the statement as a loro map
     const statementMap = new LoroMap<StmtDocSchema>();
 
@@ -667,7 +714,7 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
       new LoroMap(),
     );
     stmtPropertiesMap.set('type', 'colab-statement');
-    stmtPropertiesMap.set('contentType', newStatementData.contentType);
+    stmtPropertiesMap.set('contentType', contentType);
 
     // Set type and content type
     const stmtDocAclsMap = statementMap.getOrCreateContainer(
@@ -682,7 +729,7 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
     );
 
     // Iterate over the languages and create empty content for each
-    for (const langCode of newStatementData.langCodes) {
+    for (const langCode of langCodes) {
       const langElementMap: StmtElementLoro =
         stmtDocContentMap.getOrCreateContainer(langCode, new LoroMap());
 

@@ -34,10 +34,10 @@ export default function ToolbarMenu({ docType }: ToolbarMenuProps) {
         </>
       )}
       <FormattingMenu setup={toolbarSetup?.formatting || {}} />
+      {showSheetControls && <SheetMenu />}
       {showStmtControls && (
         <StatementMenu activeStatementElementRef={activeStatementElementRef} />
       )}
-      {showSheetControls && <SheetMenu />}
     </>
   );
 }

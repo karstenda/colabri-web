@@ -10,7 +10,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@mui/material/styles';
-import type { OrgProduct } from '../../../api/ColabriAPI';
+import type { AttributeValueStruct, OrgProduct } from '../../../api/ColabriAPI';
 import { useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';
 import GPCCategorySelector, {
   GPCCategoryValue,
@@ -19,16 +19,16 @@ import GPCCategorySelector, {
 export type ProductFormEntries = {
   name?: string;
   attributeValues?: {
-    GPC_SEGMENT?: string;
-    GPC_FAMILY?: string;
-    GPC_CLASS?: string;
-    GPC_BRICK?: string;
-    OBH_DIVISION?: string;
-    OBH_BRAND?: string;
-    OBH_SUBBRAND?: string;
-    OBH_PRODUCT?: string;
-    OBH_VARIANT?: string;
-    OBH_SIZE?: string;
+    GPC_SEGMENT?: AttributeValueStruct;
+    GPC_FAMILY?: AttributeValueStruct;
+    GPC_CLASS?: AttributeValueStruct;
+    GPC_BRICK?: AttributeValueStruct;
+    OBH_DIVISION?: AttributeValueStruct;
+    OBH_BRAND?: AttributeValueStruct;
+    OBH_SUBBRAND?: AttributeValueStruct;
+    OBH_PRODUCT?: AttributeValueStruct;
+    OBH_VARIANT?: AttributeValueStruct;
+    OBH_SIZE?: AttributeValueStruct;
   };
 };
 
@@ -51,7 +51,9 @@ export interface ProductFormState {
   };
 }
 
-export type FormFieldValue = string | { attributeName: string; value: string };
+export type FormFieldValue =
+  | string
+  | { attributeName: string; value: AttributeValueStruct };
 
 export interface ProductFormProps {
   formMode: 'create' | 'edit';
@@ -107,7 +109,10 @@ export default function ProductForm(props: ProductFormProps) {
       if (field.startsWith('OBH_')) {
         onFieldChange('attributeValues', {
           attributeName: field,
-          value: event.target.value,
+          value: {
+            display: event.target.value,
+            value: event.target.value,
+          },
         });
       } else {
         onFieldChange(
@@ -142,9 +147,24 @@ export default function ProductForm(props: ProductFormProps) {
           default:
             attributeName = '';
         }
+
+        // Prepare display value
+        let display = '';
+        if (selectedGpcCategoryValue[f]) {
+          display =
+            selectedGpcCategoryValue[f]?.code +
+            ' - ' +
+            selectedGpcCategoryValue[f].description;
+        }
+
         onFieldChange('attributeValues', {
           attributeName: attributeName,
-          value: selectedGpcCategoryValue[f]?.code || '',
+          value: {
+            display: display,
+            value: {
+              code: selectedGpcCategoryValue[f]?.code || '',
+            },
+          },
         });
       }
     },
@@ -215,7 +235,7 @@ export default function ProductForm(props: ProductFormProps) {
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
             <TextField
-              value={formValues.attributeValues?.OBH_DIVISION ?? ''}
+              value={formValues.attributeValues?.OBH_DIVISION?.display ?? ''}
               disabled={isSubmitting}
               onChange={handleTextFieldChange}
               name="OBH_DIVISION"
@@ -230,7 +250,7 @@ export default function ProductForm(props: ProductFormProps) {
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
             <TextField
-              value={formValues.attributeValues?.OBH_BRAND ?? ''}
+              value={formValues.attributeValues?.OBH_BRAND?.display ?? ''}
               disabled={isSubmitting}
               onChange={handleTextFieldChange}
               name="OBH_BRAND"
@@ -245,7 +265,7 @@ export default function ProductForm(props: ProductFormProps) {
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
             <TextField
-              value={formValues.attributeValues?.OBH_SUBBRAND ?? ''}
+              value={formValues.attributeValues?.OBH_SUBBRAND?.display ?? ''}
               disabled={isSubmitting}
               onChange={handleTextFieldChange}
               name="OBH_SUBBRAND"
@@ -260,7 +280,7 @@ export default function ProductForm(props: ProductFormProps) {
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
             <TextField
-              value={formValues.attributeValues?.OBH_PRODUCT ?? ''}
+              value={formValues.attributeValues?.OBH_PRODUCT?.display ?? ''}
               disabled={isSubmitting}
               onChange={handleTextFieldChange}
               name="OBH_PRODUCT"
@@ -275,7 +295,7 @@ export default function ProductForm(props: ProductFormProps) {
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
             <TextField
-              value={formValues.attributeValues?.OBH_VARIANT ?? ''}
+              value={formValues.attributeValues?.OBH_VARIANT?.display ?? ''}
               disabled={isSubmitting}
               onChange={handleTextFieldChange}
               name="OBH_VARIANT"
@@ -290,7 +310,7 @@ export default function ProductForm(props: ProductFormProps) {
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
             <TextField
-              value={formValues.attributeValues?.OBH_SIZE ?? ''}
+              value={formValues.attributeValues?.OBH_SIZE?.display ?? ''}
               disabled={isSubmitting}
               onChange={handleTextFieldChange}
               name="OBH_SIZE"
@@ -320,16 +340,24 @@ export default function ProductForm(props: ProductFormProps) {
             <GPCCategorySelector
               gpcCategoryValue={{
                 gpcSegment: {
-                  code: formValues.attributeValues?.GPC_SEGMENT ?? '',
+                  description: formValues.attributeValues?.GPC_SEGMENT?.display,
+                  code:
+                    formValues.attributeValues?.GPC_SEGMENT?.value?.code ?? '',
                 },
                 gpcFamily: {
-                  code: formValues.attributeValues?.GPC_FAMILY ?? '',
+                  description: formValues.attributeValues?.GPC_FAMILY?.display,
+                  code:
+                    formValues.attributeValues?.GPC_FAMILY?.value?.code ?? '',
                 },
                 gpcClass: {
-                  code: formValues.attributeValues?.GPC_CLASS ?? '',
+                  description: formValues.attributeValues?.GPC_CLASS?.display,
+                  code:
+                    formValues.attributeValues?.GPC_CLASS?.value?.code ?? '',
                 },
                 gpcBrick: {
-                  code: formValues.attributeValues?.GPC_BRICK ?? '',
+                  description: formValues.attributeValues?.GPC_BRICK?.display,
+                  code:
+                    formValues.attributeValues?.GPC_BRICK?.value?.code ?? '',
                 },
               }}
               placeholderGPCSegment={t('product.form.placeholders.gpcSegment')}
@@ -382,37 +410,38 @@ export function productToFormValues(
   if (product.attributeValues) {
     for (const [key, attrValue] of Object.entries(product.attributeValues)) {
       const attributeName = attrValue.attribute?.name;
+      const attributeValueStruct = attrValue.value as AttributeValueStruct;
       if (attributeName) {
         switch (attributeName) {
           case 'GPC_SEGMENT':
-            attributeValues.GPC_SEGMENT = String(attrValue.value ?? '');
+            attributeValues.GPC_SEGMENT = attributeValueStruct;
             break;
           case 'GPC_FAMILY':
-            attributeValues.GPC_FAMILY = String(attrValue.value ?? '');
+            attributeValues.GPC_FAMILY = attributeValueStruct;
             break;
           case 'GPC_CLASS':
-            attributeValues.GPC_CLASS = String(attrValue.value ?? '');
+            attributeValues.GPC_CLASS = attributeValueStruct;
             break;
           case 'GPC_BRICK':
-            attributeValues.GPC_BRICK = String(attrValue.value ?? '');
+            attributeValues.GPC_BRICK = attributeValueStruct;
             break;
           case 'OBH_DIVISION':
-            attributeValues.OBH_DIVISION = String(attrValue.value ?? '');
+            attributeValues.OBH_DIVISION = attributeValueStruct;
             break;
           case 'OBH_BRAND':
-            attributeValues.OBH_BRAND = String(attrValue.value ?? '');
+            attributeValues.OBH_BRAND = attributeValueStruct;
             break;
           case 'OBH_SUBBRAND':
-            attributeValues.OBH_SUBBRAND = String(attrValue.value ?? '');
+            attributeValues.OBH_SUBBRAND = attributeValueStruct;
             break;
           case 'OBH_PRODUCT':
-            attributeValues.OBH_PRODUCT = String(attrValue.value ?? '');
+            attributeValues.OBH_PRODUCT = attributeValueStruct;
             break;
           case 'OBH_VARIANT':
-            attributeValues.OBH_VARIANT = String(attrValue.value ?? '');
+            attributeValues.OBH_VARIANT = attributeValueStruct;
             break;
           case 'OBH_SIZE':
-            attributeValues.OBH_SIZE = String(attrValue.value ?? '');
+            attributeValues.OBH_SIZE = attributeValueStruct;
             break;
         }
       }

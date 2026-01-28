@@ -91,8 +91,13 @@ export type SheetStatementGridBlockLoro =
 export type SheetStatementGridRowLoro = LoroMap<{
   type: StatementGridRowType;
   statement?: LoroMap<StmtDocSchema>;
-  statementRef?: string;
+  statementRef?: LoroMap<StmtRefSchema>;
 }>;
+
+export type StmtRefSchema = {
+  docId: string;
+  versionV: string;
+};
 
 export type ApprovalLoro = GroupApprovalLoro | UserApprovalLoro;
 

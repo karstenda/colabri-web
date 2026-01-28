@@ -153,7 +153,16 @@ export default function ContentTypeSelector({
       sx={{
         width: '100%',
         '& .MuiAutocomplete-inputRoot': {
-          alignContent: 'center',
+          flexWrap: 'wrap',
+          gap: 0.5,
+        },
+        '& .MuiInputBase-root': {
+          height: 'auto',
+          padding: '2px',
+          paddingLeft: '8px',
+        },
+        '& .MuiInputBase-input': {
+          padding: '4px !important',
         },
       }}
       slotProps={{

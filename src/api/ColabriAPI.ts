@@ -125,6 +125,11 @@ export interface AttributeValueOnly {
   value: any;
 }
 
+export interface AttributeValueStruct {
+  display: string;
+  value: any;
+}
+
 export interface CheckOrganizationNameRequest {
   name: string;
   recaptchaToken: string;
@@ -151,6 +156,7 @@ export interface ColabModelProperties {
   contentType: string;
   countryCodes?: string[];
   langCodes?: string[];
+  masterLangCode?: string;
   type: ColabModelType;
 }
 
@@ -175,8 +181,13 @@ export interface ColabSheetStatementGridBlock {
 
 export interface ColabSheetStatementGridRow {
   statement?: ColabStatementModel;
-  statementRef?: string;
+  statementRef?: ColabSheetStatementRef;
   type: StatementGridRowType;
+}
+
+export interface ColabSheetStatementRef {
+  docId: string;
+  versionV: string;
 }
 
 export interface ColabSheetTextBlock {
@@ -223,7 +234,7 @@ export interface CreateAttributeRequest {
 export interface CreateAttributeValueRequest {
   attributeId?: string;
   attributeName?: string;
-  value: any;
+  value: AttributeValueStruct;
 }
 
 export interface CreateDocumentRequest {
@@ -429,11 +440,13 @@ export interface SheetDocument {
   id: string;
   name: string;
   owner: string;
+  peerMap: Record<string, string>;
   sheet: ColabSheetModel;
   streams: Record<string, DocumentStream[]>;
   type: string;
   updatedAt: string;
   updatedBy: string;
+  versionV: Record<string, number>;
 }
 
 export interface SpellCheckRequest {
@@ -516,11 +529,13 @@ export interface StatementDocument {
   id: string;
   name: string;
   owner: string;
+  peerMap: Record<string, string>;
   statement: ColabStatementModel;
   streams: Record<string, DocumentStream[]>;
   type: string;
   updatedAt: string;
   updatedBy: string;
+  versionV: Record<string, number>;
 }
 
 export interface SyncColabDocResponse {
@@ -529,7 +544,7 @@ export interface SyncColabDocResponse {
 
 export interface TextElement {
   attributes: Record<string, string>;
-  children: TextElementChild[];
+  children: TextElementChildrenOrString;
   nodeName: string;
 }
 

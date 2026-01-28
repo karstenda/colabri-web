@@ -127,12 +127,12 @@
         "title": "Create Example Product",
         "description": "Specify a single product for which you want to manage the content in Colabri. Don't worry after the setup you can add more products.",
         "placeholders": {
-          "name": "E.g.: Coca-Cola Zero Cherry - 12oz Sleek Cans",
-          "obhDivision": "E.g.: US Sparkling Flavors",
+          "name": "E.g.: NA - Coca-Cola Zero - Six Pack - 12oz Sleek Cans",
+          "obhDivision": "E.g.: North America",
           "obhBrand": "E.g.: Coca-Cola",
-          "obhSubbrand": "E.g.: Coca-Cola Zero",
-          "obhProduct": "E.g.: Coca-Cola Zero Cherry",
-          "obhVariant": "E.g.: Cherry",
+          "obhSubbrand": "E.g.: Zero",
+          "obhProduct": "E.g.: Coca-Cola Zero",
+          "obhVariant": "E.g.: Six Pack",
           "obhSize": "E.g.: 12oz Sleek Can",
           "gpcSegment": "E.g.: 50000000 - Food/Beverage/Tobacco",
           "gpcFamily": "E.g.: 50200000 - Beverages",
@@ -196,8 +196,11 @@
       "addBlockTooltip": "Add new block",
       "removeBlockTooltip": "Remove selected block",
       "manageBlockTooltip": "Manage selected block",
+      "statementApprovalTooltip": "Approve the selected language",
+      "statementMenuTooltip": "Manage the languages in the selected statement",
+      "sheetMenuTooltip": "Manage the blocks in this sheet",
       "manageDocument": "Manage Document",
-      "manageDocumentTooltip": "Manage permissions  and settings for this document",
+      "manageDocumentTooltip": "Manage permissions and settings for this document",
       "removeLanguageConfirm": "Are you sure you want to remove the {{language}} language?",
       "removeLanguageConfirmGeneric": "Are you sure you want to remove the selected language?",
       "removeBlockConfirm": "Are you sure you want to remove this block?"
@@ -220,7 +223,11 @@
       "title": "Add Languages to Document"
     },
     "addStatementModal": {
-      "title": "Add Statement to Document"
+      "title": "Add Statement",
+      "newStatementTab": "New Statement",
+      "newStatementDescription": "Create a new statement to add to this block. This statement will only be available in this document.",
+      "libraryStatementTab": "Library",
+      "libraryStatementDescription": "Select from existing statements in the statement library."
     },
     "addBlockModal": {
       "title": "Add Blocks to Document"
@@ -360,6 +367,7 @@
     "sharedSheets": "Shared With Me",
     "librarySheets": "Sheet Library",
     "addSheet": "Create Sheet",
+    "blocks": "Blocks",
     "columns": {
       "name": "Name",
       "owner": "Owner",

@@ -5,9 +5,10 @@ import {
   SheetStatementGridBlockLoro,
   SheetStatementGridRowLoro,
   StmtDocSchema,
+  StmtRefSchema,
   TextElementLoro,
 } from '../../data/ColabDoc';
-import { DataGrid } from '@mui/x-data-grid';
+import { DataGrid, GridRow } from '@mui/x-data-grid';
 import { StatementGridRowType } from '../../../api/ColabriAPI';
 import { useState, useMemo, useCallback, useEffect, use } from 'react';
 import {
@@ -42,7 +43,7 @@ export type StatementGridEditorTableProps = {
 export type StatementGridEditorTableRow = {
   id: string;
   type: StatementGridRowType;
-  statementRef?: string;
+  statementRef?: LoroMap<StmtRefSchema>;
   statement?: LoroMap<StmtDocSchema>;
 };
 
@@ -240,9 +241,18 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
     });
 
     if (newStatementData && controller) {
+      // Figure out the type
+      let type: 'new' | 'reference' = 'new';
+      if (newStatementData.statementSource === 'library') {
+        type = 'reference';
+      } else {
+        type = 'new';
+      }
+
       // Add the new statement via the controller
       const ok = controller.addStatementToStatementGridBlock(
         containerId,
+        type,
         newStatementData,
       );
       if (ok) {
@@ -339,6 +349,7 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
   const gridSlots = useMemo(
     () => ({
       toolbar: StatementGridEditorToolbar,
+      row: GridRow,
     }),
     [],
   );

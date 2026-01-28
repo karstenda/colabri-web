@@ -18,6 +18,8 @@ import {
   GridFilterModel,
   GridLogicOperator,
   GridPaginationModel,
+  GridRowId,
+  GridRowSelectionModel,
   GridSortModel,
 } from '@mui/x-data-grid/models';
 import { GridColumnVisibilityModel } from '@mui/x-data-grid/hooks/features/columns';
@@ -43,11 +45,19 @@ export type StatementsGridProps = {
   scope?: 'my' | 'shared' | 'lib';
   editable?: boolean;
   handleClick?: (params: StatementDocument) => void;
+  selectable?: boolean;
+  onSelectionChange?: (selectedStatements: StatementDocument[]) => void;
 };
 
 function StatementsGrid(props: StatementsGridProps) {
   const { t } = useTranslation();
-  const { scope, handleClick, editable = true } = props;
+  const {
+    scope,
+    handleClick,
+    editable = true,
+    selectable = false,
+    onSelectionChange,
+  } = props;
 
   const organization = useOrganization();
   const dialogs = useDialogs();
@@ -71,6 +81,11 @@ function StatementsGrid(props: StatementsGridProps) {
   const [sortModel, setSortModel] = React.useState<GridSortModel>([]);
   const [columnVisibilityModel, setColumnVisibilityModel] =
     React.useState<GridColumnVisibilityModel>({ updatedAt: false });
+  const [rowSelectionModel, setRowSelectionModel] =
+    React.useState<GridRowSelectionModel>({
+      type: 'include',
+      ids: new Set<GridRowId>([]),
+    });
 
   // Default quick filter logic operator to 'or'
   filterModel.quickFilterLogicOperator = GridLogicOperator.Or;
@@ -234,6 +249,26 @@ function StatementsGrid(props: StatementsGridProps) {
     refetchStatements();
   }, [refetchStatements]);
 
+  // When the row selection changes
+  const handleRowSelectionModelChange = React.useCallback(
+    (newModel: GridRowSelectionModel) => {
+      // Update the state
+      setRowSelectionModel(newModel);
+      // Execute the callback
+      if (onSelectionChange) {
+        // Get the corresponding rows
+        const selectedStatements = [];
+        for (const statement of statements) {
+          if (newModel.type === 'include' && newModel.ids.has(statement.id!)) {
+            selectedStatements.push(statement);
+          }
+        }
+        onSelectionChange(selectedStatements);
+      }
+    },
+    [onSelectionChange],
+  );
+
   // When the statement is clicked for inspection
   const defaultHandleClick = React.useCallback(
     (statement: StatementDocument) => {
@@ -382,6 +417,9 @@ function StatementsGrid(props: StatementsGridProps) {
             setColumnVisibilityModel(newModel)
           }
           pagination
+          checkboxSelection={selectable}
+          rowSelectionModel={rowSelectionModel}
+          onRowSelectionModelChange={handleRowSelectionModelChange}
           showToolbar
           sortingMode="server"
           filterMode="server"
