@@ -399,6 +399,18 @@ export default function MainSidebar({
                         }
                       />
                       <MainSidebarPageItem
+                        id="config-libraries"
+                        title="Libraries"
+                        icon={<LocalLibraryIcon />}
+                        href={`/org/${organization?.id}/config/libraries`}
+                        selected={
+                          !!matchPath(
+                            `/org/${organization?.id}/config/libraries/*`,
+                            pathname,
+                          )
+                        }
+                      />
+                      <MainSidebarPageItem
                         id="config-products"
                         title="Products"
                         icon={<ShoppingCartIcon />}

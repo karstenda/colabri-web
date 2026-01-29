@@ -14,7 +14,9 @@ import { useNavigate } from 'react-router';
 import type { Attribute } from '../../../api/ColabriAPI';
 import { useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';
 
-export type AttributeFormEntries = Partial<Omit<Attribute, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'updatedBy'>>;
+export type AttributeFormEntries = Partial<
+  Omit<Attribute, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'updatedBy'>
+>;
 
 export interface AttributeFormState {
   values: AttributeFormEntries;
@@ -30,7 +32,9 @@ export interface AttributeFormProps {
     name: keyof AttributeFormState['values'],
     value: FormFieldValue,
   ) => void;
-  onSubmit: (formValues: Partial<AttributeFormState['values']>) => Promise<void>;
+  onSubmit: (
+    formValues: Partial<AttributeFormState['values']>,
+  ) => Promise<void>;
   onReset?: (formValues: Partial<AttributeFormState['values']>) => void;
   submitButtonLabel: string;
   backButtonPath?: string;
@@ -106,7 +110,7 @@ export default function AttributeForm(props: AttributeFormProps) {
       noValidate
       autoComplete="off"
       onReset={handleReset}
-      sx={{ width: '100%' }}
+      sx={{ marginTop: '16px', marginBottom: '16px', width: '100%' }}
     >
       <Grid container spacing={2} sx={{ mb: 2, width: '100%' }}>
         <Grid size={{ xs: 12, sm: 12 }} sx={{ display: 'flex' }}>

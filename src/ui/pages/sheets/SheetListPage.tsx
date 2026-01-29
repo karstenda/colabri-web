@@ -1,7 +1,9 @@
 import Box from '@mui/material/Box';
 import PageContainer from '../../components/MainLayout/PageContainer';
-import SheetsGrid from '../../components/SheetsGrid/SheetsGrid';
 import { useTranslation } from 'react-i18next';
+import SheetLibListPanel from './SheetListLibPanel';
+import SheetSharedListPanel from './SheetListSharedPanel';
+import SheetMyListPanel from './SheetListMyPanel';
 
 export type SheetListPageProps = {
   scope?: 'my' | 'shared' | 'lib';
@@ -25,7 +27,9 @@ export default function SheetListPage({ scope }: SheetListPageProps) {
       breadcrumbs={[{ title: t('sheets.title') }]}
     >
       <Box sx={{ flex: 1, width: '100%' }}>
-        <SheetsGrid editable={true} scope={scope} />
+        {scope == 'my' && <SheetMyListPanel />}
+        {scope == 'shared' && <SheetSharedListPanel />}
+        {scope == 'lib' && <SheetLibListPanel />}
       </Box>
     </PageContainer>
   );

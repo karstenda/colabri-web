@@ -111,7 +111,7 @@ export default function ProductForm(props: ProductFormProps) {
           attributeName: field,
           value: {
             display: event.target.value,
-            value: event.target.value,
+            value: event.target.value as any,
           },
         });
       } else {
@@ -188,7 +188,7 @@ export default function ProductForm(props: ProductFormProps) {
       noValidate
       autoComplete="off"
       onReset={handleReset}
-      sx={{ width: '100%' }}
+      sx={{ marginTop: '16px', marginBottom: '16px', width: '100%' }}
     >
       <FormGroup>
         <Grid size={{ xs: 12, sm: 12 }} sx={{ display: 'flex' }}>

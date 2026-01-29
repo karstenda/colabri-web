@@ -41,22 +41,27 @@ import { useTranslation } from 'react-i18next';
 
 const INITIAL_PAGE_SIZE = 10;
 
-export type StatementsGridProps = {
-  scope?: 'my' | 'shared' | 'lib';
-  editable?: boolean;
+export type StatementsOverviewProps = {
+  scope?: {
+    type: 'my' | 'shared' | 'lib';
+    libraryId?: string;
+  };
   handleClick?: (params: StatementDocument) => void;
   selectable?: boolean;
   onSelectionChange?: (selectedStatements: StatementDocument[]) => void;
+  showStatementActions?: boolean;
+  renderTopActions?: () => React.ReactNode;
 };
 
-function StatementsGrid(props: StatementsGridProps) {
+function StatementsOverview(props: StatementsOverviewProps) {
   const { t } = useTranslation();
   const {
     scope,
     handleClick,
-    editable = true,
     selectable = false,
     onSelectionChange,
+    showStatementActions = true,
+    renderTopActions,
   } = props;
 
   const organization = useOrganization();
@@ -93,7 +98,7 @@ function StatementsGrid(props: StatementsGridProps) {
   const activeFilterItems = [...filterModel.items];
 
   // Apply the right filtering based on the scope
-  if (scope === 'my' && orgUserId && organization) {
+  if (scope?.type === 'my' && orgUserId && organization) {
     activeFilterItems.push({
       id: 'scope-my-1',
       field: 'owner',
@@ -106,7 +111,7 @@ function StatementsGrid(props: StatementsGridProps) {
       operator: 'doesNotEqual',
       value: 'library',
     });
-  } else if (scope === 'shared' && orgUserId && organization) {
+  } else if (scope?.type === 'shared' && orgUserId && organization) {
     activeFilterItems.push({
       id: 'scope-shared-1',
       field: 'owner',
@@ -119,12 +124,18 @@ function StatementsGrid(props: StatementsGridProps) {
       operator: 'doesNotEqual',
       value: 'library',
     });
-  } else if (scope === 'lib' && orgUserId && organization) {
+  } else if (scope?.type === 'lib' && orgUserId && organization) {
     activeFilterItems.push({
       id: 'scope-lib',
       field: 'containerType',
       operator: 'equals',
       value: 'library',
+    });
+    activeFilterItems.push({
+      id: 'scope-lib',
+      field: 'container',
+      operator: 'equals',
+      value: scope.libraryId,
     });
   }
 
@@ -231,11 +242,6 @@ function StatementsGrid(props: StatementsGridProps) {
     [dialogs, notifications, deleteDocument, t],
   );
 
-  // When a statement is to be added
-  const handleStatementCreate = React.useCallback(() => {
-    navigate(`/org/${organization?.id}/statements/new`);
-  }, [organization, navigate]);
-
   // When a statement is clicked for editing
   const handleRowEdit = React.useCallback(
     (statement: StatementDocument) => async () => {
@@ -339,7 +345,7 @@ function StatementsGrid(props: StatementsGridProps) {
         flex: 1,
         align: 'right',
         width: 100,
-        getActions: editable
+        getActions: showStatementActions
           ? (params) => {
               // Can you delete the statement?
               const canDelete =
@@ -370,42 +376,34 @@ function StatementsGrid(props: StatementsGridProps) {
           : () => [],
       },
     ],
-    [handleRowEdit, handleStatementDelete, editable, t],
+    [handleRowEdit, handleStatementDelete, showStatementActions, t],
   );
 
   return (
     <Stack direction="column" spacing={2} sx={{ width: '100%' }}>
-      {editable && (
-        <Stack
-          direction="row"
-          alignItems="center"
-          spacing={1}
-          justifyContent="flex-end"
+      <Stack
+        direction="row"
+        alignItems="center"
+        spacing={1}
+        justifyContent="flex-end"
+      >
+        <Tooltip
+          title={t('statements.actions.reloadData')}
+          placement="right"
+          enterDelay={1000}
         >
-          <Tooltip
-            title={t('statements.actions.reloadData')}
-            placement="right"
-            enterDelay={1000}
-          >
-            <div>
-              <IconButton
-                size="small"
-                aria-label="refresh"
-                onClick={handleRefresh}
-              >
-                <RefreshIcon />
-              </IconButton>
-            </div>
-          </Tooltip>
-          <Button
-            variant="contained"
-            onClick={handleStatementCreate}
-            startIcon={<AddIcon />}
-          >
-            {t('common.create')}
-          </Button>
-        </Stack>
-      )}
+          <div>
+            <IconButton
+              size="small"
+              aria-label="refresh"
+              onClick={handleRefresh}
+            >
+              <RefreshIcon />
+            </IconButton>
+          </div>
+        </Tooltip>
+        {renderTopActions && renderTopActions()}
+      </Stack>
 
       <ResolvedPrplsProvider prpls={statementPrpls}>
         <DataGrid
@@ -473,4 +471,4 @@ function StatementsGrid(props: StatementsGridProps) {
   );
 }
 
-export default StatementsGrid;
+export default StatementsOverview;

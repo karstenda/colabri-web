@@ -39,15 +39,24 @@ import { useTranslation } from 'react-i18next';
 
 const INITIAL_PAGE_SIZE = 10;
 
-export type SheetsGridProps = {
-  scope?: 'my' | 'shared' | 'lib';
-  editable?: boolean;
+export type SheetsOverviewProps = {
+  scope?: {
+    type: 'my' | 'shared' | 'lib';
+    libraryId?: string;
+  };
+  showSheetActions?: boolean;
+  renderTopActions?: () => React.ReactNode;
   handleClick?: (params: SheetDocument) => void;
 };
 
-function SheetsGrid(props: SheetsGridProps) {
+function SheetsOverview(props: SheetsOverviewProps) {
   const { t } = useTranslation();
-  const { scope, handleClick, editable = true } = props;
+  const {
+    scope,
+    handleClick,
+    showSheetActions = true,
+    renderTopActions,
+  } = props;
 
   const organization = useOrganization();
   const dialogs = useDialogs();
@@ -78,7 +87,7 @@ function SheetsGrid(props: SheetsGridProps) {
   const activeFilterItems = [...filterModel.items];
 
   // Apply the right filtering based on the scope
-  if (scope === 'my' && orgUserId && organization) {
+  if (scope?.type === 'my' && orgUserId && organization) {
     activeFilterItems.push({
       id: 'scope-my-1',
       field: 'owner',
@@ -91,7 +100,7 @@ function SheetsGrid(props: SheetsGridProps) {
       operator: 'doesNotEqual',
       value: 'library',
     });
-  } else if (scope === 'shared' && orgUserId && organization) {
+  } else if (scope?.type === 'shared' && orgUserId && organization) {
     activeFilterItems.push({
       id: 'scope-shared-1',
       field: 'owner',
@@ -104,12 +113,18 @@ function SheetsGrid(props: SheetsGridProps) {
       operator: 'doesNotEqual',
       value: 'library',
     });
-  } else if (scope === 'lib' && orgUserId && organization) {
+  } else if (scope?.type === 'lib' && orgUserId && organization) {
     activeFilterItems.push({
       id: 'scope-lib',
       field: 'containerType',
       operator: 'equals',
       value: 'library',
+    });
+    activeFilterItems.push({
+      id: 'scope-lib',
+      field: 'container',
+      operator: 'equals',
+      value: scope.libraryId,
     });
   }
 
@@ -304,7 +319,7 @@ function SheetsGrid(props: SheetsGridProps) {
         flex: 1,
         align: 'right',
         width: 100,
-        getActions: editable
+        getActions: showSheetActions
           ? (params) => {
               // Can you delete the sheet?
               const canDelete =
@@ -335,42 +350,34 @@ function SheetsGrid(props: SheetsGridProps) {
           : () => [],
       },
     ],
-    [handleRowEdit, handleSheetDelete, editable, t],
+    [handleRowEdit, handleSheetDelete, showSheetActions, t],
   );
 
   return (
     <Stack direction="column" spacing={2} sx={{ width: '100%' }}>
-      {editable && (
-        <Stack
-          direction="row"
-          alignItems="center"
-          spacing={1}
-          justifyContent="flex-end"
+      <Stack
+        direction="row"
+        alignItems="center"
+        spacing={1}
+        justifyContent="flex-end"
+      >
+        <Tooltip
+          title={t('sheets.actions.reloadData')}
+          placement="right"
+          enterDelay={1000}
         >
-          <Tooltip
-            title={t('sheets.actions.reloadData')}
-            placement="right"
-            enterDelay={1000}
-          >
-            <div>
-              <IconButton
-                size="small"
-                aria-label="refresh"
-                onClick={handleRefresh}
-              >
-                <RefreshIcon />
-              </IconButton>
-            </div>
-          </Tooltip>
-          <Button
-            variant="contained"
-            onClick={handleSheetCreate}
-            startIcon={<AddIcon />}
-          >
-            {t('common.create')}
-          </Button>
-        </Stack>
-      )}
+          <div>
+            <IconButton
+              size="small"
+              aria-label="refresh"
+              onClick={handleRefresh}
+            >
+              <RefreshIcon />
+            </IconButton>
+          </div>
+        </Tooltip>
+        {renderTopActions && renderTopActions()}
+      </Stack>
 
       <ResolvedPrplsProvider prpls={sheetPrpls}>
         <DataGrid
@@ -435,4 +442,4 @@ function SheetsGrid(props: SheetsGridProps) {
   );
 }
 
-export default SheetsGrid;
+export default SheetsOverview;

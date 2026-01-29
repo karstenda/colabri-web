@@ -317,6 +317,48 @@
       "noOptions": "No countries found"
     }
   },
+  "libraries": {
+    "title": "Libraries",
+    "manageDescription": "Manage your organization's libraries",
+    "addLibrary": "Add Library",
+    "createTitle": "Create Library",
+    "editTitle": "Edit Library",
+    "detailsTitle": "Library Details",
+    "notFound": "Library not found",
+    "fields": {
+      "type": "Type"
+    },
+    "actions": {
+      "refresh": "Refresh list"
+    },
+    "messages": {
+      "deleteConfirm": "Do you wish to delete {{name}}?",
+      "deleteTitle": "Delete library?",
+      "deleteSuccess": "Library deleted successfully.",
+      "deleteError": "Failed to delete library. Reason: {{message}}",
+      "createSuccess": "Library created successfully.",
+      "createError": "Failed to create library. Reason: {{message}}",
+      "updateSuccess": "Library updated successfully.",
+      "updateError": "Failed to update library. Reason: {{message}}",
+      "loadError": "Error loading libraries: {{message}}",
+      "loadDetailError": "Failed to load library: {{message}}"
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "nameMinLength": "Name must be at least 2 characters long",
+      "nameMaxLength": "Name must not exceed 100 characters",
+      "typeRequired": "Type is required",
+      "typeMaxLength": "Type must not exceed 50 characters"
+    },
+    "confirmDelete": {
+      "message": "Do you wish to delete {{name}}?",
+      "title": "Delete library?"
+    },
+    "notifications": {
+      "deleted": "Library deleted successfully.",
+      "deleteFailed": "Failed to delete library. Reason: {{reason}}"
+    }
+  },
   "products": {
     "title": "Products",
     "addProduct": "Add Product",

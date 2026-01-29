@@ -118,7 +118,7 @@ export default function StatementForm(props: StatementFormProps) {
       noValidate
       autoComplete="off"
       onReset={handleReset}
-      sx={{ width: '100%' }}
+      sx={{ marginTop: '16px', marginBottom: '16px', width: '100%' }}
     >
       <FormGroup>
         <Grid container spacing={2} sx={{ mb: 2, width: '100%' }}>

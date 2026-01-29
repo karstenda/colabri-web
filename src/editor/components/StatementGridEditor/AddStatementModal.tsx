@@ -24,7 +24,7 @@ import type {
 import { DialogProps } from '../../../ui/hooks/useDialogs/useDialogs';
 import { useTranslation } from 'react-i18next';
 import { ContentTypeSelector } from '../../../ui/components/ContentTypeSelector';
-import StatementsGrid from '../../../ui/components/StatementsGrid';
+import StatementsGrid from '../../../ui/components/StatementsOverview';
 
 export interface NewStatementData {
   statementSource: 'new' | 'library';

@@ -42,6 +42,10 @@ import ProductListPage from './pages/products/ProductListPage';
 import ProductShowPage from './pages/products/ProductShowPage';
 import ProductCreatePage from './pages/products/ProductCreatePage';
 import ProductEditPage from './pages/products/ProductEditPage';
+import LibraryListPage from './pages/libraries/LibraryListPage';
+import LibraryShowPage from './pages/libraries/LibraryShowPage';
+import LibraryCreatePage from './pages/libraries/LibraryCreatePage';
+import LibraryEditPage from './pages/libraries/LibraryEditPage';
 
 const router = createHashRouter([
   {
@@ -212,8 +216,24 @@ const router = createHashRouter([
         Component: ProductEditPage,
       },
       {
+        path: 'org/:orgId/config/libraries/',
+        Component: LibraryListPage,
+      },
+      {
+        path: 'org/:orgId/config/libraries/:libraryId',
+        Component: LibraryShowPage,
+      },
+      {
+        path: 'org/:orgId/config/libraries/new',
+        Component: LibraryCreatePage,
+      },
+      {
+        path: 'org/:orgId/config/libraries/:libraryId/edit',
+        Component: LibraryEditPage,
+      },
+      {
         path: 'org/:orgId/*',
-        Component: UserListPage,
+        Component: () => <SheetListPage scope="my" />,
       },
     ],
   },

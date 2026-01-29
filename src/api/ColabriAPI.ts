@@ -113,7 +113,7 @@ export interface AttributeValue {
   id: string;
   updatedAt: string;
   updatedBy: string;
-  value: any;
+  value: AttributeValueStruct;
 }
 
 export interface AttributeValueOnly {
@@ -122,12 +122,12 @@ export interface AttributeValueOnly {
   id: string;
   updatedAt: string;
   updatedBy: string;
-  value: any;
+  value: AttributeValueStruct;
 }
 
 export interface AttributeValueStruct {
   display: string;
-  value: any;
+  value: Record<string, any>;
 }
 
 export interface CheckOrganizationNameRequest {
@@ -250,6 +250,11 @@ export interface CreateGroupRequest {
   name: string;
 }
 
+export interface CreateLibraryRequest {
+  name: string;
+  type: string;
+}
+
 export interface CreateOrganizationRequest {
   expiryDate?: string;
   name: string;
@@ -342,6 +347,21 @@ export interface HTTPError {
   error?: string;
   /** @example "status bad request" */
   status?: string;
+}
+
+export interface Library {
+  acls: Record<string, string[]>;
+  createdAt: string;
+  createdBy: string;
+  id: string;
+  name: string;
+  type: string;
+  updatedAt: string;
+  updatedBy: string;
+}
+
+export interface MoveDocToLibraryRequest {
+  docId: string;
 }
 
 export interface OrgContentLanguage {
@@ -560,11 +580,16 @@ export interface TextElementChildrenOrString {
 }
 
 export interface UpdateAttributeValueRequest {
-  value: any;
+  value: AttributeValueStruct;
 }
 
 export interface UpdateGroupRequest {
   description?: string;
+  name?: string;
+}
+
+export interface UpdateLibraryRequest {
+  acls?: Record<string, string[]>;
   name?: string;
 }
 
@@ -1757,6 +1782,133 @@ export class Api<
         path: `/${orgId}/languages`,
         method: "DELETE",
         body: langIds,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description List all libraries in the specified organization
+     *
+     * @tags libraries
+     * @name GetLibraries
+     * @summary List all libraries
+     * @request GET:/{orgId}/libraries
+     */
+    getLibraries: (orgId: string, params: RequestParams = {}) =>
+      this.request<Library, any>({
+        path: `/${orgId}/libraries`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Create a new library in the specified organization
+     *
+     * @tags libraries
+     * @name PostLibrarie
+     * @summary Create a new library
+     * @request POST:/{orgId}/libraries
+     */
+    postLibrarie: (
+      orgId: string,
+      library: CreateLibraryRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<Library, any>({
+        path: `/${orgId}/libraries`,
+        method: "POST",
+        body: library,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Retrieve a specific library in the specified organization
+     *
+     * @tags libraries
+     * @name GetLibrarie
+     * @summary Get a library
+     * @request GET:/{orgId}/libraries/{libraryId}
+     */
+    getLibrarie: (
+      orgId: string,
+      libraryId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<Library, any>({
+        path: `/${orgId}/libraries/${libraryId}`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Delete a library in the specified organization
+     *
+     * @tags libraries
+     * @name DeleteLibrarie
+     * @summary Delete a library
+     * @request DELETE:/{orgId}/libraries/{libraryId}
+     */
+    deleteLibrarie: (
+      orgId: string,
+      libraryId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<Library, any>({
+        path: `/${orgId}/libraries/${libraryId}`,
+        method: "DELETE",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update an existing library in the specified organization
+     *
+     * @tags libraries
+     * @name PatchLibrarie
+     * @summary Update a library
+     * @request PATCH:/{orgId}/libraries/{libraryId}
+     */
+    patchLibrarie: (
+      orgId: string,
+      libraryId: string,
+      library: UpdateLibraryRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<Library, any>({
+        path: `/${orgId}/libraries/${libraryId}`,
+        method: "PATCH",
+        body: library,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Move a document to a specified library within the organization
+     *
+     * @tags libraries
+     * @name PostLibrariesMove
+     * @summary Move a document to a library
+     * @request POST:/{orgId}/libraries/{libraryId}/move
+     */
+    postLibrariesMove: (
+      orgId: string,
+      libraryId: string,
+      payload: MoveDocToLibraryRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<Library[], any>({
+        path: `/${orgId}/libraries/${libraryId}/move`,
+        method: "POST",
+        body: payload,
         type: ContentType.Json,
         format: "json",
         ...params,

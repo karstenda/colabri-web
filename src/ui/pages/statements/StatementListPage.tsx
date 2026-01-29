@@ -1,7 +1,10 @@
 import Box from '@mui/material/Box';
 import PageContainer from '../../components/MainLayout/PageContainer';
-import StatementsGrid from '../../components/StatementsGrid';
+import StatementsOverview from '../../components/StatementsOverview';
 import { useTranslation } from 'react-i18next';
+import StatementLibListPanel from './StatementLibListPanel';
+import StatementMyListPanel from './StatementMyListPanel';
+import StatementSharedListPanel from './StatementSharedListPanel';
 
 export type StatementListPageProps = {
   scope?: 'my' | 'shared' | 'lib';
@@ -25,7 +28,9 @@ export default function StatementListPage({ scope }: StatementListPageProps) {
       breadcrumbs={[{ title: t('statements.title') }]}
     >
       <Box sx={{ flex: 1, width: '100%' }}>
-        <StatementsGrid editable={true} scope={scope} />
+        {scope == 'my' && <StatementMyListPanel />}
+        {scope == 'shared' && <StatementSharedListPanel />}
+        {scope == 'lib' && <StatementLibListPanel />}
       </Box>
     </PageContainer>
   );
