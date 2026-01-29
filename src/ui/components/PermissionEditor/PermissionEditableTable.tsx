@@ -1,54 +1,48 @@
 import { useCachedResolvedPrpls } from '../../context/PrplsContext/ResolvedPrplsProvider';
 import PermissionsTableRow, {
-  PermissionsTableRowProps,
-} from './PermissionTableRow';
+  PermissionEditableTableRowProps,
+} from './PermissionEditableTableRow';
 import { ResolvedPrpl } from '../../../api/ColabriAPI';
 import { Permission } from '../../data/Permission';
 import { TableBody } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PermissionEditorTable } from './PermissionEditorStyles';
+import PermissionEditableTableRow from './PermissionEditableTableRow';
 
-type PermissionsTableProps = {
+type PermissionsEditableTableProps = {
   identities: Record<string, ResolvedPrpl>;
-  permissionMap: Record<string, Set<Permission>>; // Map of prpls with their permissions
+  permissionsMap: Record<string, Set<Permission>>; // Map of prpls with their permissions
+  onPermissionsMapChange: (
+    newPermissionMap: Record<string, Set<Permission>>,
+  ) => void;
   fixedPermissionMap: Record<string, Set<Permission>>; // Map of prpls with fixed permissions
   availablePermissions?: Record<string, Set<Permission>>; // Map of sections and permissions
-  onChange?: (newPermissionMap: Record<string, Set<Permission>>) => void;
 };
 
-const PermissionsTable = (props: PermissionsTableProps) => {
+const PermissionsEditableTable = (props: PermissionsEditableTableProps) => {
   // Generate the set of all prpls to display (the union of permissionMap and fixedPermissionMap)
   const allPrpls = new Set<string>([
-    ...Object.keys(props.permissionMap),
+    ...Object.keys(props.permissionsMap),
     ...Object.keys(props.fixedPermissionMap),
   ]);
 
   // Resolve these prpls
   const resolvedPrpls = useCachedResolvedPrpls(Array.from(allPrpls));
 
-  const [permissionMap, setPermissionMap] = useState<
-    Record<string, Set<Permission>>
-  >(props.permissionMap);
-
   // Handle a row change
   const onRowChange = (prplId: string, newPermissions: Set<Permission>) => {
     // Update the state
-    const newPermissionMap = { ...permissionMap };
-    newPermissionMap[prplId] = newPermissions;
-    setPermissionMap(newPermissionMap);
-
-    // Notify the change
-    if (props.onChange) {
-      props.onChange(newPermissionMap);
-    }
+    const newPermissionsMap = { ...props.permissionsMap };
+    newPermissionsMap[prplId] = newPermissions;
+    props.onPermissionsMapChange(newPermissionsMap);
   };
 
   // Run over the list of permissions and construct properties for the rows
-  const rowProperties = [] as PermissionsTableRowProps[];
+  const rowProperties = [] as PermissionEditableTableRowProps[];
   allPrpls.forEach((prpl) => {
     rowProperties.push({
       resolvedPrpl: resolvedPrpls[prpl],
-      permissions: props.permissionMap[prpl] ?? new Set(),
+      permissions: props.permissionsMap[prpl] ?? new Set(),
       fixedPermissions: props.fixedPermissionMap[prpl] ?? new Set(),
       availablePermissions: props.availablePermissions,
       onChange: onRowChange,
@@ -59,10 +53,13 @@ const PermissionsTable = (props: PermissionsTableProps) => {
     <PermissionEditorTable>
       <TableBody>
         {rowProperties.map((rowProp) => (
-          <PermissionsTableRow key={rowProp.resolvedPrpl.prpl} {...rowProp} />
+          <PermissionEditableTableRow
+            key={rowProp.resolvedPrpl.prpl}
+            {...rowProp}
+          />
         ))}
       </TableBody>
     </PermissionEditorTable>
   );
 };
-export default PermissionsTable;
+export default PermissionsEditableTable;

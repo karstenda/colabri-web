@@ -19,6 +19,7 @@ import {
 } from '../../context/UserOrganizationContext/UserOrganizationProvider';
 import { AssigneeSelector } from '../../components/AssigneeSelector';
 import { Assignee } from '../../data/Common';
+import { useTheme } from '@mui/material/styles';
 
 export type UserFormEntries = Partial<
   Omit<User, 'id' | 'updatedAt' | 'createdBy' | 'updatedBy'> & {
@@ -61,6 +62,7 @@ export default function UserForm(props: UserFormProps) {
   const formErrors = formState.errors;
 
   const navigate = useNavigate();
+  const theme = useTheme();
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -241,6 +243,27 @@ export default function UserForm(props: UserFormProps) {
               fullWidth
             />
           </Grid>
+          {formMode === 'edit' && (
+            <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
+              <FormControl>
+                <FormControlLabel
+                  name="disabled"
+                  control={
+                    <Checkbox
+                      disabled={isSubmitting}
+                      size="large"
+                      checked={formValues.disabled ?? false}
+                      onChange={handleCheckboxFieldChange}
+                    />
+                  }
+                  label="Disable User"
+                />
+                <FormHelperText error={!!formErrors.disabled}>
+                  {formErrors.disabled ?? ' '}
+                </FormHelperText>
+              </FormControl>
+            </Grid>
+          )}
           <Grid size={{ xs: 12, sm: 12 }} sx={{ display: 'flex' }}>
             <AssigneeSelector
               orgId={organization?.id || ''}
@@ -261,30 +284,14 @@ export default function UserForm(props: UserFormProps) {
               customGroups={availableGroups}
             />
           </Grid>
-          {formMode === 'edit' && (
-            <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
-              <FormControl>
-                <FormControlLabel
-                  name="disabled"
-                  control={
-                    <Checkbox
-                      disabled={isSubmitting}
-                      size="large"
-                      checked={formValues.disabled ?? false}
-                      onChange={handleCheckboxFieldChange}
-                    />
-                  }
-                  label="Disabled"
-                />
-                <FormHelperText error={!!formErrors.disabled}>
-                  {formErrors.disabled ?? ' '}
-                </FormHelperText>
-              </FormControl>
-            </Grid>
-          )}
         </Grid>
       </FormGroup>
-      <Stack direction="row" spacing={2} justifyContent="space-between">
+      <Stack
+        direction="row"
+        spacing={2}
+        justifyContent="space-between"
+        sx={{ marginTop: theme.spacing(2) }}
+      >
         <Button
           variant="contained"
           startIcon={<ArrowBackIcon />}

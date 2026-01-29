@@ -20,6 +20,9 @@ export default function StatementListPage({ scope }: StatementListPageProps) {
     pageTitle = t('statements.sharedStatements');
   } else if (scope === 'lib') {
     pageTitle = t('statements.libraryStatements');
+  } else {
+    scope = 'my';
+    pageTitle = t('statements.myStatements');
   }
 
   return (

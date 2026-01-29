@@ -374,7 +374,12 @@ export default function ProductForm(props: ProductFormProps) {
           </Grid>
         </Grid>
       </FormGroup>
-      <Stack direction="row" spacing={2} justifyContent="space-between">
+      <Stack
+        direction="row"
+        spacing={2}
+        justifyContent="space-between"
+        sx={{ marginTop: theme.spacing(2) }}
+      >
         <Button
           variant="contained"
           startIcon={<ArrowBackIcon />}

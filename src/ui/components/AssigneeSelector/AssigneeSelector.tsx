@@ -206,7 +206,6 @@ export default function AssigneeSelector({
         '& .MuiInputBase-root': {
           height: 'auto',
           padding: '2px',
-          margin: '3px',
         },
         '& .MuiInputBase-input': {
           paddingTop: '4px !important',
@@ -313,10 +312,10 @@ export default function AssigneeSelector({
         loading
           ? 'Loading...'
           : usersOnly
-          ? 'No users found'
-          : groupsOnly
-          ? 'No groups found'
-          : 'No users or groups found'
+            ? 'No users found'
+            : groupsOnly
+              ? 'No groups found'
+              : 'No users or groups found'
       }
     />
   );

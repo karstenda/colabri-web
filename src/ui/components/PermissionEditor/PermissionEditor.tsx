@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import ResolvedPrplsProvider from '../../context/PrplsContext/ResolvedPrplsProvider';
-import PermissionTable from './PermissionTable';
 import { AssigneeSelector } from '../AssigneeSelector';
 import { useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';
 import { Permission } from '../../data/Permission';
@@ -8,26 +7,58 @@ import { toResolvedPrpl } from '../../data/Common';
 import { ResolvedPrpl } from '../../../api/ColabriAPI';
 import { PermissionEditorDivider } from './PermissionEditorStyles';
 import { Assignee } from '../../data/Common';
+import PermissionEditableTable from './PermissionEditableTable';
 
 type PermissionEditorProps = {
   helperText?: string;
-  permissions: Record<string, Set<Permission>>;
+  availablePermissions: Record<string, Set<Permission>>;
   defaultPermission: Permission;
   aclMap: Record<Permission, string[]>;
   aclFixedMap?: Record<Permission, string[]>;
   onAclChange?: (newAclMap: Record<Permission, string[]>) => void;
 };
 
+// Utility to convert an ACL map to a prpl-permissions map
+const aclMapToPrplPermissionsMap = (aclMap: Record<Permission, string[]>) => {
+  const result = {} as Record<string, Set<Permission>>;
+  Object.entries(aclMap).forEach(([permission, prpls]) => {
+    prpls.forEach((prpl) => {
+      if (!result.hasOwnProperty(prpl)) {
+        result[prpl] = new Set<Permission>();
+      }
+      result[prpl].add(permission as Permission);
+    });
+  });
+  return result;
+};
+
+const prplPermissionsMaptoAclMap = (
+  prplPermissionsMap: Record<string, Set<Permission>>,
+) => {
+  const result = {} as Record<Permission, string[]>;
+  Object.entries(prplPermissionsMap).forEach(([prpl, permissions]) => {
+    permissions.forEach((permission) => {
+      if (!result.hasOwnProperty(permission)) {
+        result[permission] = [];
+      }
+      result[permission].push(prpl);
+    });
+  });
+  return result;
+};
+
 const PermissionEditor = (props: PermissionEditorProps) => {
   const organization = useOrganization();
-  // State to track the ACL map
-  const [aclMap, setAclMap] = useState<Record<Permission, string[]>>(
-    props.aclMap,
-  );
+
+  // The user interface is going to list all the prpls with their permissions.
+  // So we need to transform the aclMap to a map of prpls with their permissions.
+  const [permissionsMap, setPermissionsMap] = useState<
+    Record<string, Set<Permission>>
+  >(aclMapToPrplPermissionsMap(props.aclMap));
 
   // Calculate a flat list of all permissions
   const allPermissions = new Set<Permission>();
-  Object.keys(props.permissions).forEach((permission) => {
+  Object.keys(props.availablePermissions).forEach((permission) => {
     allPermissions.add(permission as Permission);
   });
 
@@ -35,18 +66,6 @@ const PermissionEditor = (props: PermissionEditorProps) => {
   const [knownIdentities, setKnownIdentities] = useState<
     Record<string, ResolvedPrpl>
   >({});
-
-  // The user interface is going to list all the prpls with their permissions.
-  // So we need to transform the aclMap to a map of prpls with their permissions.
-  const prplPermissionsMap = {} as Record<string, Set<Permission>>;
-  Object.entries(aclMap).forEach(([permission, prpls]) => {
-    prpls.forEach((prpl) => {
-      if (!prplPermissionsMap.hasOwnProperty(prpl)) {
-        prplPermissionsMap[prpl] = new Set<Permission>();
-      }
-      prplPermissionsMap[prpl].add(permission as Permission);
-    });
-  });
 
   // Let's also create one for the fixed permissions
   const fixedPrplPermissionsMap = {} as Record<string, Set<Permission>>;
@@ -90,41 +109,44 @@ const PermissionEditor = (props: PermissionEditorProps) => {
         };
       });
 
-      // Generate the new acl map.
-      let newPermPrpls = aclMap[props.defaultPermission] || [];
-      if (!newPermPrpls.includes(resolvedPrpl.prpl)) {
-        newPermPrpls = [...newPermPrpls, resolvedPrpl.prpl];
-      }
-      const newAclMap = {
-        ...aclMap,
-        ...{
-          [props.defaultPermission]: newPermPrpls,
-        },
-      };
-      setAclMap(newAclMap);
+      // Add them to the permission map
+      setPermissionsMap((prev) => {
+        // checks if already present
+        if (prev.hasOwnProperty(resolvedPrpl.prpl)) {
+          return prev;
+        }
 
-      // Notify the change
-      if (props.onAclChange) {
-        props.onAclChange(newAclMap);
-      }
+        // Create a new map with the new prpl and default permission
+        const newMap = {
+          ...prev,
+          [resolvedPrpl.prpl]: new Set<Permission>([props.defaultPermission]),
+        };
+
+        // Notify change using the calculated new map
+        const newAclMap = prplPermissionsMaptoAclMap(newMap);
+        if (props.onAclChange) {
+          props.onAclChange(newAclMap);
+        }
+
+        return newMap;
+      });
     });
   };
 
-  const onPermissionMapChange = (
-    newPermissionMap: Record<string, Set<Permission>>,
+  const onPermissionsMapChange = (
+    newPermissionsMap: Record<string, Set<Permission>>,
   ) => {
-    // Convert the newPermissionMap back to aclMap format
-    const newAclMap = {} as Record<Permission, string[]>;
-    Object.entries(newPermissionMap).forEach(([prpl, permissions]) => {
-      permissions.forEach((permission) => {
-        if (!newAclMap[permission]) {
-          newAclMap[permission] = [];
-        }
-        newAclMap[permission].push(prpl);
-      });
+    // See if there are any prpls with no permissions and remove them
+    Object.entries(newPermissionsMap).forEach(([prpl, permissions]) => {
+      if (permissions.size === 0) {
+        delete newPermissionsMap[prpl];
+      }
     });
 
-    setAclMap(newAclMap);
+    // Update the state
+    setPermissionsMap(newPermissionsMap);
+    // Notify the change
+    const newAclMap = prplPermissionsMaptoAclMap(newPermissionsMap);
     if (props.onAclChange) {
       props.onAclChange(newAclMap);
     }
@@ -132,7 +154,7 @@ const PermissionEditor = (props: PermissionEditorProps) => {
 
   // Generate the set of all prpls to display (the union of permissionMap and fixedPermissionMap)
   const allPrpls = new Set<string>([
-    ...Object.keys(prplPermissionsMap),
+    ...Object.keys(permissionsMap),
     ...Object.keys(fixedPrplPermissionsMap),
   ]);
 
@@ -147,18 +169,18 @@ const PermissionEditor = (props: PermissionEditorProps) => {
           placeholder={'Add users or groups'}
           label={undefined}
         />
-        {Object.entries(prplPermissionsMap).length > 0 && (
+        {Object.entries(permissionsMap).length > 0 && (
           <PermissionEditorDivider
             dir="horizontal"
             sx={{ marginTop: 2, marginBottom: 1 }}
           />
         )}
-        <PermissionTable
-          permissionMap={prplPermissionsMap}
+        <PermissionEditableTable
+          permissionsMap={permissionsMap}
+          onPermissionsMapChange={onPermissionsMapChange}
           fixedPermissionMap={fixedPrplPermissionsMap}
-          availablePermissions={props.permissions}
+          availablePermissions={props.availablePermissions}
           identities={knownIdentities}
-          onChange={onPermissionMapChange}
         />
       </ResolvedPrplsProvider>
     </>

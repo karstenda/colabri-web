@@ -86,7 +86,7 @@ const ManagePermissionModal = ({
       <DialogContent>
         <Box sx={{ pt: 2 }}>
           <PermissionEditor
-            permissions={{
+            availablePermissions={{
               default: payload.availablePermissions,
             }}
             defaultPermission={payload.defaultPermission}

@@ -232,11 +232,13 @@ export const GPCSelector: React.FC<GPCSelectorProps> = ({
         />
       )}
       renderOption={(props, option) => {
+        const { key, ...optionProps } = props;
         if (option.code === MORE_RESULTS_OPTION.code) {
           return (
             <Box
               component="li"
-              {...props}
+              key={key}
+              {...optionProps}
               sx={{
                 justifyContent: 'center',
                 color: 'text.secondary',
@@ -253,7 +255,8 @@ export const GPCSelector: React.FC<GPCSelectorProps> = ({
         return (
           <Box
             component="li"
-            {...props}
+            key={key}
+            {...optionProps}
             sx={{
               display: 'flex',
               flexDirection: 'column',

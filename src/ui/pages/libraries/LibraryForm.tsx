@@ -11,10 +11,18 @@ import { useTranslation } from 'react-i18next';
 import { useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';
 import type { LibraryFormEntries } from './LibraryFormValidate';
 import { DocumentType } from '../../../api/ColabriAPI';
-import { FormHelperText, MenuItem } from '@mui/material';
+import {
+  FormHelperText,
+  MenuItem,
+  Paper,
+  Typography,
+  useTheme,
+} from '@mui/material';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
+import { Permission } from '../../data/Permission';
+import PermissionEditor from '../../components/PermissionEditor/PermissionEditor';
 
 export type { LibraryFormEntries };
 
@@ -23,7 +31,14 @@ export interface LibraryFormState {
   errors: Partial<Record<keyof LibraryFormState['values'], string>>;
 }
 
-export type FormFieldValue = string | string[] | number | boolean | File | null;
+export type FormFieldValue =
+  | string
+  | string[]
+  | number
+  | boolean
+  | File
+  | null
+  | Record<string, string[]>;
 
 export interface LibraryFormProps {
   formMode: 'create' | 'edit';
@@ -49,6 +64,7 @@ export default function LibraryForm(props: LibraryFormProps) {
   } = props;
 
   const { t } = useTranslation();
+  const theme = useTheme();
   const formValues = formState.values;
   const formErrors = formState.errors;
 
@@ -99,6 +115,20 @@ export default function LibraryForm(props: LibraryFormProps) {
       );
     },
     [onFieldChange],
+  );
+
+  const handleAclChange = React.useCallback(
+    (newAclMap: Record<string, string[]>) => {
+      onFieldChange('acls', newAclMap);
+    },
+    [onFieldChange],
+  );
+
+  const availablePermissions = React.useMemo(
+    () => ({
+      default: new Set([Permission.Manage, Permission.View]),
+    }),
+    [],
   );
 
   const handleReset = React.useCallback(() => {
@@ -176,9 +206,26 @@ export default function LibraryForm(props: LibraryFormProps) {
               />
             )}
           </Grid>
+          <Grid size={{ xs: 12, sm: 12 }} sx={{ display: 'flex' }}>
+            <Paper sx={{ p: 2 }}>
+              <Typography variant="overline">
+                {t('common.permissions')}
+              </Typography>
+              <Box sx={{ mb: 2, width: '100%' }}>
+                <PermissionEditor
+                  availablePermissions={availablePermissions}
+                  defaultPermission={Permission.View}
+                  aclMap={
+                    (formValues.acls as Record<Permission, string[]>) || {}
+                  }
+                  onAclChange={handleAclChange}
+                />
+              </Box>
+            </Paper>
+          </Grid>
         </Grid>
 
-        <Stack direction="row" spacing={2}>
+        <Stack direction="row" spacing={2} sx={{ marginTop: theme.spacing(2) }}>
           <Button
             variant="outlined"
             startIcon={<ArrowBackIcon />}

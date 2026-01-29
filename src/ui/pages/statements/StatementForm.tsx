@@ -15,6 +15,7 @@ import {
 } from '../../../api/ColabriAPI';
 import { ContentTypeSelector } from '../../components/ContentTypeSelector';
 import { useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';
+import { useTheme } from '@mui/material/styles';
 
 export type StatementFormEntries = {
   contentType?: string;
@@ -63,6 +64,7 @@ export default function StatementForm(props: StatementFormProps) {
   const formErrors = formState.errors;
 
   const navigate = useNavigate();
+  const theme = useTheme();
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -147,7 +149,12 @@ export default function StatementForm(props: StatementFormProps) {
           </Grid>
         </Grid>
       </FormGroup>
-      <Stack direction="row" spacing={2} justifyContent="space-between">
+      <Stack
+        direction="row"
+        spacing={2}
+        justifyContent="space-between"
+        sx={{ marginTop: theme.spacing(2) }}
+      >
         <Button
           variant="contained"
           startIcon={<ArrowBackIcon />}

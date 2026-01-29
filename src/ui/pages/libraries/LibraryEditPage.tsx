@@ -165,6 +165,7 @@ export default function LibraryEditPage() {
         libraryId,
         data: {
           name: data.name,
+          acls: data.acls,
         },
       });
     },
@@ -206,6 +207,7 @@ export default function LibraryEditPage() {
         initialValues={{
           name: library.name,
           type: library.type,
+          acls: library.acls,
         }}
         onSubmit={handleUpdateLibrary}
       />

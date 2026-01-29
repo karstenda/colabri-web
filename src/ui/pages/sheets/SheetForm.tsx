@@ -17,6 +17,7 @@ import { useOrganization } from '../../context/UserOrganizationContext/UserOrgan
 import { CountrySelector } from '../../components/CountrySelector';
 import { LanguageSelector } from '../../components/LanguageSelector';
 import { ContentLanguage } from '../../../editor/data/ContentLanguage';
+import { useTheme } from '@mui/material/styles';
 
 export type SheetFormEntries = {
   name?: string;
@@ -68,6 +69,7 @@ export default function SheetForm(props: SheetFormProps) {
   const formErrors = formState.errors;
 
   const navigate = useNavigate();
+  const theme = useTheme();
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -188,7 +190,12 @@ export default function SheetForm(props: SheetFormProps) {
           </Grid>
         </Grid>
       </FormGroup>
-      <Stack direction="row" spacing={2} justifyContent="space-between">
+      <Stack
+        direction="row"
+        spacing={2}
+        justifyContent="space-between"
+        sx={{ marginTop: theme.spacing(2) }}
+      >
         <Button
           variant="contained"
           startIcon={<ArrowBackIcon />}

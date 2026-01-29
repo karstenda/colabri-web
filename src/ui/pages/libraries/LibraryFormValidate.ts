@@ -3,10 +3,7 @@
 import type { Library } from '../../../api/ColabriAPI';
 
 export type LibraryFormEntries = Partial<
-  Omit<
-    Library,
-    'id' | 'updatedAt' | 'createdBy' | 'updatedBy' | 'createdAt' | 'acls'
-  >
+  Omit<Library, 'id' | 'updatedAt' | 'createdBy' | 'updatedBy' | 'createdAt'>
 >;
 
 type ValidationResult = {

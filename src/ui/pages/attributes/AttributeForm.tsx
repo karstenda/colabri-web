@@ -13,6 +13,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from 'react-router';
 import type { Attribute } from '../../../api/ColabriAPI';
 import { useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';
+import { useTheme } from '@mui/material/styles';
 
 export type AttributeFormEntries = Partial<
   Omit<Attribute, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'updatedBy'>
@@ -55,6 +56,7 @@ export default function AttributeForm(props: AttributeFormProps) {
   const formErrors = formState.errors;
 
   const navigate = useNavigate();
+  const theme = useTheme();
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -146,7 +148,12 @@ export default function AttributeForm(props: AttributeFormProps) {
           </FormControl>
         </Grid>
       </Grid>
-      <Stack direction="row" spacing={2} justifyContent="space-between">
+      <Stack
+        direction="row"
+        spacing={2}
+        justifyContent="space-between"
+        sx={{ marginTop: theme.spacing(2) }}
+      >
         <Button
           variant="contained"
           startIcon={<ArrowBackIcon />}

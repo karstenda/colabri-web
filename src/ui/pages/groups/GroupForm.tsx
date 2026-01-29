@@ -9,6 +9,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from 'react-router';
 import { useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';
 import type { GroupFormEntries } from './GroupFormValidate';
+import { useTheme } from '@mui/material/styles';
 
 export type { GroupFormEntries };
 
@@ -46,6 +47,7 @@ export default function GroupForm(props: GroupFormProps) {
   const formErrors = formState.errors;
 
   const navigate = useNavigate();
+  const theme = useTheme();
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -124,7 +126,12 @@ export default function GroupForm(props: GroupFormProps) {
           </Grid>
         </Grid>
       </FormGroup>
-      <Stack direction="row" spacing={2} justifyContent="space-between">
+      <Stack
+        direction="row"
+        spacing={2}
+        justifyContent="space-between"
+        sx={{ marginTop: theme.spacing(2) }}
+      >
         <Button
           variant="contained"
           startIcon={<ArrowBackIcon />}

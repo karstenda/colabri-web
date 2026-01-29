@@ -23,6 +23,9 @@ import {
 import PageContainer from '../../components/MainLayout/PageContainer';
 import { useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';
 import { DocumentType } from '../../../api/ColabriAPI';
+import { Permission } from '../../data/Permission';
+import PermissionEditor from '../../components/PermissionEditor/PermissionEditor';
+import PermissionViewer from '../../components/PermissionViewer/PermissionViewer';
 
 export default function LibraryShowPage() {
   const { libraryId } = useParams();
@@ -164,6 +167,19 @@ export default function LibraryShowPage() {
               <Typography variant="body1" sx={{ mb: 2 }}>
                 {dayjs(library.updatedAt).format('YYYY-MM-DD HH:mm:ss')}
               </Typography>
+            </Paper>
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 12 }} sx={{ display: 'flex' }}>
+            <Paper sx={{ p: 2 }}>
+              <Typography variant="overline">
+                {t('common.permissions')}
+              </Typography>
+              <Box sx={{ mb: 2, width: '100%' }}>
+                <PermissionViewer
+                  aclMap={(library.acls as Record<Permission, string[]>) || {}}
+                />
+              </Box>
             </Paper>
           </Grid>
         </Grid>

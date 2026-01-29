@@ -34,7 +34,8 @@
     "metadata": "Metadata",
     "na": "N/A",
     "createdAt": "Created Date",
-    "updatedAt": "Updated Date"
+    "updatedAt": "Updated Date",
+    "permissions": "Permissions"
   },
   "navigation": {
     "home": "Home",

@@ -19,6 +19,9 @@ export default function SheetListPage({ scope }: SheetListPageProps) {
     pageTitle = t('sheets.sharedSheets');
   } else if (scope === 'lib') {
     pageTitle = t('sheets.librarySheets');
+  } else {
+    scope = 'my';
+    pageTitle = t('sheets.mySheets');
   }
 
   return (

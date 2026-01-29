@@ -13,9 +13,8 @@ import {
   PermissionEditorTableCellRight,
   PermissionEditorTableRow,
 } from './PermissionEditorStyles';
-import MenuList from '@mui/material/MenuList';
 
-export type PermissionsTableRowProps = {
+export type PermissionEditableTableRowProps = {
   resolvedPrpl: ResolvedPrplOption;
   permissions: Set<Permission>; // Map of prpls with their permissions
   fixedPermissions: Set<Permission>; // Map of prpls with fixed permissions
@@ -23,7 +22,7 @@ export type PermissionsTableRowProps = {
   onChange?: (prpl: string, newPermissions: Set<Permission>) => void;
 };
 
-const PermissionsTableRow = (props: PermissionsTableRowProps) => {
+const PermissionEditableTableRow = (props: PermissionEditableTableRowProps) => {
   const { t } = useTranslation();
 
   // State to track selected permissions
@@ -150,4 +149,4 @@ const PermissionsTableRow = (props: PermissionsTableRowProps) => {
     </PermissionEditorTableRow>
   );
 };
-export default PermissionsTableRow;
+export default PermissionEditableTableRow;
