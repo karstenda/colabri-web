@@ -4,7 +4,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Permission } from '../../data/Permission';
 import { ResolvedPrplOption } from '../../context/PrplsContext/ResolvedPrplsProvider';
@@ -47,6 +47,11 @@ const PermissionEditableTableRow = (props: PermissionEditableTableRowProps) => {
     ...Array.from(permissions),
     ...Array.from(props.fixedPermissions),
   ]);
+
+  // Listen to changes in the permissions prop
+  useEffect(() => {
+    setPermissions(props.permissions);
+  }, [props.permissions]);
 
   // On permission change
   const handlePermissionChange = (event: SelectChangeEvent<string[]>) => {

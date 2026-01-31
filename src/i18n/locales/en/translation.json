@@ -35,7 +35,10 @@
     "na": "N/A",
     "createdAt": "Created Date",
     "updatedAt": "Updated Date",
-    "permissions": "Permissions"
+    "permissions": "Permissions",
+    "document": "Document",
+    "localization": "Localization",
+    "block": "Block"
   },
   "navigation": {
     "home": "Home",
@@ -191,27 +194,34 @@
   },
   "editor": {
     "toolbar": {
-      "addLanguageTooltip": "Add new language",
-      "removeLanguageTooltip": "Remove selected language",
-      "manageLanguageTooltip": "Manage selected language",
+      "addLocalizationTooltip": "Add new localization",
+      "removeLocalizationTooltip": "Remove selected localization",
+      "manageLocalizationTooltip": "Manage selected localization",
+      "inspectLocalizationTooltip": "Inspect the selected localization",
       "addBlockTooltip": "Add new block",
       "removeBlockTooltip": "Remove selected block",
       "manageBlockTooltip": "Manage selected block",
-      "statementApprovalTooltip": "Approve the selected language",
-      "statementMenuTooltip": "Manage the languages in the selected statement",
+      "inspectBlockTooltip": "Inspect the selected block",
+      "statementApprovalTooltip": "Approve the selected localization",
+      "statementMenuTooltip": "Manage the localizations in the selected statement",
       "sheetMenuTooltip": "Manage the blocks in this sheet",
       "manageDocument": "Manage Document",
       "manageDocumentTooltip": "Manage permissions and settings for this document",
-      "removeLanguageConfirm": "Are you sure you want to remove the {{language}} language?",
-      "removeLanguageConfirmGeneric": "Are you sure you want to remove the selected language?",
+      "removeLocalizationConfirm": "Are you sure you want to remove the {{localization}} localization?",
+      "removeLocalizationConfirmGeneric": "Are you sure you want to remove the selected localization?",
       "removeBlockConfirm": "Are you sure you want to remove this block?"
     },
-    "manageDocPermissionModal": {
-      "title": "Manage {{documentName}}"
+    "manageModal": {
+      "localizationTitle": "Manage {{language}} localization",
+      "blockTitle": "Manage Block Permissions",
+      "statementTitle": "Manage Statement Permissions"
     },
-    "managePermissionModal": {
-      "langTitle": "Manage {{language}}",
-      "blockTitle": "Manage Block Permissions"
+    "permissionChainEditor": {
+      "docPermissions": "Document Permissions",
+      "sheetPermissions": "Sheet Permissions",
+      "statementPermissions": "Statement Permissions",
+      "localizationPermissions": "{{localization}} Localization Permissions",
+      "blockPermissions": "Block Permissions"
     },
     "statementBlock": {
       "noLanguagesConfigured": "No languages configured.",
@@ -221,7 +231,7 @@
       "nonOrgLanguage": "This language is not configured for your organization."
     },
     "addLanguageModal": {
-      "title": "Add Languages to Document"
+      "title": "Add Localizations to Statement"
     },
     "addStatementModal": {
       "title": "Add Statement",

@@ -3,4 +3,5 @@ import { SheetContentBlockBP } from '../SheetBlock/SheetContentBlockBP';
 
 export type SheetStatementGridBlockBP = SheetContentBlockBP & {
   containerId: ContainerID;
+  readOnly?: boolean;
 };

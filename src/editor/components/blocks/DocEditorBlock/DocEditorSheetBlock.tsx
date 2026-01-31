@@ -8,6 +8,8 @@ import ManagePermissionModal, {
   ManagePermissionModalPayload,
 } from '../../ManagePermissionModal/ManagePermissionModal';
 import DocEditorBlock, { DocEditorBlockProps } from './DocEditorBlock';
+import ManageModal from '../../ManageModal/ManageModal';
+import { ManageSheetBlockModalPayload } from '../../ManageModal/ManageModalPayloads';
 
 export type DocEditorSheetBlockProps = {
   foo?: string;
@@ -45,40 +47,13 @@ const DocEditorSheetBlock: React.FC<DocEditorSheetBlockProps> = (props) => {
       return;
     }
 
-    // Get the current ACLs
-    const docAcls = controller.getDocAclMap();
-    const blockAcls = controller.getBlockAclMap(
-      docEditorBlockProps.loroContainerId,
-    );
-
     // Open the modal to manage the statement element
-    const newAclMaps = await dialogs.open<
-      ManagePermissionModalPayload,
-      Record<Permission, string[]> | undefined
-    >(ManagePermissionModal, {
-      title: t('editor.managePermissionModal.blockTitle'),
-      orgId: organization?.id || '',
-      acls: blockAcls,
-      docAcls: docAcls,
-      availablePermissions: new Set<Permission>([
-        Permission.Edit,
-        Permission.Approve,
-        Permission.Manage,
-      ]),
-      defaultPermission: Permission.Edit,
+    await dialogs.open<ManageSheetBlockModalPayload, void>(ManageModal, {
+      type: 'sheet-block',
+      title: t('editor.manageModal.blockTitle'),
+      sheetDocController: controller,
+      blockContainerId: docEditorBlockProps.loroContainerId,
     });
-
-    // If a new ACL map was returned, update the document
-    if (newAclMaps) {
-      // Patch the document ACL map with the new ACLs
-      controller.patchBlockAclMap(
-        docEditorBlockProps.loroContainerId,
-        newAclMaps,
-      );
-
-      // Commit the changes
-      controller.commit();
-    }
   };
 
   /**

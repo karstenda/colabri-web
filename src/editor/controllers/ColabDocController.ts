@@ -48,6 +48,13 @@ export default class ColabDocController<T extends ColabLoroDoc> {
    * @param newAcls
    */
   public patchDocAclMap(newAcls: Record<Permission, string[]>) {
+    // Check permissions
+    if (!this.hasManagePermission()) {
+      console.warn('User does not have permission to manage document ACLs.');
+      return;
+    }
+
+    // Patch the ACL map
     const aclMap = this.loroDoc.getMap('acls') as AclLoroMap;
     this.patchAclMap(aclMap, newAcls);
   }

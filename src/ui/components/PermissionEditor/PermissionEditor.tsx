@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ResolvedPrplsProvider from '../../context/PrplsContext/ResolvedPrplsProvider';
 import { AssigneeSelector } from '../AssigneeSelector';
 import { useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';
@@ -85,6 +85,11 @@ const PermissionEditor = (props: PermissionEditorProps) => {
     });
   }
 
+  // Listen to changes in the aclMap prop
+  useEffect(() => {
+    setPermissionsMap(aclMapToPrplPermissionsMap(props.aclMap));
+  }, [props.aclMap]);
+
   // Handle an assignee selection
   const onAssigneeSelected = (assignee: Assignee | Assignee[] | null) => {
     if (!assignee) {
@@ -92,45 +97,42 @@ const PermissionEditor = (props: PermissionEditorProps) => {
     }
 
     // Handle both single and multiple assignees
-    const assignees = [] as Assignee[];
-    if (Array.isArray(assignee)) {
-      assignees.push(...assignee);
-    } else {
-      assignees.push(assignee);
-    }
+    const assignees = Array.isArray(assignee) ? assignee : [assignee];
 
-    // Iterate over assignees and add them to known identities and acl map
+    const newIdentities: Record<string, ResolvedPrpl> = {};
+    const newPermissionsMap = { ...permissionsMap };
+    let hasChanges = false;
+
+    // Iterate over assignees to prepare changes
     assignees.forEach((assignee) => {
       const resolvedPrpl = toResolvedPrpl(assignee, organization?.id || '');
-      setKnownIdentities((prev) => {
-        return {
-          ...prev,
-          ...{ [resolvedPrpl.prpl]: resolvedPrpl },
-        };
-      });
 
-      // Add them to the permission map
-      setPermissionsMap((prev) => {
-        // checks if already present
-        if (prev.hasOwnProperty(resolvedPrpl.prpl)) {
-          return prev;
-        }
+      // Batch identity updates
+      newIdentities[resolvedPrpl.prpl] = resolvedPrpl;
 
-        // Create a new map with the new prpl and default permission
-        const newMap = {
-          ...prev,
-          [resolvedPrpl.prpl]: new Set<Permission>([props.defaultPermission]),
-        };
-
-        // Notify change using the calculated new map
-        const newAclMap = prplPermissionsMaptoAclMap(newMap);
-        if (props.onAclChange) {
-          props.onAclChange(newAclMap);
-        }
-
-        return newMap;
-      });
+      // Batch permission map updates
+      if (!newPermissionsMap.hasOwnProperty(resolvedPrpl.prpl)) {
+        newPermissionsMap[resolvedPrpl.prpl] = new Set<Permission>([
+          props.defaultPermission,
+        ]);
+        hasChanges = true;
+      }
     });
+
+    // Update identities once
+    setKnownIdentities((prev) => ({
+      ...prev,
+      ...newIdentities,
+    }));
+
+    // Update permissions and notify parent once, if changed
+    if (hasChanges) {
+      setPermissionsMap(newPermissionsMap);
+      const newAclMap = prplPermissionsMaptoAclMap(newPermissionsMap);
+      if (props.onAclChange) {
+        props.onAclChange(newAclMap);
+      }
+    }
   };
 
   const onPermissionsMapChange = (

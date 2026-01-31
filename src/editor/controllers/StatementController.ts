@@ -76,6 +76,15 @@ class StatementController<
     langCode: string,
     newAcls: Record<Permission, string[]>,
   ) {
+    // Check permissions
+    if (!this.hasManagePermission()) {
+      console.warn(
+        'User does not have permission to manage statement element ACLs: ' +
+          langCode,
+      );
+      return;
+    }
+
     const contentMap = this.getContentMap();
     const stmtElementMap = contentMap.get(langCode);
     if (!stmtElementMap) {

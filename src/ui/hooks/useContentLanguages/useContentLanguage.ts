@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Api } from '../../../api/ColabriAPI';
+import type { ContentLanguage } from '../../../editor/data/ContentLanguage';
 
 // Create a singleton API client instance
 const apiClient = new Api({
@@ -29,6 +30,74 @@ export const languageKeys = {
 // Stable empty array reference to avoid unnecessary re-renders
 const EMPTY_LANGUAGES: never[] = [];
 const EMPTY_REFETCH = () => {};
+
+export const useContentLanguage = (
+  orgId: string,
+  langCode: string,
+  enabled = true,
+) => {
+  const {
+    languages: orgLanguages,
+    isLoading: isOrgLoading,
+    error: orgError,
+    refetch: refetchOrg,
+  } = useContentLanguages(orgId, enabled && !!orgId);
+
+  const orgMatch = orgLanguages.find((lang) => lang.code === langCode) ?? null;
+  const platformEnabled =
+    enabled && !!langCode && !!orgId && !isOrgLoading && !orgMatch;
+
+  const {
+    languages: platformLanguages,
+    isLoading: isPlatformLoading,
+    error: platformError,
+    refetch: refetchPlatform,
+  } = usePlatformContentLanguages(platformEnabled);
+
+  const cachedLanguage =
+    orgMatch ??
+    platformLanguages.find((lang) => lang.code === langCode) ??
+    null;
+
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: languageKeys.detail(orgId, langCode),
+    queryFn: async (): Promise<ContentLanguage | null> => {
+      if (!langCode) {
+        return null;
+      }
+
+      const orgLanguages = await apiClient.orgId.getLanguages(orgId);
+      const orgMatch = orgLanguages.data?.find(
+        (lang) => lang.code === langCode,
+      );
+      if (orgMatch) {
+        return orgMatch;
+      }
+
+      const platformLanguages = await apiClient.languages.getLanguages();
+      return (
+        platformLanguages.data?.find((lang) => lang.code === langCode) ?? null
+      );
+    },
+    enabled:
+      enabled &&
+      !!orgId &&
+      !!langCode &&
+      !cachedLanguage &&
+      !isOrgLoading &&
+      !isPlatformLoading,
+    staleTime: 60 * 60 * 1000, // 1 hour
+  });
+
+  return {
+    language: cachedLanguage ?? data ?? null,
+    isLoading: isOrgLoading || isPlatformLoading || isLoading,
+    error: orgError ?? platformError ?? error,
+    refetch: async () => {
+      await Promise.all([refetchOrg(), refetchPlatform(), refetch()]);
+    },
+  };
+};
 
 /**
  * Hook to fetch a list of all languages on the platform

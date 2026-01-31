@@ -12,9 +12,10 @@ import { useTranslation } from 'react-i18next';
 
 export type StatementBlockProps = {
   bp: StatementBlockBP;
+  readOnly?: boolean;
 };
 
-const StatementBlock = ({ bp }: StatementBlockProps) => {
+const StatementBlock = ({ bp, readOnly }: StatementBlockProps) => {
   const { t } = useTranslation();
 
   // Get the current ColabDoc

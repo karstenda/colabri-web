@@ -12,9 +12,10 @@ import SheetMenu from './SheetMenu';
 
 export type ToolbarMenuProps = {
   docType?: DocumentType;
+  readOnly?: boolean;
 };
 
-export default function ToolbarMenu({ docType }: ToolbarMenuProps) {
+export default function ToolbarMenu({ docType, readOnly }: ToolbarMenuProps) {
   const toolbarSetup = useActiveToolbarSetup();
   const activeStatementElementRef = useActiveStatementElement();
   const compactView = useMediaQuery('(max-width:800px)');
@@ -27,16 +28,19 @@ export default function ToolbarMenu({ docType }: ToolbarMenuProps) {
 
   return (
     <>
-      {!compactView && (
+      {!compactView && !readOnly && (
         <>
           <UndoRedoMenu />
           <ToolbarMenuDivider />
         </>
       )}
-      <FormattingMenu setup={toolbarSetup?.formatting || {}} />
-      {showSheetControls && <SheetMenu />}
+      {!readOnly && <FormattingMenu setup={toolbarSetup?.formatting || {}} />}
+      {showSheetControls && <SheetMenu readOnly={readOnly} />}
       {showStmtControls && (
-        <StatementMenu activeStatementElementRef={activeStatementElementRef} />
+        <StatementMenu
+          activeStatementElementRef={activeStatementElementRef}
+          readOnly={readOnly}
+        />
       )}
     </>
   );

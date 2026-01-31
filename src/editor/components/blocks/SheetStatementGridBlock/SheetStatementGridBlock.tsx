@@ -53,16 +53,16 @@ const SheetStatementGridBlock: React.FC<SheetStatementGridBlockProps> = ({
   useEffect(() => {
     if (controller && bp.containerId && loroDoc) {
       // Update the state
-      setCanManage(controller.canManageBlock(bp.containerId));
-      setCanAdd(controller.canAddRemoveToBlock(bp.containerId));
+      setCanManage(controller.hasManageBlockPermission(bp.containerId));
+      setCanAdd(controller.hasAddRemoveToBlockPermission(bp.containerId));
 
       // Subscribe to ACL changes in the loroDoc
       const aclUnsubscribe = controller.subscribeToBlockAclChanges(
         bp.containerId,
         () => {
           // On any ACL change, update the canEdit state
-          setCanManage(controller.canManageBlock(bp.containerId));
-          setCanAdd(controller.canAddRemoveToBlock(bp.containerId));
+          setCanManage(controller.hasManageBlockPermission(bp.containerId));
+          setCanAdd(controller.hasAddRemoveToBlockPermission(bp.containerId));
         },
       );
 

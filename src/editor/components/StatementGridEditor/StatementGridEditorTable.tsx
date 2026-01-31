@@ -102,8 +102,8 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
   useEffect(() => {
     if (loroDoc && containerId) {
       // Update the state
-      setCanManage(controller.canManageBlock(containerId));
-      setCanAdd(controller.canAddRemoveToBlock(containerId));
+      setCanManage(controller.hasManageBlockPermission(containerId));
+      setCanAdd(controller.hasAddRemoveToBlockPermission(containerId));
 
       // Target the container
       const container = loroDoc.getContainerById(
@@ -149,8 +149,8 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
         containerId,
         () => {
           // On any ACL change, update the canEdit state
-          setCanManage(controller.canManageBlock(containerId));
-          setCanAdd(controller.canAddRemoveToBlock(containerId));
+          setCanManage(controller.hasManageBlockPermission(containerId));
+          setCanAdd(controller.hasAddRemoveToBlockPermission(containerId));
 
           // This can affect the columns (actions column), so update them too
           updateColumns(propertiesMap);
@@ -178,12 +178,8 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
       // Always display the name column and actions column
       const newColumns: GridColDef<StatementGridEditorTableRow>[] = [
         getStmtTypeColumn(t),
+        getStmtActionsColumn(t, controller, containerId, canManage, canAdd),
       ];
-
-      // If canManage or canAdd, show actions column
-      if (canManage || canAdd) {
-        newColumns.push(getStmtActionsColumn(t, handleStatementRemove));
-      }
 
       if (!propertiesMap) {
         setColumns(newColumns);
@@ -203,7 +199,7 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
 
       setColumns(newColumns);
     },
-    [loroDoc, languages, canManage, canAdd, t],
+    [loroDoc, languages, canManage, canAdd, t, containerId],
   );
 
   const updateRows = useCallback(
@@ -260,27 +256,6 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
       }
     }
   }, [loroDoc, controller, languages, containerId, dialogs]);
-
-  const handleStatementRemove = useCallback(
-    async (stmtRowContainerId: ContainerID) => {
-      // Confirm the deletion of the statement
-      const confirm = await dialogs.confirm(
-        t('editor.sheetStatementGridBlock.removeStatementConfirm'),
-      );
-
-      if (confirm && controller) {
-        // Add the new statement via the controller
-        const ok = controller.removeStatementFromStatementGridBlock(
-          containerId,
-          stmtRowContainerId,
-        );
-        if (ok) {
-          controller.commit();
-        }
-      }
-    },
-    [loroDoc, controller, containerId, dialogs],
-  );
 
   const handleRowClick = useCallback(
     (params: { row: StatementGridEditorTableRow }) => {

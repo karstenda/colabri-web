@@ -4,4 +4,5 @@ import { SheetContentBlockBP } from '../SheetBlock/SheetContentBlockBP';
 export type SheetTextBlockBP = SheetContentBlockBP & {
   containerId: ContainerID;
   langCode: string;
+  readOnly?: boolean;
 };

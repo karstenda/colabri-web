@@ -35,6 +35,8 @@ import { ColabApprovalState } from '../../../../api/ColabriAPI';
 import ColabTextEditorOutlined from '../../ColabTextEditor/ColabTextEditorOutlined';
 import { useSetActiveStatementElement } from '../../../context/ColabDocEditorContext/ColabDocEditorProvider';
 import StatementApprovalDropdown from '../../ApprovalDropdown/StmtApprovalDropdown';
+import ManageModal from '../../ManageModal/ManageModal';
+import { ManageStatementElementModalPayload } from '../../ManageModal/ManageModalPayloads';
 
 export type StatementElementBlockProps = {
   bp: StatementElementBlockBP;
@@ -186,41 +188,16 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
     if (!loroDoc || !language || !controller) {
       return;
     }
-
-    // Get the current ACLs
-    const docAcls = controller.getDocAclMap();
-    const stmtElementAcls = controller.getStmtElementAclMap(bp.langCode);
-
     // Open the modal to manage the statement element
-    const newStmtElementAclMaps = await dialogs.open<
-      ManagePermissionModalPayload,
-      Record<Permission, string[]> | undefined
-    >(ManagePermissionModal, {
+    await dialogs.open<ManageStatementElementModalPayload, void>(ManageModal, {
+      type: 'statement-element',
+      title: t('editor.manageModal.localizationTitle', {
+        localization: language?.name || bp.langCode,
+      }),
+      stmtDocController: controller,
       langCode: bp.langCode,
-      orgId: organization?.id || '',
-      acls: stmtElementAcls,
-      docAcls: docAcls,
-      availablePermissions: new Set<Permission>([
-        Permission.Edit,
-        Permission.Approve,
-      ]),
-      defaultPermission: Permission.Edit,
+      readOnly: bp.readOnly,
     });
-
-    // If a new ACL map was returned, update the document
-    if (newStmtElementAclMaps) {
-      // Create the StatementDocController
-      const stmtDocController = colabDoc.getDocController();
-
-      // Patch the document ACL map with the new ACLs
-      stmtDocController.patchStmtElementAclMap(
-        language.code,
-        newStmtElementAclMaps,
-      );
-
-      // Commit the changes
-      stmtDocController.commit();
-    }
   };
 
   if (!loroDoc || !ephStoreMgr) {

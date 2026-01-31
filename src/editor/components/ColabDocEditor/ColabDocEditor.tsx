@@ -36,7 +36,11 @@ import ManageDocButton from '../ManageDocButton/ManageDocButton';
 import { useTranslation } from 'react-i18next';
 import SheetBlock from '../blocks/SheetBlock/SheetBlock';
 
-export default function ColabDocEditor() {
+export type ColabDocEditorProps = {
+  readOnly?: boolean;
+};
+
+export default function ColabDocEditor({ readOnly }: ColabDocEditorProps) {
   // Get the standard hooks
   const { t } = useTranslation();
 
@@ -172,14 +176,20 @@ export default function ColabDocEditor() {
                 </EditorTopHeaderLeftStack>
                 <EditorTopHeaderRightStack>
                   {canManage && (
-                    <ManageDocButton docType={colabDoc?.getDocType()} />
+                    <ManageDocButton
+                      docType={colabDoc?.getDocType()}
+                      readOnly={readOnly}
+                    />
                   )}
                   {!compactView && <ThemeSwitcher />}
                   <ProfileMenu />
                 </EditorTopHeaderRightStack>
               </EditorTopHeaderWrapper>
               <EditorToolbarWrapper>
-                <ToolbarMenu docType={colabDoc?.getDocType()} />
+                <ToolbarMenu
+                  docType={colabDoc?.getDocType()}
+                  readOnly={readOnly}
+                />
               </EditorToolbarWrapper>
             </EditorHeaderWrapper>
             <EditorContentWrapper className="EditorBackground">
@@ -188,11 +198,11 @@ export default function ColabDocEditor() {
                 <EditorContentBlockTrack className="EditorBackground">
                   {colabDoc?.getDocType() ===
                     DocumentType.DocumentTypeColabStatement && (
-                    <StatementBlock bp={{}} />
+                    <StatementBlock bp={{}} readOnly={readOnly} />
                   )}
                   {colabDoc?.getDocType() ===
                     DocumentType.DocumentTypeColabSheet && (
-                    <SheetBlock bp={{}} />
+                    <SheetBlock bp={{}} readOnly={readOnly} />
                   )}
                 </EditorContentBlockTrack>
               </EditorContentMainColumn>

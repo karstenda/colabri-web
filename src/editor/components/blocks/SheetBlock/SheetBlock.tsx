@@ -14,13 +14,15 @@ import { SheetTextBlockBP } from '../SheetTextBlock/SheetTextBlockBP';
 import { SheetStatementGridBlockBP } from '../SheetStatementGridBlock/SheetStatementGridBlockBP';
 import SheetTextBlock from '../SheetTextBlock/SheetTextBlock';
 import SheetStatementGridBlock from '../SheetStatementGridBlock/SheetStatementGridBlock';
+
 export type SheetBlockProps = {
   bp: SheetBlockBP;
+  readOnly?: boolean;
 };
 
 const DEFAULT_LANGCODE = 'en';
 
-const SheetBlock = ({ bp }: SheetBlockProps) => {
+const SheetBlock = ({ bp, readOnly }: SheetBlockProps) => {
   const { t } = useTranslation();
 
   // Get the current ColabDoc
@@ -104,6 +106,7 @@ const SheetBlock = ({ bp }: SheetBlockProps) => {
             type: 'text' as ColabSheetBlockType,
             containerId: sheetContentBlock.id,
             langCode: DEFAULT_LANGCODE,
+            readOnly: readOnly,
           };
           newSheetBlockBPs.push(textBlockBP);
           break;
@@ -114,6 +117,7 @@ const SheetBlock = ({ bp }: SheetBlockProps) => {
             id: sheetContentBlock.id,
             type: 'statement-grid' as ColabSheetBlockType,
             containerId: sheetContentBlock.id,
+            readOnly: readOnly,
           };
           newSheetBlockBPs.push(statementGridBlockBP);
           break;

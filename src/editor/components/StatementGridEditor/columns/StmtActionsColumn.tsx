@@ -3,22 +3,47 @@ import LocalStmtDeleteAction from '../cells/LocalStmtDeleteAction/LocalStmtDelet
 import { StatementGridEditorTableRow } from '../StatementGridEditorTable';
 import { GridActionsColDef } from '@mui/x-data-grid';
 import { ContainerID } from 'loro-crdt';
+import LocalStmtManageAction from '../cells/LocalStmtManageAction/LocalStmtManageAction';
+import SheetDocController from '../../../controllers/SheetDocController';
 
 const getStmtActionsColumn = (
   t: TFunction,
-  handleStatementRemove: (stmtRowContainerId: ContainerID) => Promise<void>,
+  controller: SheetDocController,
+  blockId: ContainerID,
+  canManage?: boolean,
+  canAdd?: boolean,
 ): GridActionsColDef<StatementGridEditorTableRow> => ({
   field: 'actions',
   headerName: '',
   type: 'actions',
   align: 'left',
-  width: 30,
-  getActions: (data: { row: StatementGridEditorTableRow }) => [
-    <LocalStmtDeleteAction
-      row={data.row}
-      onRemove={() => handleStatementRemove(data.row.id as ContainerID)}
-    />,
-  ],
+  getActions: (data: { row: StatementGridEditorTableRow }) => {
+    const actions = [];
+
+    // Show manage action only if canManage
+    if (canManage) {
+      actions.push(
+        <LocalStmtManageAction
+          row={data.row}
+          controller={controller}
+          blockId={blockId}
+        />,
+      );
+    }
+
+    // Show delete action only if canManage or canAdd
+    if (canManage || canAdd) {
+      actions.push(
+        <LocalStmtDeleteAction
+          row={data.row}
+          controller={controller}
+          blockId={blockId}
+        />,
+      );
+    }
+
+    return actions;
+  },
 });
 
 export default getStmtActionsColumn;

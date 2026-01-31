@@ -1,32 +1,32 @@
 import Button from '@mui/material/Button';
 import { useTranslation } from 'react-i18next';
 import { useColabDoc } from '../../context/ColabDocContext/ColabDocProvider';
-import { Permission } from '../../../ui/data/Permission';
-import { StmtLoroDoc } from '../../data/ColabDoc';
 import { useDialogs } from '../../../ui/hooks/useDialogs/useDialogs';
 import { Box } from '@mui/material';
 import { DocumentType } from '../../../api/ColabriAPI';
-import ManageSheetPermissionModal, {
-  ManageSheetPermissionModalPayload,
-} from '../ManageDocPermissionModal/ManageSheetPermissionModal';
-import ManageStmtPermissionModal, {
-  ManageStmtPermissionModalPayload,
-} from '../ManageDocPermissionModal/ManageStmtPermissionModal';
+import {
+  ManageSheetModalPayload,
+  ManageStatementModalPayload,
+} from '../ManageModal/ManageModalPayloads';
+import ManageModal from '../ManageModal/ManageModal';
+import StatementDocController from '../../controllers/StatementDocController';
+import SheetDocController from '../../controllers/SheetDocController';
 
 export type ManageDocButtonProps = {
   docType: DocumentType;
   onClick?: () => void;
+  readOnly?: boolean;
 };
 
 const ManageDocButton: React.FC<ManageDocButtonProps> = ({
   docType,
   onClick,
+  readOnly,
 }) => {
   const { t } = useTranslation();
   const dialogs = useDialogs();
 
   const { colabDoc } = useColabDoc();
-  const loroDoc = colabDoc?.getLoroDoc();
 
   /**
    * Handle the opening of the Manage Statement modal
@@ -40,34 +40,21 @@ const ManageDocButton: React.FC<ManageDocButtonProps> = ({
     let newDocAclMaps;
     if (docType === DocumentType.DocumentTypeColabStatement) {
       // Open the ManageStmtPermissionModal dialog
-      newDocAclMaps = await dialogs.open<
-        ManageStmtPermissionModalPayload,
-        Record<Permission, string[]> | null
-      >(ManageStmtPermissionModal, {
-        loroDoc: loroDoc as StmtLoroDoc,
-        docName: colabDoc?.getDocName() || '',
+      await dialogs.open<ManageStatementModalPayload, void>(ManageModal, {
+        type: 'statement',
+        stmtDocController:
+          colabDoc.getDocController() as StatementDocController,
+        title: t('editor.toolbar.manageDocument'),
+        readOnly: readOnly,
       });
     } else if (docType === DocumentType.DocumentTypeColabSheet) {
       // Open the ManageSheetPermissionModal dialog
-      newDocAclMaps = await dialogs.open<
-        ManageSheetPermissionModalPayload,
-        Record<Permission, string[]> | null
-      >(ManageSheetPermissionModal, {
-        loroDoc: loroDoc as StmtLoroDoc,
-        docName: colabDoc?.getDocName() || '',
+      await dialogs.open<ManageSheetModalPayload, void>(ManageModal, {
+        type: 'sheet',
+        sheetDocController: colabDoc.getDocController() as SheetDocController,
+        title: t('editor.toolbar.manageDocument'),
+        readOnly: readOnly,
       });
-    }
-
-    // If a new ACL map was returned, update the document
-    if (newDocAclMaps) {
-      // Create the StatementDocController
-      const stmtDocController = colabDoc.getDocController();
-
-      // Patch the document ACL map with the new ACLs
-      stmtDocController.patchDocAclMap(newDocAclMaps);
-
-      // Commit the changes
-      stmtDocController.commit();
     }
 
     // Call the onClick prop if provided

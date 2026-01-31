@@ -4,4 +4,5 @@ export type StatementElementBlockBP = {
   id: string;
   langCode: string;
   containerId: ContainerID;
+  readOnly?: boolean;
 };

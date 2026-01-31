@@ -15,10 +15,6 @@ import { ColabSheetBlockType } from '../../../api/ColabriAPI';
 import { useDialogs } from '../../../ui/hooks/useDialogs/useDialogs';
 import { useActiveBlock } from '../../context/ColabDocEditorContext/ColabDocEditorProvider';
 import { useTranslation } from 'react-i18next';
-import { Permission } from '../../../ui/data/Permission';
-import ManagePermissionModal, {
-  ManagePermissionModalPayload,
-} from '../ManagePermissionModal/ManagePermissionModal';
 import { ContainerID, LoroMap } from 'loro-crdt';
 import { ConnectedSheetDoc } from '../../data/ConnectedColabDoc';
 import AddBlockModal, {
@@ -27,10 +23,14 @@ import AddBlockModal, {
 import BlockAddIcon from '../icons/BlockAddIcon';
 import BlockRemoveIcon from '../icons/BlockRemoveIcon';
 import BlockSettingsIcon from '../icons/BlockSettingsIcon';
+import ManageModal from '../ManageModal/ManageModal';
+import { ManageSheetBlockModalPayload } from '../ManageModal/ManageModalPayloads';
 
-export type SheetMenuProps = {};
+export type SheetMenuProps = {
+  readOnly?: boolean;
+};
 
-export default function SheetMenu({}: SheetMenuProps) {
+export default function SheetMenu({ readOnly }: SheetMenuProps) {
   // Get the translation hook
   const { t } = useTranslation();
 
@@ -137,38 +137,14 @@ export default function SheetMenu({}: SheetMenuProps) {
       return;
     }
 
-    // Get the current ACLs
-    const docAcls = controller.getDocAclMap();
-    const sheetBlockAcls = controller.getBlockAclMap(containerId);
-
     // Open the modal to manage the block
-    const newStmtElementAclMaps = await dialogs.open<
-      ManagePermissionModalPayload,
-      Record<Permission, string[]> | undefined
-    >(ManagePermissionModal, {
-      title: t('editor.managePermissionModal.blockTitle'),
-      orgId: organization?.id || '',
-      acls: sheetBlockAcls,
-      docAcls: docAcls,
-      availablePermissions: new Set<Permission>([
-        Permission.Edit,
-        Permission.Approve,
-        Permission.Manage,
-      ]),
-      defaultPermission: Permission.Edit,
+    dialogs.open<ManageSheetBlockModalPayload, void>(ManageModal, {
+      type: 'sheet-block',
+      title: t('editor.manageModal.blockTitle'),
+      sheetDocController: controller,
+      blockContainerId: containerId,
+      readOnly: readOnly,
     });
-
-    // If a new ACL map was returned, update the document
-    if (newStmtElementAclMaps) {
-      // Get the controller
-      const sheetDocController = colabDoc.getDocController();
-
-      // Patch the document ACL map with the new ACLs
-      sheetDocController.patchBlockAclMap(containerId, newStmtElementAclMaps);
-
-      // Commit the changes
-      sheetDocController.commit();
-    }
   };
 
   /**
@@ -271,7 +247,7 @@ export default function SheetMenu({}: SheetMenuProps) {
               onClose={handleCloseMenu}
               slotProps={{ list: { 'aria-labelledby': 'sheet-menu-button' } }}
             >
-              {canAddRemove && (
+              {canAddRemove && !readOnly && (
                 <MenuItem onClick={handleAddBlockClicked}>
                   <ListItemIcon>
                     <BlockAddIcon />
@@ -281,7 +257,7 @@ export default function SheetMenu({}: SheetMenuProps) {
                   </ListItemText>
                 </MenuItem>
               )}
-              {canAddRemove && isSheetBlockFocused && (
+              {canAddRemove && !readOnly && isSheetBlockFocused && (
                 <MenuItem onClick={handleRemoveBlockClicked}>
                   <ListItemIcon>
                     <BlockRemoveIcon />
@@ -291,13 +267,23 @@ export default function SheetMenu({}: SheetMenuProps) {
                   </ListItemText>
                 </MenuItem>
               )}
-              {canManage && isSheetBlockFocused && (
+              {canManage && !readOnly && isSheetBlockFocused && (
                 <MenuItem onClick={handleManageSheetBlockClicked}>
                   <ListItemIcon>
                     <BlockSettingsIcon />
                   </ListItemIcon>
                   <ListItemText>
                     {t('editor.toolbar.manageBlockTooltip')}
+                  </ListItemText>
+                </MenuItem>
+              )}
+              {readOnly && isSheetBlockFocused && (
+                <MenuItem onClick={handleManageSheetBlockClicked}>
+                  <ListItemIcon>
+                    <BlockSettingsIcon />
+                  </ListItemIcon>
+                  <ListItemText>
+                    {t('editor.toolbar.inspectBlockTooltip')}
                   </ListItemText>
                 </MenuItem>
               )}

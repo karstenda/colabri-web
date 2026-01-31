@@ -21,10 +21,9 @@ import {
   type PlatformContentLanguage,
 } from '../../../api/ColabriAPI';
 import LanguageChip from '../LanguageChip/LanguageChip';
+import { ContentLanguage } from '../../../editor/data/ContentLanguage';
 
-export type LanguageOption = OrgContentLanguage | PlatformContentLanguage;
-
-const filter = createFilterOptions<LanguageOption>();
+const filter = createFilterOptions<ContentLanguage>();
 
 const MORE_RESULTS_OPTION: PlatformContentLanguage = {
   code: 'MORE_RESULTS',
@@ -54,8 +53,8 @@ interface LanguageSelectorProps {
    * Whether to allow multiple language selection
    */
   multiple?: boolean;
-  value?: string | string[] | LanguageOption | LanguageOption[] | null;
-  onChange?: (value: LanguageOption | LanguageOption[] | null) => void;
+  value?: string | string[] | ContentLanguage | ContentLanguage[] | null;
+  onChange?: (value: ContentLanguage | ContentLanguage[] | null) => void;
   label?: string;
   placeholder?: string;
   disabled?: boolean;
@@ -66,7 +65,7 @@ interface LanguageSelectorProps {
   /**
    * Optional function to filter available options
    */
-  filterOptions?: (options: LanguageOption[]) => LanguageOption[];
+  filterOptions?: (options: ContentLanguage[]) => ContentLanguage[];
 }
 
 export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
@@ -101,12 +100,12 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   const isLoading = scope === 'platform' ? isPlatformLoading : isOrgLoading;
 
   // Get language code from option
-  const getLanguageCode = (option: LanguageOption): string => {
+  const getLanguageCode = (option: ContentLanguage): string => {
     return option.code || '';
   };
 
   // Get language name for display
-  const getLanguageName = (option: LanguageOption): string => {
+  const getLanguageName = (option: ContentLanguage): string => {
     if (option.code === MORE_RESULTS_OPTION.code) {
       return '';
     }
@@ -117,14 +116,14 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   };
 
   // Find language by code
-  const findLanguageByCode = (code: string): LanguageOption | null => {
+  const findLanguageByCode = (code: string): ContentLanguage | null => {
     return languages.find((lang) => getLanguageCode(lang) === code) || null;
   };
 
-  // Helper to convert string or object to LanguageOption
+  // Helper to convert string or object to ContentLanguage
   const normalizeValue = (
-    val: string | LanguageOption,
-  ): LanguageOption | null => {
+    val: string | ContentLanguage,
+  ): ContentLanguage | null => {
     if (typeof val === 'string') {
       return findLanguageByCode(val);
     }
@@ -135,7 +134,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   const selectedValue = React.useMemo(() => {
     if (multiple) {
       const values = Array.isArray(value) ? value : [];
-      return values.map(normalizeValue).filter(Boolean) as LanguageOption[];
+      return values.map(normalizeValue).filter(Boolean) as ContentLanguage[];
     } else {
       if (!value) return null;
       if (Array.isArray(value)) return null; // Invalid case
@@ -146,7 +145,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   // Handle change
   const handleChange = (
     _event: React.SyntheticEvent,
-    newValue: LanguageOption | LanguageOption[] | null,
+    newValue: ContentLanguage | ContentLanguage[] | null,
   ) => {
     if (!onChange) return;
 
@@ -157,7 +156,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
       );
       onChange(validLanguages);
     } else {
-      const val = newValue as LanguageOption | null;
+      const val = newValue as ContentLanguage | null;
       if (val && val.code === MORE_RESULTS_OPTION.code) {
         return;
       }

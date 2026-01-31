@@ -38,6 +38,22 @@ class StatementLocalController extends StatementController<SheetLoroDoc> {
   }
 
   /**
+   * Get the controller for the main sheet
+   * @returns
+   */
+  getSheetController(): SheetDocController {
+    return this.sheetController;
+  }
+
+  /**
+   * The ID of the block that contains this statement
+   * @returns
+   */
+  getBlockId(): ContainerID {
+    return this.blockId;
+  }
+
+  /**
    * Get the main properties map
    */
   getPropertiesMap(): LoroMap<Record<string, any>> {
@@ -65,12 +81,12 @@ class StatementLocalController extends StatementController<SheetLoroDoc> {
   /**
    * Get the main acl map
    */
-  getStmtAclMap(): AclLoroMap {
+  getStmtAclMap() {
     const aclsMap = this.stmtMap.get('acls');
     if (!aclsMap) {
       throw new Error('Could not find acls map in the embedded statement');
     }
-    return aclsMap;
+    return aclsMap.toJSON();
   }
 
   /**
@@ -81,7 +97,7 @@ class StatementLocalController extends StatementController<SheetLoroDoc> {
     // Get the acls from all the levels
     const docAcls = this.getDocAclMap();
     const blockAcls = this.sheetController.getBlockAclMap(this.blockId);
-    const stmtAcls = this.getStmtAclMap().toJSON();
+    const stmtAcls = this.getStmtAclMap();
 
     // Merge them together - combine arrays for each permission key
     return [docAcls, blockAcls, stmtAcls].reduce(
@@ -98,6 +114,47 @@ class StatementLocalController extends StatementController<SheetLoroDoc> {
       },
       {} as Record<Permission, string[]>,
     );
+  }
+
+  /**
+   * Patch the ACL map for the statement.
+   * @param newAcls
+   * @returns
+   */
+  patchStatementAclMap(newAcls: Record<Permission, string[]>) {
+    // Check permissions
+    if (!this.hasManagePermission()) {
+      console.warn('User does not have permission to manage statement ACLs.');
+      return;
+    }
+    // Patch the ACL map
+    const aclMap = this.stmtMap.get('acls') as AclLoroMap;
+    this.patchAclMap(aclMap, newAcls);
+  }
+
+  /**
+   * Subscribe to ACL changes for the statement.
+   *
+   * @param langCode
+   * @param callback
+   * @returns
+   */
+  subscribeToStatementAclChanges(callback: (event: LoroEventBatch) => void) {
+    // Get the path to the root map
+    const stmtMapPath = this.loroDoc.getPathToContainer(this.stmtMap.id);
+    if (!stmtMapPath) {
+      throw new Error('Could not find path to root map in embedded statement');
+    }
+
+    // Subscribe to changes under the root map
+    return this.loroDoc.subscribe((event: LoroEventBatch) => {
+      for (const ev of event.events) {
+        if (pathStartsWith(ev.path, [...stmtMapPath, 'acls'])) {
+          callback(event);
+          break;
+        }
+      }
+    });
   }
 
   /**

@@ -54,8 +54,40 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
   }
 
   /**
-   * Get an embedded statement controller for an embedded statement in a given row container ID
+   * Based on a row container ID, get the local statement container ID
    * @param rowContainerId
+   * @returns
+   */
+  getLocalStmtContainerId(rowContainerId: ContainerID): ContainerID {
+    const rowMap = this.loroDoc.getContainerById(
+      rowContainerId,
+    ) as SheetStatementGridRowLoro;
+    if (!rowMap) {
+      throw new Error(
+        `Could not find row map for container ID ${rowContainerId}`,
+      );
+    }
+
+    // Verify it's a local statement row
+    if (rowMap.get('type') !== StatementGridRowType.StatementGridRowTypeLocal) {
+      throw new Error(
+        `Row container ID ${rowContainerId} is not a local statement`,
+      );
+    }
+
+    // Get the statement map
+    const stmtMap = rowMap.get('statement');
+    if (!stmtMap) {
+      throw new Error(
+        `Could not find statement map for row container ID ${rowContainerId}`,
+      );
+    }
+    return stmtMap.id;
+  }
+
+  /**
+   * Get an embedded statement controller for an embedded statement in a given row container ID
+   * @param containerId
    * @returns
    */
   getLocalStatementController(
@@ -66,7 +98,7 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
     ) as LoroMap<StmtDocSchema>;
     if (!stmtRootMap) {
       throw new Error(
-        `Could not find statement map for row container ID ${containerId}`,
+        `Could not find statement map for container ID ${containerId}`,
       );
     }
 
@@ -150,7 +182,7 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
    * Wether the user has manage permission for the block
    * @param containerId
    */
-  canManageBlock(containerId: ContainerID): boolean {
+  hasManageBlockPermission(containerId: ContainerID): boolean {
     // Check if the user has global manage permission
     const canDocManage = this.hasManagePermission();
     if (canDocManage) {
@@ -172,7 +204,7 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
    * Wether the user has add/remove permission on the block
    * @param containerId
    */
-  canAddRemoveToBlock(containerId: ContainerID): boolean {
+  hasAddRemoveToBlockPermission(containerId: ContainerID): boolean {
     // Check if the user has global manage permission
     const canDocManage = this.hasManagePermission();
     if (canDocManage) {
@@ -235,6 +267,14 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
     containerId: ContainerID,
     newAcls: Record<Permission, string[]>,
   ) {
+    // Check permissions
+    if (!this.hasManageBlockPermission(containerId)) {
+      console.warn(
+        'User does not have permission to manage block ACLs: ' + containerId,
+      );
+      return;
+    }
+
     // Get the block map
     const blockMap = this.loroDoc.getContainerById(
       containerId,

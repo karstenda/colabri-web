@@ -12,9 +12,12 @@ import { ToolbarButton, ToolbarMenuDivider } from './ToolbarMenuStyles';
 import { useColabDoc } from '../../context/ColabDocContext/ColabDocProvider';
 import { useEffect, useRef, useState } from 'react';
 import { AddLanguageModal, AddLanguageModalPayload } from '../AddLanguageModal';
-import { useContentLanguages } from '../../../ui/hooks/useContentLanguages/useContentLanguage';
+import {
+  useContentLanguage,
+  useContentLanguages,
+} from '../../../ui/hooks/useContentLanguages/useContentLanguage';
 import { useOrganization } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
-import { OrgContentLanguage } from '../../../api/ColabriAPI';
+import { DocumentType, OrgContentLanguage } from '../../../api/ColabriAPI';
 import { useDialogs } from '../../../ui/hooks/useDialogs/useDialogs';
 import { Permission } from '../../../ui/data/Permission';
 import { useTranslation } from 'react-i18next';
@@ -33,13 +36,20 @@ import StatementDocController from '../../controllers/StatementDocController';
 import { ActiveStatementElementRef } from '../../context/ColabDocEditorContext/ColabDocEditorContext';
 import StatementApprovalDropdown from '../ApprovalDropdown/StmtApprovalDropdown';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import ManageModal from '../ManageModal/ManageModal';
+import {
+  ManageSheetStatementElementModalPayload,
+  ManageStatementElementModalPayload,
+} from '../ManageModal/ManageModalPayloads';
 
 export type StatementMenuProps = {
   activeStatementElementRef?: ActiveStatementElementRef | null;
+  readOnly?: boolean;
 };
 
 export default function StatementMenu({
   activeStatementElementRef,
+  readOnly,
 }: StatementMenuProps) {
   // Get the translation hook
   const { t } = useTranslation();
@@ -116,34 +126,81 @@ export default function StatementMenu({
     );
   }
 
+  // Get the active language
+  const { language: activeLanguage } = useContentLanguage(
+    organization?.id || '',
+    activeStatementElementRef?.langCode || '',
+    !!organization && !!activeStatementElementRef,
+  );
+
   // When the colabDoc is loaded.
   useEffect(() => {
-    if (
-      !colabDoc ||
-      !controller ||
-      !activeStatementElementRef ||
-      !isLanguageAdded
-    ) {
+    // Check if we have the controller and colabDoc loaded
+    const isLoaded = colabDoc && controller;
+    if (!isLoaded) {
       return;
     }
-    const langCode = activeStatementElementRef.langCode;
+
+    // Determine whether to enable the menu
+    let doEnableMenu = false;
+    // This depends on the type of document
+    if (colabDoc.getDocType() === DocumentType.DocumentTypeColabStatement) {
+      // Enable the menu always for statement docs
+      doEnableMenu = true;
+    } else if (colabDoc.getDocType() === DocumentType.DocumentTypeColabSheet) {
+      // Only enable the menu if there's an active statement element
+      doEnableMenu = !!activeStatementElementRef;
+    }
+
+    if (!doEnableMenu) {
+      return;
+    }
 
     // Enable the menu
     showMenuRef.current = true;
     disabled.current = false;
 
+    // Get the language code of the active statement element (if any)
+    const langCode = activeStatementElementRef?.langCode;
+
     // Check permissions
     setCanAddRemove(controller.hasAddRemovePermission());
     setCanManage(controller.hasManagePermission());
-    setCanApprove(controller.hasApprovePermission(langCode));
+    setCanApprove(langCode ? controller.hasApprovePermission(langCode) : false);
+
     // Subscribe to ACL changes in the loroDoc
-    controller.subscribeToStatementElementAclChanges(langCode, () => {
+    let unsubscribers = [] as Array<() => void>;
+    const docAclUnsubscribe = controller.subscribeToDocAclChanges(() => {
       // On any ACL change, update the canEdit state
       setCanAddRemove(controller.hasAddRemovePermission());
       setCanManage(controller.hasManagePermission());
-      setCanApprove(controller.hasApprovePermission(langCode));
     });
-  }, [colabDoc, controller, activeStatementElementRef, isLanguageAdded]);
+    unsubscribers.push(docAclUnsubscribe);
+
+    // If a language code is focussed, subscribe to its ACL changes too
+    if (langCode) {
+      // Listen to acl changes for the language
+      const elementAclUnsubscribe =
+        controller.subscribeToStatementElementAclChanges(langCode, () => {
+          // On any ACL change, update the canApprove state
+          setCanApprove(controller.hasApprovePermission(langCode));
+        });
+      unsubscribers.push(elementAclUnsubscribe);
+
+      // Listen to approval changes for the language
+      const elementApprovalUnsubscribe =
+        controller.subscribeToStatementElementApprovalChanges(langCode, () => {
+          // On any approval change, update the canApprove state
+          setCanApprove(controller.hasApprovePermission(langCode));
+        });
+      unsubscribers.push(elementApprovalUnsubscribe);
+    }
+
+    // Cleanup subscription on unmount or dependencies change
+    return () => {
+      unsubscribers.forEach((unsubscribe) => unsubscribe());
+    };
+  }, [colabDoc, controller, activeStatementElementRef]);
 
   /**
    * Handle opening the Statement dropdown menu
@@ -173,33 +230,43 @@ export default function StatementMenu({
       return;
     }
 
-    // Get the current ACLs
-    const docAcls = controller.getDocAclMap();
-    const stmtElementAcls = controller.getStmtElementAclMap(langCode);
-
     // Open the modal to manage the statement element
-    const newStmtElementAclMaps = await dialogs.open<
-      ManagePermissionModalPayload,
-      Record<Permission, string[]> | undefined
-    >(ManagePermissionModal, {
-      langCode,
-      orgId: organization?.id || '',
-      acls: stmtElementAcls,
-      docAcls: docAcls,
-      availablePermissions: new Set<Permission>([
-        Permission.Edit,
-        Permission.Approve,
-      ]),
-      defaultPermission: Permission.Edit,
-    });
-
-    // If a new ACL map was returned, update the document
-    if (newStmtElementAclMaps) {
-      // Patch the document ACL map with the new ACLs
-      controller.patchStmtElementAclMap(langCode, newStmtElementAclMaps);
-
-      // Commit the changes
-      controller.commit();
+    // Differentiate based on controller type
+    // If it's local statement controller
+    if (controller instanceof StatementLocalController) {
+      await dialogs.open<ManageSheetStatementElementModalPayload, void>(
+        ManageModal,
+        {
+          type: 'sheet-statement-element',
+          title: t('editor.manageModal.localizationTitle', {
+            language: activeLanguage?.name || langCode,
+          }),
+          langCode: langCode,
+          stmtDocController: controller,
+          blockContainerId: controller.getBlockId(),
+          readOnly: readOnly,
+        },
+      );
+      controller.getStatementElementState;
+    }
+    // If it's statement doc controller
+    else if (controller instanceof StatementDocController) {
+      await dialogs.open<ManageStatementElementModalPayload, void>(
+        ManageModal,
+        {
+          type: 'statement-element',
+          title: t('editor.manageModal.localizationTitle', {
+            language: activeLanguage?.name || langCode,
+          }),
+          langCode,
+          stmtDocController: controller,
+          readOnly: readOnly,
+        },
+      );
+    } else {
+      console.error(
+        'Unknown controller type in StatementMenu for managing statement element permissions.',
+      );
     }
   };
 
@@ -257,11 +324,11 @@ export default function StatementMenu({
     }
 
     // Create a confirmation message
-    let confirmMessage = t('editor.toolbar.removeLanguageConfirmGeneric');
+    let confirmMessage = t('editor.toolbar.removeLocalizationConfirmGeneric');
     const contentLanguage = languages.find((l) => l.code === langCode);
     if (contentLanguage) {
-      confirmMessage = t('editor.toolbar.removeLanguageConfirm', {
-        language: contentLanguage.name,
+      confirmMessage = t('editor.toolbar.removeLocalizationConfirm', {
+        localization: contentLanguage.name,
       });
     }
 
@@ -302,7 +369,7 @@ export default function StatementMenu({
                   aria-expanded={isMenuOpen ? 'true' : undefined}
                   endIcon={<KeyboardArrowDownIcon />}
                 >
-                  {t('languages.title')}
+                  {t('statements.type')}
                 </ToolbarButton>
               </span>
             </Tooltip>
@@ -315,17 +382,17 @@ export default function StatementMenu({
                 list: { 'aria-labelledby': 'statement-menu-button' },
               }}
             >
-              {canAddRemove && (
+              {canAddRemove && !readOnly && (
                 <MenuItem onClick={handleAddLanguageClicked}>
                   <ListItemIcon>
                     <LanguageAddIcon width={20} height={20} />
                   </ListItemIcon>
                   <ListItemText>
-                    {t('editor.toolbar.addLanguageTooltip')}
+                    {t('editor.toolbar.addLocalizationTooltip')}
                   </ListItemText>
                 </MenuItem>
               )}
-              {canAddRemove && activeStatementElementRef && (
+              {canAddRemove && !readOnly && activeStatementElementRef && (
                 <MenuItem onClick={handleRemoveLanguageClicked}>
                   <ListItemIcon>
                     <SvgIcon
@@ -334,17 +401,27 @@ export default function StatementMenu({
                     />
                   </ListItemIcon>
                   <ListItemText>
-                    {t('editor.toolbar.removeLanguageTooltip')}
+                    {t('editor.toolbar.removeLocalizationTooltip')}
                   </ListItemText>
                 </MenuItem>
               )}
-              {canManage && activeStatementElementRef && (
+              {canManage && !readOnly && activeStatementElementRef && (
                 <MenuItem onClick={handleManageStatementElementClicked}>
                   <ListItemIcon>
                     <LanguageSettingsIcon />
                   </ListItemIcon>
                   <ListItemText>
-                    {t('editor.toolbar.manageLanguageTooltip')}
+                    {t('editor.toolbar.manageLocalizationTooltip')}
+                  </ListItemText>
+                </MenuItem>
+              )}
+              {readOnly && activeStatementElementRef && (
+                <MenuItem onClick={handleManageStatementElementClicked}>
+                  <ListItemIcon>
+                    <LanguageSettingsIcon />
+                  </ListItemIcon>
+                  <ListItemText>
+                    {t('editor.toolbar.inspectLocalizationTooltip')}
                   </ListItemText>
                 </MenuItem>
               )}
