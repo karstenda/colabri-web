@@ -21,17 +21,11 @@ import {
   TypographyReadOnly,
 } from './StatementElementBlockStyle';
 import { useDialogs } from '../../../../ui/hooks/useDialogs/useDialogs';
-import ManagePermissionModal, {
-  ManagePermissionModalPayload,
-} from '../../ManagePermissionModal/ManagePermissionModal';
 import { ConnectedStmtDoc } from '../../../data/ConnectedColabDoc';
-import { Permission } from '../../../../ui/data/Permission';
-import ApprovalDropdown from '../../ApprovalDropdown/ApprovalDropdown';
 import ErrorIcon from '@mui/icons-material/Error';
 import { useGoogleFonts } from '../../../../ui/hooks/useFonts/useFonts';
 import { ContentLanguage } from '../../../data/ContentLanguage';
 import { t } from 'i18next';
-import { ColabApprovalState } from '../../../../api/ColabriAPI';
 import ColabTextEditorOutlined from '../../ColabTextEditor/ColabTextEditorOutlined';
 import { useSetActiveStatementElement } from '../../../context/ColabDocEditorContext/ColabDocEditorProvider';
 import StatementApprovalDropdown from '../../ApprovalDropdown/StmtApprovalDropdown';

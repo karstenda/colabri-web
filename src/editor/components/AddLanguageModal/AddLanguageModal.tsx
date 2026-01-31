@@ -7,14 +7,12 @@ import {
   Button,
   Box,
 } from '@mui/material';
-import {
-  LanguageSelector,
-  LanguageOption,
-} from '../../../ui/components/LanguageSelector/LanguageSelector';
+import { LanguageSelector } from '../../../ui/components/LanguageSelector/LanguageSelector';
 import { useOrganization } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
 import type { OrgContentLanguage } from '../../../api/ColabriAPI';
 import { DialogProps } from '../../../ui/hooks/useDialogs/useDialogs';
 import { useTranslation } from 'react-i18next';
+import { ContentLanguage } from '../../data/ContentLanguage';
 
 export interface AddLanguageModalPayload {
   existingLanguages: OrgContentLanguage[];
@@ -31,7 +29,7 @@ export const AddLanguageModal: React.FC<AddLanguageModalProps> = ({
   const { t } = useTranslation();
   const { existingLanguages } = payload;
   const organization = useOrganization();
-  const [selectedLanguages, setSelectedLanguages] = useState<LanguageOption[]>(
+  const [selectedLanguages, setSelectedLanguages] = useState<ContentLanguage[]>(
     [],
   );
 
@@ -39,7 +37,7 @@ export const AddLanguageModal: React.FC<AddLanguageModalProps> = ({
   const existingLanguageCodes = existingLanguages.map((lang) => lang.code);
 
   // Filter available options to exclude already added languages
-  const filterOptions = (options: LanguageOption[]) => {
+  const filterOptions = (options: ContentLanguage[]) => {
     return options.filter(
       (option) => option.code && !existingLanguageCodes.includes(option.code),
     );
@@ -58,12 +56,12 @@ export const AddLanguageModal: React.FC<AddLanguageModalProps> = ({
   };
 
   const handleChange = (
-    value: string | string[] | LanguageOption | LanguageOption[] | null,
+    value: string | string[] | ContentLanguage | ContentLanguage[] | null,
   ) => {
     if (Array.isArray(value)) {
       // Filter out string values and keep only LanguageOption objects
       const languageOptions = value.filter(
-        (item): item is LanguageOption => typeof item !== 'string',
+        (item): item is ContentLanguage => typeof item !== 'string',
       );
       setSelectedLanguages(languageOptions);
     } else {

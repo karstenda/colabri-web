@@ -1,12 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { useOrganization } from '../../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
-import { Permission } from '../../../../ui/data/Permission';
 import { useDialogs } from '../../../../ui/hooks/useDialogs/useDialogs';
 import { useColabDoc } from '../../../context/ColabDocContext/ColabDocProvider';
 import { ConnectedSheetDoc } from '../../../data/ConnectedColabDoc';
-import ManagePermissionModal, {
-  ManagePermissionModalPayload,
-} from '../../ManagePermissionModal/ManagePermissionModal';
 import DocEditorBlock, { DocEditorBlockProps } from './DocEditorBlock';
 import ManageModal from '../../ManageModal/ManageModal';
 import { ManageSheetBlockModalPayload } from '../../ManageModal/ManageModalPayloads';

@@ -19,11 +19,7 @@ import {
 import { useOrganization } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
 import { DocumentType, OrgContentLanguage } from '../../../api/ColabriAPI';
 import { useDialogs } from '../../../ui/hooks/useDialogs/useDialogs';
-import { Permission } from '../../../ui/data/Permission';
 import { useTranslation } from 'react-i18next';
-import ManagePermissionModal, {
-  ManagePermissionModalPayload,
-} from '../ManagePermissionModal/ManagePermissionModal';
 import {
   ConnectedSheetDoc,
   ConnectedStmtDoc,

@@ -1,7 +1,6 @@
 import { SheetTextBlockBP } from './SheetTextBlockBP';
 import React from 'react';
 import { Stack, Tooltip, Typography } from '@mui/material';
-import ColabTextEditor from '../../ColabTextEditor/ColabTextEditor';
 import {
   useContentLanguages,
   usePlatformContentLanguages,
@@ -14,19 +13,13 @@ import { useColabDoc } from '../../../context/ColabDocContext/ColabDocProvider';
 import { LoroDocType } from 'loro-prosemirror';
 import { useEffect, useState } from 'react';
 import { ContainerID, LoroMap } from 'loro-crdt';
-import DocEditorBlock from '../DocEditorBlock';
 import {
   SheetTextBlockHeaderLeft,
   SheetTextBlockHeaderRight,
   SheetTextBlockHeaderWrapper,
-  TypographyReadOnly,
 } from './SheetTextBlockStyle';
 import { useDialogs } from '../../../../ui/hooks/useDialogs/useDialogs';
-import ManagePermissionModal, {
-  ManagePermissionModalPayload,
-} from '../../ManagePermissionModal/ManagePermissionModal';
 import { ConnectedSheetDoc } from '../../../data/ConnectedColabDoc';
-import { Permission } from '../../../../ui/data/Permission';
 import ApprovalDropdown from '../../ApprovalDropdown/ApprovalDropdown';
 import ErrorIcon from '@mui/icons-material/Error';
 import { useGoogleFonts } from '../../../../ui/hooks/useFonts/useFonts';

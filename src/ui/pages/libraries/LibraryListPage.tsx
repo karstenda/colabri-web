@@ -90,38 +90,6 @@ export default function LibraryListPage() {
   // Use React Query hook for fetching libraries
   const { libraries, isLoading, error, refetch } = useLibraries(
     organization?.id || '',
-    {
-      limit: paginationModel.pageSize,
-      offset: paginationModel.page * paginationModel.pageSize,
-      sort: sortModel.map((item) => ({
-        field: item.field,
-        direction: item.sort === 'asc' ? 'asc' : 'desc',
-      })),
-      filter: {
-        items: filterModel.items.map((item) => ({
-          id: item.id ? `${item.field}-${item.operator}` : item.id + '',
-          field: item.field,
-          operator: item.operator,
-          value: item.value?.toString(),
-        })),
-        logicOperator: (filterModel.logicOperator as 'and' | 'or') || 'and',
-        quickFilterValues: filterModel.quickFilterValues,
-        quickFilterLogicOperator:
-          (filterModel.quickFilterLogicOperator as 'and' | 'or') || 'and',
-        quickFilterFields: (() => {
-          const quickFilterFields = [];
-          for (const field of allFilterableFields) {
-            if (
-              columnVisibilityModel[field] ||
-              !filterModel.quickFilterExcludeHiddenColumns
-            ) {
-              quickFilterFields.push(field);
-            }
-          }
-          return quickFilterFields;
-        })(),
-      },
-    },
   );
 
   const handlePaginationModelChange = React.useCallback(

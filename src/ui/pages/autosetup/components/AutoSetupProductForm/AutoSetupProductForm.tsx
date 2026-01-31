@@ -77,7 +77,7 @@ const AutoSetupProductForm = ({
           attributeName: field,
           value: {
             display: event.target.value,
-            value: event.target.value,
+            value: event.target.value as any as Record<string, any>,
           },
         });
         return;

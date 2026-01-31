@@ -1,13 +1,13 @@
 import React from 'react';
 import { Chip, Avatar, useTheme } from '@mui/material';
 import LanguageIcon from '@mui/icons-material/Language';
-import { LanguageOption } from '../LanguageSelector/LanguageSelector';
+import { ContentLanguage } from '../../../editor/data/ContentLanguage';
 
 export interface LanguageChipProps {
   /**
    * The language to display as a chip
    */
-  language: LanguageOption;
+  language: ContentLanguage;
 
   /**
    * Whether the chip is deletable (shows delete icon)

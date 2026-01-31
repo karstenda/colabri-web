@@ -12,10 +12,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import {
-  LanguageSelector,
-  LanguageOption,
-} from '../../../ui/components/LanguageSelector/LanguageSelector';
+import { LanguageSelector } from '../../../ui/components/LanguageSelector/LanguageSelector';
 import { useOrganization } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
 import type {
   OrgContentLanguage,
@@ -25,6 +22,7 @@ import { DialogProps } from '../../../ui/hooks/useDialogs/useDialogs';
 import { useTranslation } from 'react-i18next';
 import { ContentTypeSelector } from '../../../ui/components/ContentTypeSelector';
 import StatementsGrid from '../../../ui/components/StatementsOverview';
+import { ContentLanguage } from '../../data/ContentLanguage';
 
 export interface NewStatementData {
   statementSource: 'new' | 'library';
@@ -60,7 +58,7 @@ export const AddStatementModal: React.FC<AddStatementModalProps> = ({
 
   // Selected languages state
   const [selectedLanguages, setSelectedLanguages] =
-    useState<LanguageOption[]>(docLanguages);
+    useState<ContentLanguage[]>(docLanguages);
 
   // Selected library statements state
   const [selectedLibStatements, setSelectedLibStatements] = useState<
@@ -114,7 +112,7 @@ export const AddStatementModal: React.FC<AddStatementModalProps> = ({
   };
 
   const handleLanguagesChange = (
-    value: LanguageOption | LanguageOption[] | null,
+    value: ContentLanguage | ContentLanguage[] | null,
   ) => {
     if (Array.isArray(value)) {
       setSelectedLanguages(value);
@@ -188,9 +186,8 @@ export const AddStatementModal: React.FC<AddStatementModalProps> = ({
           )}
           {statementSource === 'library' && (
             <StatementsGrid
-              editable={false}
               selectable={true}
-              scope="lib"
+              scope={{ type: 'lib' }}
               onSelectionChange={handleLibStatementsSelect}
             />
           )}
