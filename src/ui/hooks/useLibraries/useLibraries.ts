@@ -123,6 +123,27 @@ export const useUpdateLibrary = (orgId: string) => {
 };
 
 /**
+ * Move a document to a library
+ *
+ * @param orgId
+ * @param docId
+ * @returns
+ */
+export const useMoveToLibrary = (orgId: string) => {
+  const queryClient = useQueryClient();
+  const { mutateAsync, isPending, error } = useMutation({
+    mutationFn: ({ libraryId, docId }: { libraryId: string; docId: string }) =>
+      apiClient.orgId.postLibrariesMove(orgId, libraryId, {
+        docId: docId,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: libraryKeys.lists() });
+    },
+  });
+  return { moveToLibrary: mutateAsync, isPending, error };
+};
+
+/**
  * Hook to delete a library
  */
 export const useDeleteLibrary = (orgId: string) => {

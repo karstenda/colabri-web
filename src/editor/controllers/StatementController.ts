@@ -156,6 +156,21 @@ class StatementController<
   }
 
   /**
+   * Whether all approvals have been done on the document
+   */
+  public isFullyApproved(): boolean {
+    // Iterate over all the languages
+    const langCodes = this.getLangCodes();
+    for (const langCode of langCodes) {
+      const state = this.getStatementElementState(langCode);
+      if (state !== ColabApprovalState.Approved) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * Get the state of the specified statement element
    * @returns
    */

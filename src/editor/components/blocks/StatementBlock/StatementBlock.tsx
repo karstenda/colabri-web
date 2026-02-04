@@ -91,6 +91,7 @@ const StatementBlock = ({ bp, readOnly }: StatementBlockProps) => {
           id: smtElement.id,
           langCode: langCode,
           containerId: smtElement.id,
+          readOnly: readOnly,
         });
       }
     });
@@ -132,7 +133,7 @@ const StatementBlock = ({ bp, readOnly }: StatementBlockProps) => {
           smtmElementsBPs.length === 0 && (
             <Box>
               <Alert severity="info">
-                {t('editor.statementBlock.noLanguagesAvailable')}
+                {t('editor.statementBlock.noLocalizations')}
               </Alert>
             </Box>
           )}

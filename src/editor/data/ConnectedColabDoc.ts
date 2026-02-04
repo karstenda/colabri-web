@@ -8,6 +8,7 @@ import {
   DocumentType,
 } from '../../api/ColabriAPI';
 import SheetDocController from '../controllers/SheetDocController';
+import { DocContainer } from './DocContainer';
 
 /**
  * A connected Colab document
@@ -29,11 +30,19 @@ export class ConnectedColabDoc<T extends ColabLoroDoc> {
     this.ephStoreMgr = ephStoreMgr;
   }
 
+  public getDocId(): string {
+    throw new Error('Method not implemented.');
+  }
+
   public getDocName(): string {
     throw new Error('Method not implemented.');
   }
 
   public getDocType(): DocumentType {
+    throw new Error('Method not implemented.');
+  }
+
+  public getDocContainer(): DocContainer | undefined {
     throw new Error('Method not implemented.');
   }
 
@@ -78,8 +87,22 @@ export class ConnectedSheetDoc extends ConnectedColabDoc<SheetLoroDoc> {
     return this.sheetDoc;
   }
 
+  public getDocId(): string {
+    return this.sheetDoc.id;
+  }
+
   public getDocName(): string {
     return this.sheetDoc.name;
+  }
+
+  public getDocContainer(): DocContainer | undefined {
+    if (this.sheetDoc.container) {
+      return {
+        type: this.sheetDoc.containerType as 'library' | undefined,
+        id: this.sheetDoc.container,
+      };
+    }
+    return undefined;
   }
 
   public getDocType(): DocumentType {
@@ -115,8 +138,22 @@ export class ConnectedStmtDoc extends ConnectedColabDoc<StmtLoroDoc> {
     return this.statementDoc;
   }
 
+  public getDocId(): string {
+    return this.statementDoc.id;
+  }
+
   public getDocName(): string {
     return this.statementDoc.name;
+  }
+
+  public getDocContainer(): DocContainer | undefined {
+    if (this.statementDoc.container) {
+      return {
+        type: this.statementDoc.containerType as 'library' | undefined,
+        id: this.statementDoc.container,
+      };
+    }
+    return undefined;
   }
 
   public getDocType(): DocumentType {

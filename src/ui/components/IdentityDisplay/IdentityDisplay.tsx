@@ -68,10 +68,10 @@ export default function IdentityDisplay({
             sx={{
               width: size === 'small' ? 24 : 32,
               height: size === 'small' ? 24 : 32,
-              bgcolor: theme.palette.primary.main,
+              bgcolor: theme.palette.grey[400],
             }}
           >
-            <ShieldIcon />
+            <ShieldIcon sx={{ fontSize: size === 'small' ? 14 : 20 }} />
           </Avatar>
         )}
         {resolvedPrpl && resolvedPrpl.type === 'unknown' && (
@@ -79,10 +79,10 @@ export default function IdentityDisplay({
             sx={{
               width: size === 'small' ? 24 : 32,
               height: size === 'small' ? 24 : 32,
-              bgcolor: theme.palette.primary.main,
+              bgcolor: theme.palette.grey[400],
             }}
           >
-            <QuestionMarkIcon />
+            <QuestionMarkIcon sx={{ fontSize: size === 'small' ? 14 : 20 }} />
           </Avatar>
         )}
       </Box>

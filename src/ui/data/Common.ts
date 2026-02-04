@@ -58,7 +58,7 @@ export const getDisplayName = (resolvedPrpl: ResolvedPrplOption): string => {
   } else if (resolvedPrpl.type === 'group') {
     return getGroupDisplayName(resolvedPrpl.group);
   } else if (resolvedPrpl.type === 'system') {
-    return resolvedPrpl.system || 'System';
+    return 'System';
   } else if (resolvedPrpl.type === 'loading') {
     return 'Loading...';
   }

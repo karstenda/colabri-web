@@ -35,6 +35,14 @@ export default class ColabDocController<T extends ColabLoroDoc> {
   }
 
   /**
+   * Whether the current user is the owner of the document
+   * @returns
+   */
+  public isOwner(): boolean {
+    return this.authPrpls.has(this.owner);
+  }
+
+  /**
    * Get the document ACL map
    * @returns
    */
@@ -123,6 +131,13 @@ export default class ColabDocController<T extends ColabLoroDoc> {
         permissionList.push(prpl);
       });
     });
+  }
+
+  /**
+   * Whether all approvals have been done on the document
+   */
+  public isFullyApproved(): boolean {
+    throw new Error('Method not implemented.');
   }
 
   /**

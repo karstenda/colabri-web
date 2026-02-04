@@ -4,6 +4,7 @@ import StatementGridEditorContext, {
 } from './StatementGridEditorContext';
 
 export type StatementGridEditorContextProviderProps = {
+  readOnly?: boolean;
   children: React.ReactNode;
 };
 
@@ -27,14 +28,28 @@ export function useStatementGridEditorContext() {
   return context;
 }
 
+export function useStatementGridEditorReadOnly() {
+  const context = useStatementGridEditorContext();
+  return context.readOnly;
+}
+
+export function useSetStatementGridEditorReadOnly() {
+  const context = useStatementGridEditorContext();
+  return context.setReadOnly;
+}
+
 export default function StatementGridEditorContextProvider({
+  readOnly: readOnlyProp,
   children,
 }: StatementGridEditorContextProviderProps) {
   const [activeCell, setActiveCell] = useState<ActiveCellRef | null>(null);
 
+  const [readOnly, setReadOnly] = useState<boolean>(readOnlyProp ?? false);
   return (
     <StatementGridEditorContext.Provider
       value={{
+        readOnly,
+        setReadOnly,
         activeCell,
         setActiveCell,
       }}

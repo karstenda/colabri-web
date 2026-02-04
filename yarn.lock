@@ -2710,12 +2710,12 @@ loro-adaptors@0.6.0:
   dependencies:
     loro-protocol "0.3.0"
 
-loro-adaptors@^0.4.1:
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/loro-adaptors/-/loro-adaptors-0.4.1.tgz#fec71e1c2a2bea9424302d88295d7f1fdf6d87e2"
-  integrity sha512-YNXLlTho7DOPqASL9S1b6FegeYie5U5dhPcBL3xxINyTDa1ZpMSYMbdLKCRYyuupSRXM0OF0xO+CHSxRBPIfIA==
+loro-adaptors@^0.6.1:
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/loro-adaptors/-/loro-adaptors-0.6.1.tgz#b91a96e1f770925b197acd4cb5ead0ff352dca14"
+  integrity sha512-s1H4NfKRIRF76FNgOX2/mmtXLnedE7bQVJR4wmcwarpmePXx7nE6r7QJkATYanF4SJnlP5S1oRT6Vkl1N85e2Q==
   dependencies:
-    loro-protocol "0.2.0"
+    loro-protocol "0.3.0"
 
 loro-crdt@^1.10.3:
   version "1.10.3"
@@ -2728,11 +2728,6 @@ loro-prosemirror@0.4.1:
   integrity sha512-Nly6ECBCaGKkXmycYSZFlSJaI4juhzH5ZjvYL0Eu2vLebvLcKx6sPtmpM/6KYp69CSBrF6xL1Q31B0rk2Z8qSA==
   dependencies:
     lib0 "^0.2.42"
-
-loro-protocol@0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/loro-protocol/-/loro-protocol-0.2.0.tgz#34123e29939bb6824aab2c924e8146b831eb57d5"
-  integrity sha512-16FCgPj8A1ZCK8T97O9NWpZHbwJmPbq0WNhE+Nh0IDPxKRNYOi6XbPVfEsnnoe7gZW7X4OEdWERXm1O0W3vhwQ==
 
 loro-protocol@0.3.0, loro-protocol@^0.3.0:
   version "0.3.0"

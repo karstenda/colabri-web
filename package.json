@@ -23,7 +23,7 @@
     "i18next": "^25.7.1",
     "i18next-browser-languagedetector": "^8.2.0",
     "is-equal": "^1.6.4",
-    "loro-adaptors": "^0.4.1",
+    "loro-adaptors": "^0.6.1",
     "loro-crdt": "^1.10.3",
     "loro-prosemirror": "0.4.1",
     "loro-protocol": "^0.3.0",

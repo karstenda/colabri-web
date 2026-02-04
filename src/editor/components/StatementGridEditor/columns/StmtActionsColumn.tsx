@@ -12,6 +12,7 @@ const getStmtActionsColumn = (
   blockId: ContainerID,
   canManage?: boolean,
   canAdd?: boolean,
+  readOnly?: boolean,
 ): GridActionsColDef<StatementGridEditorTableRow> => ({
   field: 'actions',
   headerName: '',
@@ -32,7 +33,7 @@ const getStmtActionsColumn = (
     }
 
     // Show delete action only if canManage or canAdd
-    if (canManage || canAdd) {
+    if ((canManage || canAdd) && !readOnly) {
       actions.push(
         <LocalStmtDeleteAction
           row={data.row}

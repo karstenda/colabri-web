@@ -27,7 +27,10 @@ import { useGoogleFonts } from '../../../../ui/hooks/useFonts/useFonts';
 import { ContentLanguage } from '../../../data/ContentLanguage';
 import { t } from 'i18next';
 import ColabTextEditorOutlined from '../../ColabTextEditor/ColabTextEditorOutlined';
-import { useSetActiveStatementElement } from '../../../context/ColabDocEditorContext/ColabDocEditorProvider';
+import {
+  useActiveStatementElement,
+  useSetActiveStatementElement,
+} from '../../../context/ColabDocEditorContext/ColabDocEditorProvider';
 import StatementApprovalDropdown from '../../ApprovalDropdown/StmtApprovalDropdown';
 import ManageModal from '../../ManageModal/ManageModal';
 import { ManageStatementElementModalPayload } from '../../ManageModal/ManageModalPayloads';
@@ -48,7 +51,6 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
   // Get the current organization
   const organization = useOrganization();
   const userId = useOrgUserId();
-  const approvalKey = organization?.id + '/u/' + userId;
 
   // Hook to set the active statement element
   const setActiveStatementElement = useSetActiveStatementElement();
@@ -171,7 +173,12 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
         colabDoc: colabDoc,
       });
     } else {
-      setActiveStatementElement(null);
+      setActiveStatementElement((current) => {
+        if (current?.langCode === bp.langCode) {
+          return null;
+        }
+        return current;
+      });
     }
   };
   const handleHoverChange = (isHovered: boolean) => {
@@ -208,7 +215,8 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
           onHoverChange={handleHoverChange}
           showUpDownControls={false}
           onManageBlock={handleManageElement}
-          readOnly={!canEdit}
+          editable={canEdit}
+          readOnly={bp.readOnly}
         >
           <Stack direction="column" spacing={0.5}>
             <Stack direction="row" spacing={1} flex={1}>
@@ -233,13 +241,14 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
                   <StatementApprovalDropdown
                     langCode={bp?.langCode}
                     controller={controller}
+                    readOnly={bp.readOnly}
                   />
                 </StmtElementHeaderRight>
               </StmtElementHeaderWrapper>
             </Stack>
             {textElementContainerId != null && (
               <ColabTextEditorOutlined
-                showOutlines={showOutlines}
+                showOutlines={showOutlines && !bp.readOnly}
                 loro={loroDoc as any as LoroDocType}
                 ephStoreMgr={ephStoreMgr}
                 containerId={textElementContainerId}
@@ -249,7 +258,7 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
                   orgId: organization?.id || '',
                   langCode: language?.spellCheckLangCode,
                 }}
-                canEdit={canEdit}
+                canEdit={canEdit && !bp.readOnly}
                 txtDir={language?.textDirection}
                 customFonts={customFonts}
               />

@@ -1,14 +1,15 @@
-import { useState } from 'react';
 import { Permission } from '../../../ui/data/Permission';
 import Box from '@mui/material/Box';
-import Accordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
 import Typography from '@mui/material/Typography';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import PermissionEditor from '../../../ui/components/PermissionEditor/PermissionEditor';
 import PermissionViewer from '../../../ui/components/PermissionViewer/PermissionViewer';
 import { PermissionChain } from './PermissionChain';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import {
+  PermissionChainAccordion,
+  PermissionChainAccordionSummary,
+} from './PermissionChainEditorStyles';
 
 export type PermissionChainEditorProps = {
   permissionChain: PermissionChain;
@@ -49,11 +50,11 @@ const PermissionChainEditor = ({
   return (
     <Box>
       {permissionChain.chain.map((level, index) => (
-        <Accordion
+        <PermissionChainAccordion
           key={index}
           defaultExpanded={index === permissionChain.chain.length - 1}
         >
-          <AccordionSummary
+          <PermissionChainAccordionSummary
             aria-controls={`panel${index}-content`}
             id={`panel${index}-header`}
             expandIcon={<ExpandMoreIcon />}
@@ -64,7 +65,7 @@ const PermissionChainEditor = ({
             >
               {level.label}
             </Typography>
-          </AccordionSummary>
+          </PermissionChainAccordionSummary>
           <AccordionDetails
             aria-labelledby={`panel${index}-header`}
             id={`panel${index}-content`}
@@ -87,7 +88,7 @@ const PermissionChainEditor = ({
               <PermissionViewer aclMap={level.acls} />
             )}
           </AccordionDetails>
-        </Accordion>
+        </PermissionChainAccordion>
       ))}
     </Box>
   );

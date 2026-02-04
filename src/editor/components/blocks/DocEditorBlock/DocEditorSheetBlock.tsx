@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import { useOrganization } from '../../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
 import { useDialogs } from '../../../../ui/hooks/useDialogs/useDialogs';
 import { useColabDoc } from '../../../context/ColabDocContext/ColabDocProvider';
 import { ConnectedSheetDoc } from '../../../data/ConnectedColabDoc';
@@ -16,7 +15,6 @@ const DocEditorSheetBlock: React.FC<DocEditorSheetBlockProps> = (props) => {
 
   // Get the dialogs hook
   const dialogs = useDialogs();
-  const organization = useOrganization();
   const { t } = useTranslation();
 
   // Get the current ColabDoc
@@ -26,9 +24,6 @@ const DocEditorSheetBlock: React.FC<DocEditorSheetBlockProps> = (props) => {
       'SheetTextBlock can only be used with connected sheet docs.',
     );
   }
-
-  // Get the LoroDoc
-  const loroDoc = colabDoc?.getLoroDoc();
 
   // Get the controller
   const controller = colabDoc?.getDocController();
@@ -49,6 +44,7 @@ const DocEditorSheetBlock: React.FC<DocEditorSheetBlockProps> = (props) => {
       title: t('editor.manageModal.blockTitle'),
       sheetDocController: controller,
       blockContainerId: docEditorBlockProps.loroContainerId,
+      readOnly: docEditorBlockProps.readOnly,
     });
   };
 

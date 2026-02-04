@@ -121,6 +121,57 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
   }
 
   /**
+   * Whether all approvals have been done on the document
+   */
+  public isFullyApproved(): boolean {
+    // Iterate over all blocks to see if any are not approved
+    const contentList = this.loroDoc.getMovableList('content');
+    for (let i = 0; i < contentList.length; i++) {
+      const container = contentList.get(i);
+
+      // Get the block type
+      const type = container.get('type');
+
+      // If it's a text block, check approval state
+      if (type === ColabSheetBlockType.ColabSheetBlockTypeText) {
+        const state = this.getBlockState(container.id);
+        if (state !== ColabApprovalState.Approved) {
+          return false;
+        }
+      }
+      // If it's a statement grid block, check all statements inside
+      else if (type === ColabSheetBlockType.ColabSheetBlockTypeStatementGrid) {
+        const stmtGridBlock = container as SheetStatementGridBlockLoro;
+        const rowsList = stmtGridBlock.get(
+          'rows',
+        ) as LoroMovableList<SheetStatementGridRowLoro>;
+
+        // Iterate over all rows
+        for (let j = 0; j < rowsList.length; j++) {
+          const rowMap = rowsList.get(j) as SheetStatementGridRowLoro;
+          const rowType = rowMap.get('type');
+
+          // If it's a local statement, check its approval state
+          if (rowType === StatementGridRowType.StatementGridRowTypeLocal) {
+            const stmtMap = rowMap.get('statement');
+            if (stmtMap) {
+              // Create a local statement controller
+              const stmtController = this.getLocalStatementController(
+                stmtMap.id,
+              );
+              if (!stmtController.isFullyApproved()) {
+                return false;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return true;
+  }
+
+  /**
    * Get the Sheet Blocks in the document
    * @param containerId
    */

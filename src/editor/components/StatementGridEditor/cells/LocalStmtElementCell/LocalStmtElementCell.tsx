@@ -11,19 +11,22 @@ import { useSetActiveStatementElement } from '../../../../context/ColabDocEditor
 import { ColabApprovalState } from '../../../../../api/ColabriAPI';
 import StmtElementAddCell from './StmtElementAddCell';
 import StmtElementEditCell from './StmtElementEditCell';
-import { useActiveCell } from '../../context/StatementGridEditorContextProvider';
+import {
+  useActiveCell,
+  useStatementGridEditorReadOnly,
+} from '../../context/StatementGridEditorContextProvider';
 
 export type LocalStmtEditCellProps = {
   field: string;
   rowId: string;
   statement: LoroMap<StmtDocSchema>;
   langCode: string;
-  editable: boolean;
 };
 
 const LocalStmtEditCell = (props: LocalStmtEditCellProps) => {
   const { t } = useTranslation();
   const setActiveStatementElement = useSetActiveStatementElement();
+  const readOnly = useStatementGridEditorReadOnly();
   const activeCell = useActiveCell();
   const hasFocus =
     activeCell?.field === props.field && activeCell?.rowId === props.rowId;
@@ -45,6 +48,7 @@ const LocalStmtEditCell = (props: LocalStmtEditCellProps) => {
   );
 
   // Get the containerId for the textElement of the targeted statement language
+
   const contentMap = props.statement.get('content');
   const langElement = contentMap.get(props.langCode);
 
@@ -53,9 +57,9 @@ const LocalStmtEditCell = (props: LocalStmtEditCellProps) => {
   let isNotFound = false;
   let isError = false;
 
-  if (!loroDoc || !ephStoreMgr || !colabDoc) {
+  if (!loroDoc || !ephStoreMgr || !colabDoc || !stmtController) {
     isLoading = true;
-  } else if (!langElement) {
+  } else if (!langElement || !stmtController.isValid()) {
     isNotAdded = true;
   }
 
@@ -169,8 +173,10 @@ const LocalStmtEditCell = (props: LocalStmtEditCellProps) => {
         controller={stmtController}
         hasFocus={hasFocus}
         onAdd={handleLanguageAdd}
+        readOnly={readOnly}
       />
     );
+    ``;
   } else if (isNotFound) {
     return (
       <CellWrapper hasFocus={hasFocus}>
@@ -189,7 +195,7 @@ const LocalStmtEditCell = (props: LocalStmtEditCellProps) => {
         loroDoc={loroDoc as any as LoroDocType}
         ephStoreMgr={ephStoreMgr!}
         textElementContainerId={textElementContainerId!}
-        canEdit={canEdit}
+        canEdit={canEdit && !readOnly}
         approvalState={approvalState}
         hasFocus={hasFocus}
         langCode={props.langCode}

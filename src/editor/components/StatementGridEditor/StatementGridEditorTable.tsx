@@ -38,6 +38,7 @@ export type StatementGridEditorTableProps = {
   containerId: ContainerID;
   isHovered?: boolean;
   isFocused?: boolean;
+  readOnly?: boolean;
 };
 
 export type StatementGridEditorTableRow = {
@@ -51,6 +52,7 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
   containerId,
   isHovered,
   isFocused,
+  readOnly = false,
 }) => {
   const { colabDoc } = useColabDoc();
   const { t } = useTranslation();
@@ -178,7 +180,14 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
       // Always display the name column and actions column
       const newColumns: GridColDef<StatementGridEditorTableRow>[] = [
         getStmtTypeColumn(t),
-        getStmtActionsColumn(t, controller, containerId, canManage, canAdd),
+        getStmtActionsColumn(
+          t,
+          controller,
+          containerId,
+          canManage,
+          canAdd,
+          readOnly,
+        ),
       ];
 
       if (!propertiesMap) {
@@ -310,6 +319,7 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
         titleContainerId: titleContainerId,
         showOutlines: showTitleOutlines,
         handleStatementAdd: handleStatementAdd,
+        readOnly: readOnly,
       },
     }),
     [

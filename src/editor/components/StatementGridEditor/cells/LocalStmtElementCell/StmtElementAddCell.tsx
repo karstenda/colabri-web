@@ -9,12 +9,14 @@ export type StmtElementAddCellProps = {
   controller?: StatementDocController | StatementLocalController | null;
   hasFocus?: boolean;
   onAdd?: () => void;
+  readOnly?: boolean;
 };
 
 const StmtElementAddCell = ({
   controller,
   hasFocus = false,
   onAdd,
+  readOnly = false,
 }: StmtElementAddCellProps) => {
   const { t } = useTranslation();
 
@@ -54,6 +56,7 @@ const StmtElementAddCell = ({
               height: '28px',
             }}
             onClick={onAdd}
+            disabled={readOnly}
           >
             {t('languages.addLanguage')}
           </Button>

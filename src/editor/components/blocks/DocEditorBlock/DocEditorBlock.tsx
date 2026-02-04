@@ -19,6 +19,7 @@ export type DocEditorBlockProps = BoxProps & {
   blockType: string;
   loroContainerId: ContainerID;
   colabDoc: ConnectedSheetDoc | ConnectedStmtDoc;
+  editable: boolean;
   readOnly?: boolean;
   showUpDownControls?: boolean;
   showManageControls?: boolean;
@@ -36,7 +37,8 @@ const DocEditorBlock = ({
   blockType,
   loroContainerId,
   colabDoc,
-  readOnly = false,
+  editable,
+  readOnly,
   showUpDownControls = true,
   showManageControls = true,
   displayMode = 'default',
@@ -191,7 +193,7 @@ const DocEditorBlock = ({
       ref={editorContentBlockRef}
       hasFocus={focus}
       isHovered={isHovered}
-      readOnly={readOnly}
+      editable={editable && !readOnly}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       {...boxProps}

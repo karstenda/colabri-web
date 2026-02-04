@@ -54,6 +54,14 @@ class StatementLocalController extends StatementController<SheetLoroDoc> {
   }
 
   /**
+   * Check whether the embedded statement is still valid
+   * @returns
+   */
+  isValid(): boolean {
+    return !this.stmtMap?.isDeleted();
+  }
+
+  /**
    * Get the main properties map
    */
   getPropertiesMap(): LoroMap<Record<string, any>> {

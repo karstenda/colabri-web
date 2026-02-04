@@ -215,6 +215,16 @@ export default function SheetMenu({ readOnly }: SheetMenuProps) {
 
   if (showMenuRef.current === false) {
     return <></>;
+  } else if (readOnly) {
+    return (
+      <ToolbarButton
+        onMouseDown={handleManageSheetBlockClicked}
+        startIcon={<BlockSettingsIcon />}
+        disabled={!isSheetBlockFocused}
+      >
+        {t('editor.toolbar.inspectBlockTooltip')}
+      </ToolbarButton>
+    );
   } else {
     const showSheetDropdown = canAddRemove || canManage;
 
@@ -247,7 +257,7 @@ export default function SheetMenu({ readOnly }: SheetMenuProps) {
               onClose={handleCloseMenu}
               slotProps={{ list: { 'aria-labelledby': 'sheet-menu-button' } }}
             >
-              {canAddRemove && !readOnly && (
+              {canAddRemove && (
                 <MenuItem onClick={handleAddBlockClicked}>
                   <ListItemIcon>
                     <BlockAddIcon />
@@ -257,7 +267,7 @@ export default function SheetMenu({ readOnly }: SheetMenuProps) {
                   </ListItemText>
                 </MenuItem>
               )}
-              {canAddRemove && !readOnly && isSheetBlockFocused && (
+              {canAddRemove && isSheetBlockFocused && (
                 <MenuItem onClick={handleRemoveBlockClicked}>
                   <ListItemIcon>
                     <BlockRemoveIcon />
@@ -267,23 +277,13 @@ export default function SheetMenu({ readOnly }: SheetMenuProps) {
                   </ListItemText>
                 </MenuItem>
               )}
-              {canManage && !readOnly && isSheetBlockFocused && (
+              {canManage && isSheetBlockFocused && (
                 <MenuItem onClick={handleManageSheetBlockClicked}>
                   <ListItemIcon>
                     <BlockSettingsIcon />
                   </ListItemIcon>
                   <ListItemText>
                     {t('editor.toolbar.manageBlockTooltip')}
-                  </ListItemText>
-                </MenuItem>
-              )}
-              {readOnly && isSheetBlockFocused && (
-                <MenuItem onClick={handleManageSheetBlockClicked}>
-                  <ListItemIcon>
-                    <BlockSettingsIcon />
-                  </ListItemIcon>
-                  <ListItemText>
-                    {t('editor.toolbar.inspectBlockTooltip')}
                   </ListItemText>
                 </MenuItem>
               )}

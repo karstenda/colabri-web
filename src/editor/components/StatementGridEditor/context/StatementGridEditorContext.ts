@@ -6,6 +6,8 @@ export type ActiveCellRef = {
 };
 
 export type StatementGridEditorContextType = {
+  readOnly: boolean;
+  setReadOnly: (readOnly: boolean) => void;
   activeCell: ActiveCellRef | null;
   setActiveCell: (cellRef: ActiveCellRef | null) => void;
 };

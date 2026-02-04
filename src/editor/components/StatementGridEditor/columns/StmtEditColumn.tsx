@@ -1,7 +1,7 @@
 import { TFunction } from 'i18next';
 import { StatementGridEditorTableRow } from '../StatementGridEditorTable';
 import { StatementGridRowType } from '../../../../api/ColabriAPI';
-import LocalStmtLangCell from '../cells/LocalStmtElementCell/LocalStmtElementCell';
+import LocalStmtEditCell from '../cells/LocalStmtElementCell/LocalStmtElementCell';
 import { ContentLanguage } from '../../../data/ContentLanguage';
 import { JSX } from 'react';
 
@@ -20,10 +20,9 @@ const getStmtEditColumn = (language: ContentLanguage, t: TFunction) => ({
         return <>{t('editor.sheetStatementGridBlock.noStatement')}</>;
       } else {
         return (
-          <LocalStmtLangCell
+          <LocalStmtEditCell
             langCode={language.code}
             statement={row.statement}
-            editable={true}
             field={'lang-' + language.code}
             rowId={row.id}
           />

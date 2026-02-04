@@ -246,8 +246,9 @@ const SheetTextBlock: React.FC<SheetTextBlockProps> = ({ bp }) => {
           colabDoc={colabDoc}
           onFocusChange={handleFocusChange}
           onHoverChange={handleHoverChange}
-          showManageControls={canManage}
-          readOnly={!canEdit}
+          showManageControls={true}
+          editable={canEdit}
+          readOnly={bp.readOnly}
         >
           <Stack direction="column" spacing={0.5}>
             <Stack direction="row" spacing={1} flex={1}>
@@ -260,7 +261,7 @@ const SheetTextBlock: React.FC<SheetTextBlockProps> = ({ bp }) => {
                       sx={{ width: '100%' }}
                     >
                       <ColabTextEditorOutlined
-                        showOutlines={showOutlines}
+                        showOutlines={showOutlines && !bp.readOnly}
                         loro={loroDoc as any as LoroDocType}
                         ephStoreMgr={ephStoreMgr}
                         containerId={titleContainerId}
@@ -271,7 +272,7 @@ const SheetTextBlock: React.FC<SheetTextBlockProps> = ({ bp }) => {
                           langCode: language?.spellCheckLangCode,
                         }}
                         schema="simple"
-                        canEdit={canEdit}
+                        canEdit={canEdit && !bp.readOnly}
                         txtDir={language?.textDirection}
                         customFonts={customFonts}
                       />
@@ -298,13 +299,14 @@ const SheetTextBlock: React.FC<SheetTextBlockProps> = ({ bp }) => {
                     onApprove={handleApprove}
                     onReject={handleReject}
                     onRevert={handleRevert}
+                    readOnly={bp.readOnly}
                   />
                 </SheetTextBlockHeaderRight>
               </SheetTextBlockHeaderWrapper>
             </Stack>
             {textElementContainerId != null && (
               <ColabTextEditorOutlined
-                showOutlines={showOutlines}
+                showOutlines={showOutlines && !bp.readOnly}
                 loro={loroDoc as any as LoroDocType}
                 ephStoreMgr={ephStoreMgr}
                 containerId={textElementContainerId}
@@ -314,7 +316,7 @@ const SheetTextBlock: React.FC<SheetTextBlockProps> = ({ bp }) => {
                   orgId: organization?.id || '',
                   langCode: language?.spellCheckLangCode,
                 }}
-                canEdit={canEdit}
+                canEdit={canEdit && !bp.readOnly}
                 txtDir={language?.textDirection}
                 customFonts={customFonts}
               />

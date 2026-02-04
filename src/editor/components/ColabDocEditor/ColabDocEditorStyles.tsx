@@ -95,19 +95,6 @@ export const DocNameHeader = styled(TypographyDocName)(({ theme }) => ({
   overflow: 'hidden',
 }));
 
-export const DocumentTypeLabel = styled(Box)(({ theme }) => ({
-  backgroundColor: (theme.vars || theme).palette.grey[200],
-  color: (theme.vars || theme).palette.text.secondary,
-  padding: theme.spacing(0.5, 1),
-  borderRadius: '4px',
-  fontSize: '0.75rem',
-  fontWeight: 500,
-  maxWidth: '100px',
-  textWrap: 'nowrap',
-  textOverflow: 'ellipsis',
-  overflow: 'hidden',
-}));
-
 export const EditorContentBlock = styled(Box)(({ theme }) => ({
   backgroundColor: (theme.vars || theme).palette.background.default,
   border: `1px solid ${theme.palette.divider}`,

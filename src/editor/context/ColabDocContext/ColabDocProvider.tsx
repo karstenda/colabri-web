@@ -134,10 +134,21 @@ export function ColabDocProvider({ docId, children }: ColabDocProviderProps) {
 
     // Join rooms
     // --- Room 1: A Loro Document (%LOR) ---
-    const docAdaptor = new LoroAdaptor();
+    const docAdaptor = new LoroAdaptor(undefined, {
+      onUpdateError: (
+        updates: Uint8Array[],
+        errorCode: number,
+        reason?: string,
+      ) => {
+        console.error('Loro Adaptor Update Error here:', errorCode, reason);
+      },
+    });
     const docRoom = await client.join({
       roomId: roomId,
       crdtAdaptor: docAdaptor,
+      onStatusChange: (status) => {
+        console.log('Document room status changed:', status);
+      },
     });
     console.log('Connected to room ' + docId + '!');
 

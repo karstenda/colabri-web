@@ -19,6 +19,7 @@ export type ApprovalDropdownProps = {
   canApprove: boolean;
   canManage: boolean;
   hasRejected: boolean;
+  readOnly?: boolean;
   onApprove: () => void;
   onReject: () => void;
   onRevert: () => void;
@@ -29,6 +30,7 @@ const ApprovalDropdown: React.FC<ApprovalDropdownProps> = ({
   canApprove,
   canManage,
   hasRejected,
+  readOnly,
   onApprove,
   onReject,
   onRevert,
@@ -146,7 +148,7 @@ const ApprovalDropdown: React.FC<ApprovalDropdownProps> = ({
         >
           {getStateLabel(state)}
         </StatusButton>
-        {options.length > 0 && (
+        {options.length > 0 && !readOnly && (
           <DropdownButton
             size="small"
             aria-controls={open ? 'split-button-menu' : undefined}

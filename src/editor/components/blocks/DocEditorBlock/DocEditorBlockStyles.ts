@@ -24,12 +24,12 @@ export const ControlButton = styled(IconButton)(({}) => ({
 
 export const StyledDocEditorBlock = styled(Box, {
   shouldForwardProp: (prop) =>
-    prop !== 'hasFocus' && prop !== 'isHovered' && prop !== 'readOnly',
-})<{ hasFocus?: boolean; isHovered?: boolean; readOnly: boolean }>(
-  ({ theme, hasFocus, readOnly }) => ({
+    prop !== 'hasFocus' && prop !== 'isHovered' && prop !== 'editable',
+})<{ hasFocus?: boolean; isHovered?: boolean; editable: boolean }>(
+  ({ theme, hasFocus, editable }) => ({
     width: '100%',
     maxWidth: '800px',
-    backgroundColor: !readOnly
+    backgroundColor: editable
       ? (theme.vars || theme).palette.background.default
       : (theme.vars || theme).palette.background.paper,
     border: `1px solid ${

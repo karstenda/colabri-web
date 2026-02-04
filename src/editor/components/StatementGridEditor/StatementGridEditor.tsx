@@ -7,7 +7,7 @@ export type StatementGridEditorProps = {} & StatementGridEditorTableProps;
 
 const StatementGridEditor: React.FC<StatementGridEditorProps> = (props) => {
   return (
-    <StatementGridEditorContextProvider>
+    <StatementGridEditorContextProvider readOnly={props.readOnly}>
       <StatementGridEditorTable {...props} />
     </StatementGridEditorContextProvider>
   );

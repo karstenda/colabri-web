@@ -15,6 +15,7 @@ export type StatementGridEditorToolbarProps = {
   showOutlines?: boolean;
   canAdd?: boolean;
   canManage?: boolean;
+  readOnly?: boolean;
   handleStatementAdd?: () => Promise<void>;
 } & GridSlotProps['toolbar'];
 
@@ -54,6 +55,7 @@ const StatementGridEditorToolbar = ({
   showOutlines,
   canManage,
   canAdd,
+  readOnly,
   handleStatementAdd,
   ...props
 }: StatementGridEditorToolbarProps) => {
@@ -69,7 +71,7 @@ const StatementGridEditorToolbar = ({
     loroDoc != undefined &&
     ephStoreMgr != undefined;
 
-  const readOnly = !canManage && !canAdd;
+  const showReadOnly = (!canManage && !canAdd) || readOnly;
 
   useEffect(() => {}, [colabDoc]);
 
@@ -77,7 +79,7 @@ const StatementGridEditorToolbar = ({
     <StyledToolbar
       {...props}
       sx={{
-        backgroundColor: !readOnly
+        backgroundColor: !showReadOnly
           ? (theme.vars || theme).palette.background.default
           : (theme.vars || theme).palette.background.paper,
       }}
@@ -87,7 +89,7 @@ const StatementGridEditorToolbar = ({
           {showTitleEditor && (
             <Typography variant="h6" component="div" sx={{ width: '100%' }}>
               <OutlinedColabTextEditor
-                showOutlines={showOutlines}
+                showOutlines={showOutlines && !readOnly}
                 loro={loroDoc as any as LoroDocType}
                 ephStoreMgr={ephStoreMgr}
                 containerId={titleContainerId}
@@ -98,13 +100,14 @@ const StatementGridEditorToolbar = ({
                   langCode: undefined,
                 }}
                 schema="simple"
+                canEdit={canManage && !readOnly}
               />
             </Typography>
           )}
         </ToolbarLeft>
 
         <ToolbarRight>
-          {(canAdd || canManage) && (
+          {(canAdd || canManage) && !readOnly && (
             <Button onClick={handleStatementAdd}>
               {t('editor.sheetStatementGridBlock.addButton')}
             </Button>

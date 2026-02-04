@@ -344,6 +344,18 @@ export default function StatementMenu({
   // Start rendering
   if (showMenuRef.current === false) {
     return <></>;
+  } else if (readOnly) {
+    return (
+      <Stack direction="row" spacing={'2px'} sx={{ alignItems: 'center' }}>
+        <ToolbarButton
+          onMouseDown={handleManageStatementElementClicked}
+          startIcon={<LanguageSettingsIcon />}
+          disabled={!activeStatementElementRef}
+        >
+          {t('editor.toolbar.inspectLocalizationTooltip')}
+        </ToolbarButton>
+      </Stack>
+    );
   } else {
     const showStatementDropdown = canAddRemove || canManage;
 
@@ -378,7 +390,7 @@ export default function StatementMenu({
                 list: { 'aria-labelledby': 'statement-menu-button' },
               }}
             >
-              {canAddRemove && !readOnly && (
+              {canAddRemove && (
                 <MenuItem onClick={handleAddLanguageClicked}>
                   <ListItemIcon>
                     <LanguageAddIcon width={20} height={20} />
@@ -388,7 +400,7 @@ export default function StatementMenu({
                   </ListItemText>
                 </MenuItem>
               )}
-              {canAddRemove && !readOnly && activeStatementElementRef && (
+              {canAddRemove && activeStatementElementRef && (
                 <MenuItem onClick={handleRemoveLanguageClicked}>
                   <ListItemIcon>
                     <SvgIcon
@@ -401,23 +413,13 @@ export default function StatementMenu({
                   </ListItemText>
                 </MenuItem>
               )}
-              {canManage && !readOnly && activeStatementElementRef && (
+              {canManage && activeStatementElementRef && (
                 <MenuItem onClick={handleManageStatementElementClicked}>
                   <ListItemIcon>
                     <LanguageSettingsIcon />
                   </ListItemIcon>
                   <ListItemText>
                     {t('editor.toolbar.manageLocalizationTooltip')}
-                  </ListItemText>
-                </MenuItem>
-              )}
-              {readOnly && activeStatementElementRef && (
-                <MenuItem onClick={handleManageStatementElementClicked}>
-                  <ListItemIcon>
-                    <LanguageSettingsIcon />
-                  </ListItemIcon>
-                  <ListItemText>
-                    {t('editor.toolbar.inspectLocalizationTooltip')}
                   </ListItemText>
                 </MenuItem>
               )}

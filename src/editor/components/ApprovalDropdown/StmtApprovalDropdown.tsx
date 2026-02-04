@@ -11,11 +11,13 @@ import { ColabApprovalState } from '../../../api/ColabriAPI';
 export type StmtApprovalDropdownProps = {
   langCode?: string;
   controller?: StatementDocController | StatementLocalController | null;
+  readOnly?: boolean;
 };
 
 const StatementApprovalDropdown = ({
   langCode,
   controller,
+  readOnly = false,
 }: StmtApprovalDropdownProps) => {
   // Get the current organization
   const organization = useOrganization();
@@ -105,6 +107,7 @@ const StatementApprovalDropdown = ({
       onApprove={handleApprove}
       onReject={handleReject}
       onRevert={handleRevert}
+      readOnly={readOnly}
     />
   );
 };

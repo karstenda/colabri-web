@@ -11,7 +11,6 @@ import {
   EditorTopHeaderWrapper,
   EditorToolbarWrapper,
   EditorWrapper,
-  DocumentTypeLabel,
   EditorContentBlockTrack,
   DocNameHeader,
 } from './ColabDocEditorStyles';
@@ -35,12 +34,17 @@ import { ColabLoroDoc } from '../../data/ColabDoc';
 import ManageDocButton from '../ManageDocButton/ManageDocButton';
 import { useTranslation } from 'react-i18next';
 import SheetBlock from '../blocks/SheetBlock/SheetBlock';
+import LibraryLabel from '../DocLabels/LibraryLabel';
+import DocumentTypeLabel from '../DocLabels/DocumentTypeLabel';
+import ContentTypeLabel from '../DocLabels/ContentTypeLabel';
 
 export type ColabDocEditorProps = {
   readOnly?: boolean;
 };
 
-export default function ColabDocEditor({ readOnly }: ColabDocEditorProps) {
+export default function ColabDocEditor({
+  readOnly: readOnlyProp,
+}: ColabDocEditorProps) {
   // Get the standard hooks
   const { t } = useTranslation();
 
@@ -68,6 +72,9 @@ export default function ColabDocEditor({ readOnly }: ColabDocEditorProps) {
 
   // State to track whether the user can manage the document
   const [canManage, setCanManage] = useState<boolean>(false);
+
+  // State to track whether the editor is in read-only mode
+  const [readOnly, setReadOnly] = useState<boolean>(readOnlyProp || false);
 
   // Initialize version display and set up subscription
   useEffect(() => {
@@ -98,6 +105,12 @@ export default function ColabDocEditor({ readOnly }: ColabDocEditorProps) {
 
     // Initial check if the user can manage the document
     setCanManage(controller.hasManagePermission());
+
+    // Check whether the document is in a library
+    const container = colabDoc.getDocContainer();
+    if (container?.type === 'library') {
+      setReadOnly(true);
+    }
 
     // Listen for ACL changes in the LoroDoc
     return controller.subscribeToDocAclChanges(() => {
@@ -156,21 +169,17 @@ export default function ColabDocEditor({ readOnly }: ColabDocEditorProps) {
                       </DocNameHeader>
                     )}
                     {!compactView && (
-                      <DocumentTypeLabel>
-                        {colabDoc?.getDocType() ===
-                          DocumentType.DocumentTypeColabStatement && (
-                          <>{t('statements.type')}</>
+                      <Stack direction="row" spacing={1}>
+                        <DocumentTypeLabel docType={colabDoc?.getDocType()} />
+                        {colabDoc?.getDocContainer() && (
+                          <LibraryLabel
+                            container={colabDoc.getDocContainer()!}
+                          />
                         )}
-                        {colabDoc?.getDocType() ===
-                          DocumentType.DocumentTypeColabSheet && (
-                          <>{t('sheets.type')}</>
-                        )}
-                      </DocumentTypeLabel>
+                      </Stack>
                     )}
                     {contentTypeRef.current && (
-                      <DocumentTypeLabel>
-                        {contentTypeRef.current?.name}
-                      </DocumentTypeLabel>
+                      <ContentTypeLabel contentType={contentTypeRef.current} />
                     )}
                   </Stack>
                 </EditorTopHeaderLeftStack>
@@ -188,6 +197,7 @@ export default function ColabDocEditor({ readOnly }: ColabDocEditorProps) {
               <EditorToolbarWrapper>
                 <ToolbarMenu
                   docType={colabDoc?.getDocType()}
+                  container={colabDoc?.getDocContainer()}
                   readOnly={readOnly}
                 />
               </EditorToolbarWrapper>

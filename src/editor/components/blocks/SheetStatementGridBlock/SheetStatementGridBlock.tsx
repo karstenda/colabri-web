@@ -94,8 +94,8 @@ const SheetStatementGridBlock: React.FC<SheetStatementGridBlockProps> = ({
       colabDoc={colabDoc}
       onFocusChange={handleFocusChange}
       onHoverChange={handleHoverChange}
-      showManageControls={canManage}
-      readOnly={!canManage && !canAdd}
+      editable={canManage || canAdd}
+      readOnly={bp.readOnly}
       sx={{ padding: '0px' }}
       displayMode={showWide ? 'wide' : 'default'}
     >
@@ -103,6 +103,7 @@ const SheetStatementGridBlock: React.FC<SheetStatementGridBlockProps> = ({
         containerId={bp.containerId}
         isHovered={isHovered}
         isFocused={isFocused}
+        readOnly={bp.readOnly}
       />
     </DocEditorSheetBlock>
   );

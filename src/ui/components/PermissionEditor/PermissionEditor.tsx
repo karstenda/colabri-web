@@ -58,8 +58,10 @@ const PermissionEditor = (props: PermissionEditorProps) => {
 
   // Calculate a flat list of all permissions
   const allPermissions = new Set<Permission>();
-  Object.keys(props.availablePermissions).forEach((permission) => {
-    allPermissions.add(permission as Permission);
+  Object.keys(props.availablePermissions).forEach((section) => {
+    Array.from(props.availablePermissions[section]).forEach((permission) => {
+      allPermissions.add(permission);
+    });
   });
 
   // When a new assignee is selected, remember their identity and pass it to children so they don't need to resolve it again based on the prpl.

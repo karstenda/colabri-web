@@ -37,8 +37,12 @@
     "updatedAt": "Updated Date",
     "permissions": "Permissions",
     "document": "Document",
+    "documentType": "Document Type",
+    "contentType": "Content Type",
+    "library": "Library",
     "localization": "Localization",
-    "block": "Block"
+    "block": "Block",
+    "unknown": "Unknown"
   },
   "navigation": {
     "home": "Home",
@@ -221,11 +225,12 @@
       "sheetPermissions": "Sheet Permissions",
       "statementPermissions": "Statement Permissions",
       "localizationPermissions": "{{localization}} Localization Permissions",
-      "blockPermissions": "Block Permissions"
+      "blockPermissions": "Block Permissions",
+      "noPermissions": "No permissions assigned."
     },
     "statementBlock": {
       "noLanguagesConfigured": "No languages configured.",
-      "noLanguagesAvailable": "No languages available."
+      "noLocalizations": "No localizations."
     },
     "statementElementBlock": {
       "nonOrgLanguage": "This language is not configured for your organization."
@@ -242,6 +247,10 @@
     },
     "addBlockModal": {
       "title": "Add Blocks to Document"
+    },
+    "moveLibraryModal": {
+      "title": "Move to Library",
+      "description": "Select the library to which you want to move this document."
     },
     "sheetBlock": {
       "noBlocksAdded": "No blocks have been added to this sheet yet."
@@ -336,6 +345,8 @@
     "editTitle": "Edit Library",
     "detailsTitle": "Library Details",
     "notFound": "Library not found",
+    "moveToLibrary": "Move to Library",
+    "createLibraryRequest": "Create Library Request",
     "fields": {
       "type": "Type"
     },
