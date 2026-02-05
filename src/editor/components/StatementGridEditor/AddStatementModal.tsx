@@ -23,6 +23,8 @@ import { useTranslation } from 'react-i18next';
 import { ContentTypeSelector } from '../../../ui/components/ContentTypeSelector';
 import StatementsGrid from '../../../ui/components/StatementsOverview';
 import { ContentLanguage } from '../../data/ContentLanguage';
+import { useLibraries } from '../../../ui/hooks/useLibraries/useLibraries';
+import { DocumentType } from '../../../api/ColabriAPI';
 
 export interface NewStatementData {
   statementSource: 'new' | 'library';
@@ -46,10 +48,19 @@ export const AddStatementModal: React.FC<AddStatementModalProps> = ({
   const { t } = useTranslation();
   const { docLanguages } = payload;
   const organization = useOrganization();
+  const { libraries } = useLibraries(
+    organization?.id || '',
+    organization != null,
+  );
+  const stmtLibraries = libraries.filter(
+    (lib) => lib.type === DocumentType.DocumentTypeColabStatement,
+  );
 
   // Selected tab state
   const [selectedTab, setSelectedTab] = useState(0);
   const statementSource = selectedTab === 0 ? 'new' : 'library';
+  const activeLibrary =
+    statementSource === 'library' ? stmtLibraries[selectedTab - 1] : null;
 
   // Selected content type state
   const [selectedContentType, setSelectedContentType] = useState<
@@ -64,6 +75,16 @@ export const AddStatementModal: React.FC<AddStatementModalProps> = ({
   const [selectedLibStatements, setSelectedLibStatements] = useState<
     StatementDocument[]
   >([]);
+
+  // whether to enable the Add button
+  const enableAddButton = () => {
+    if (statementSource === 'library') {
+      return selectedLibStatements.length > 0;
+    } else if (statementSource === 'new') {
+      return selectedLanguages.length > 0 && selectedContentType;
+    }
+    return false;
+  };
 
   const handleAdd = () => {
     if (statementSource === 'library') {
@@ -148,11 +169,21 @@ export const AddStatementModal: React.FC<AddStatementModalProps> = ({
               id="new-statement"
               aria-controls="tabpanel-new"
             />
-            <Tab
-              label="Library"
-              id="library-statement"
-              aria-controls="tabpanel-library"
-            />
+            {stmtLibraries.length > 0 &&
+              stmtLibraries.map((lib) => (
+                <Tab
+                  key={lib.id}
+                  label={
+                    lib.name
+                      .toLocaleLowerCase()
+                      .endsWith(t('common.library').toLocaleLowerCase())
+                      ? lib.name
+                      : lib.name + ' ' + t('common.library')
+                  }
+                  id={`library-statement-${lib.id}`}
+                  aria-controls={`tabpanel-library-${lib.id}`}
+                />
+              ))}
           </Tabs>
 
           {statementSource === 'new' && (
@@ -187,7 +218,7 @@ export const AddStatementModal: React.FC<AddStatementModalProps> = ({
           {statementSource === 'library' && (
             <StatementsGrid
               selectable={true}
-              scope={{ type: 'lib' }}
+              scope={{ type: 'lib', libraryId: activeLibrary?.id }}
               onSelectionChange={handleLibStatementsSelect}
             />
           )}
@@ -198,7 +229,7 @@ export const AddStatementModal: React.FC<AddStatementModalProps> = ({
         <Button
           onClick={handleAdd}
           variant="contained"
-          disabled={!selectedContentType}
+          disabled={!enableAddButton()}
         >
           {t('common.add')}
         </Button>

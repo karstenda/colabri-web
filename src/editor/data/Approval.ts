@@ -1,3 +1,6 @@
+import { ColabApprovalState, ColabUserApproval } from '../../api/ColabriAPI';
+import { UserApprovalLoro } from './ColabDoc';
+
 export const getApprovalColor = (
   state: string,
   mode: 'light' | 'dark',
@@ -20,5 +23,48 @@ export const getApprovalColor = (
     default:
       if (isDark) return hover ? '#BDBDBD' : '#9E9E9E';
       return hover ? '#BDBDBD' : '#E0E0E0';
+  }
+};
+
+export const getApprovalStateFromApprovals = (
+  approvalMap: Record<string, ColabUserApproval> | undefined,
+): ColabApprovalState => {
+  if (!approvalMap || Object.keys(approvalMap).length === 0) {
+    return ColabApprovalState.Draft;
+  } else {
+    // Iterate over the approvals to see if any are pending
+    let lowestStateScore = 4;
+    for (let [key, value] of Object.entries(approvalMap)) {
+      const approval = value;
+      // Associate a score with this state
+      let score = 1;
+      if (approval.state === ColabApprovalState.Rejected) {
+        score = 0;
+      } else if (approval.state === ColabApprovalState.Approved) {
+        score = 3;
+      } else if (approval.state === ColabApprovalState.Pending) {
+        score = 2;
+      } else if (approval.state === ColabApprovalState.Draft) {
+        score = 1;
+      }
+
+      if (score < lowestStateScore) {
+        lowestStateScore = score;
+      }
+    }
+
+    // Map the lowest score back to a state
+    if (lowestStateScore === 3) {
+      return ColabApprovalState.Approved;
+    } else if (lowestStateScore === 2) {
+      return ColabApprovalState.Pending;
+    } else if (lowestStateScore === 1) {
+      return ColabApprovalState.Draft;
+    } else if (lowestStateScore === 0) {
+      return ColabApprovalState.Rejected;
+    } else {
+      console.log('Unknown state score: ' + lowestStateScore);
+      return ColabApprovalState.Draft;
+    }
   }
 };

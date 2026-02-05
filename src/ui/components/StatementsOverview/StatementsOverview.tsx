@@ -1,5 +1,5 @@
 import { DataGrid } from '@mui/x-data-grid/DataGrid';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useStatements } from '../../hooks/useStatements/useStatements';
 import {
   useIsOrgAdmin,
@@ -37,6 +37,13 @@ import ResolvedPrplsProvider, {
 import IdentityDisplay from '../IdentityDisplay/IdentityDisplay';
 import { useDeleteDocument } from '../../hooks/useDocuments/useDocuments';
 import { useTranslation } from 'react-i18next';
+import { ContentLanguage } from '../../../editor/data/ContentLanguage';
+import { useContentLanguages } from '../../hooks/useContentLanguages/useContentLanguage';
+import StatementElementCell from './StatementElementCell';
+import {
+  getDefaultContentLanguages,
+  updateDefaultLangCodes,
+} from './DefaultLangStore';
 
 const INITIAL_PAGE_SIZE = 10;
 
@@ -71,7 +78,26 @@ function StatementsOverview(props: StatementsOverviewProps) {
   const isOrgAdmin = useIsOrgAdmin();
   const isCloudAdmin = useIsCloudAdmin();
   const { prpls } = useUserOrganizationContext();
+  const { languages: contentLanguages } = useContentLanguages(
+    organization?.id || '',
+    organization != null,
+  );
   const { deleteDocument } = useDeleteDocument(organization?.id || '');
+  const defaultContentLanguages = getDefaultContentLanguages(contentLanguages);
+
+  // Generate the default columns to be visible
+  const initColumnVisibilityModel: Record<string, boolean> = {};
+  initColumnVisibilityModel.updatedAt = false;
+  initColumnVisibilityModel.updatedBy = false;
+  initColumnVisibilityModel.createdBy = false;
+  initColumnVisibilityModel.createdAt = false;
+  for (const lang of contentLanguages) {
+    if (defaultContentLanguages.find((l) => l.code === lang.code)) {
+      initColumnVisibilityModel[`element[${lang.code}]`] = true;
+    } else {
+      initColumnVisibilityModel[`element[${lang.code}]`] = false;
+    }
+  }
 
   // Create the states for pagination, filtering, sorting, and column visibility
   const [paginationModel, setPaginationModel] =
@@ -84,7 +110,7 @@ function StatementsOverview(props: StatementsOverviewProps) {
   });
   const [sortModel, setSortModel] = React.useState<GridSortModel>([]);
   const [columnVisibilityModel, setColumnVisibilityModel] =
-    React.useState<GridColumnVisibilityModel>({ updatedAt: false });
+    React.useState<GridColumnVisibilityModel>(initColumnVisibilityModel);
   const [rowSelectionModel, setRowSelectionModel] =
     React.useState<GridRowSelectionModel>({
       type: 'include',
@@ -254,6 +280,39 @@ function StatementsOverview(props: StatementsOverviewProps) {
     refetchStatements();
   }, [refetchStatements]);
 
+  // When the column visibility model changes
+  const handleColumnVisibilityModelChange = React.useCallback(
+    (newModel: GridColumnVisibilityModel) => {
+      setColumnVisibilityModel((prev) => {
+        // Figure out if a language column (format "element[langCode]") is being toggled
+        let isTogglingLanguageColumn = false;
+        const visibleLangCodes: string[] = [];
+        for (const key of Object.keys(newModel)) {
+          if (key.startsWith('element[') && key.endsWith(']')) {
+            const langCode = key.substring(8, key.length - 1);
+            const isVisible = newModel[key];
+            if (isVisible) {
+              visibleLangCodes.push(langCode);
+            }
+            const wasVisible = prev[key];
+
+            if (isVisible !== wasVisible) {
+              isTogglingLanguageColumn = true;
+            }
+          }
+        }
+
+        // If so, update the default language codes in local storage
+        if (isTogglingLanguageColumn) {
+          updateDefaultLangCodes(visibleLangCodes);
+        }
+
+        return newModel;
+      });
+    },
+    [],
+  );
+
   // When the row selection changes
   const handleRowSelectionModelChange = React.useCallback(
     (newModel: GridRowSelectionModel) => {
@@ -277,10 +336,52 @@ function StatementsOverview(props: StatementsOverviewProps) {
   // When the statement is clicked for inspection
   const defaultHandleClick = React.useCallback(
     (statement: StatementDocument) => {
-      navigate(`/org/${organization?.id}/statements/${statement.id}`);
+      // If selectable, we want to select the row instead of navigating
+      if (selectable) {
+        // Toggle the row selection
+        if (rowSelectionModel.ids.has(statement.id!)) {
+          rowSelectionModel.ids.delete(statement.id!);
+        } else {
+          rowSelectionModel.ids.add(statement.id!);
+        }
+        // Add this row to the selection model
+        const newSelectionModel: GridRowSelectionModel = {
+          type: 'include',
+          ids: rowSelectionModel.ids,
+        };
+        handleRowSelectionModelChange(newSelectionModel);
+      } else {
+        // Navigate to the statement editor
+        navigate(`/org/${organization?.id}/statements/${statement.id}`);
+      }
     },
     [organization, navigate],
   );
+
+  const generateElementColumns = (
+    contentLanguages: ContentLanguage[] | never[],
+  ): GridColDef[] => {
+    const localizationColumns: GridColDef[] = [];
+    contentLanguages.forEach((lang) => {
+      localizationColumns.push({
+        field: `element[${lang.code}]`,
+        headerName: lang.name,
+        width: 250,
+        type: 'boolean',
+        sortable: false,
+        filterable: false,
+        renderCell: (row) => {
+          return (
+            <StatementElementCell
+              statement={row.row.statement}
+              langCode={lang.code}
+            />
+          );
+        },
+      });
+    });
+    return localizationColumns;
+  };
 
   const columns = React.useMemo<GridColDef[]>(
     () => [
@@ -288,8 +389,48 @@ function StatementsOverview(props: StatementsOverviewProps) {
         field: 'name',
         headerName: t('statements.columns.name'),
         width: 250,
+        minWidth: 250,
         flex: 1,
       },
+      {
+        field: 'Actions',
+        headerName: '',
+        type: 'actions',
+        flex: 1,
+        align: 'right',
+        width: 100,
+        minWidth: 75,
+        getActions: showStatementActions
+          ? (params) => {
+              // Can you delete the statement?
+              const canDelete =
+                isCloudAdmin || isOrgAdmin || prpls?.includes(params.row.owner);
+
+              // Generate the actions
+              const actions = [];
+              if (canDelete) {
+                actions.push(
+                  <GridActionsCellItem
+                    key="delete-item"
+                    icon={<DeleteIcon />}
+                    label={t('common.delete')}
+                    onClick={handleStatementDelete(params.row)}
+                  />,
+                );
+              }
+              actions.push(
+                <GridActionsCellItem
+                  key="edit-item"
+                  icon={<EditIcon />}
+                  label={t('common.edit')}
+                  onClick={handleRowEdit(params.row)}
+                />,
+              );
+              return actions;
+            }
+          : () => [],
+      },
+      ...generateElementColumns(contentLanguages),
       {
         field: 'owner',
         headerName: t('statements.columns.owner'),
@@ -337,46 +478,29 @@ function StatementsOverview(props: StatementsOverviewProps) {
         valueGetter: (value) => value && new Date(value),
         width: 140,
       },
-      {
-        field: 'Actions',
-        headerName: '',
-        type: 'actions',
-        flex: 1,
-        align: 'right',
-        width: 100,
-        getActions: showStatementActions
-          ? (params) => {
-              // Can you delete the statement?
-              const canDelete =
-                isCloudAdmin || isOrgAdmin || prpls?.includes(params.row.owner);
-
-              // Generate the actions
-              const actions = [];
-              if (canDelete) {
-                actions.push(
-                  <GridActionsCellItem
-                    key="delete-item"
-                    icon={<DeleteIcon />}
-                    label={t('common.delete')}
-                    onClick={handleStatementDelete(params.row)}
-                  />,
-                );
-              }
-              actions.push(
-                <GridActionsCellItem
-                  key="edit-item"
-                  icon={<EditIcon />}
-                  label={t('common.edit')}
-                  onClick={handleRowEdit(params.row)}
-                />,
-              );
-              return actions;
-            }
-          : () => [],
-      },
     ],
-    [handleRowEdit, handleStatementDelete, showStatementActions, t],
+    [
+      handleRowEdit,
+      handleStatementDelete,
+      showStatementActions,
+      contentLanguages,
+      t,
+    ],
   );
+
+  useEffect(() => {
+    setColumnVisibilityModel((prev) => {
+      const newVisibility = { ...prev };
+      contentLanguages.forEach((lang) => {
+        if (defaultContentLanguages.find((l) => l.code === lang.code)) {
+          newVisibility[`element[${lang.code}]`] = true;
+        } else {
+          newVisibility[`element[${lang.code}]`] = false;
+        }
+      });
+      return newVisibility;
+    });
+  }, [contentLanguages]);
 
   return (
     <Stack direction="column" spacing={2} sx={{ width: '100%' }}>
@@ -410,9 +534,7 @@ function StatementsOverview(props: StatementsOverviewProps) {
           rowCount={statements.length}
           columns={columns}
           columnVisibilityModel={columnVisibilityModel}
-          onColumnVisibilityModelChange={(newModel) =>
-            setColumnVisibilityModel(newModel)
-          }
+          onColumnVisibilityModelChange={handleColumnVisibilityModelChange}
           pagination
           checkboxSelection={selectable}
           rowSelectionModel={rowSelectionModel}
