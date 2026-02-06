@@ -39,7 +39,7 @@ import { useDeleteDocument } from '../../hooks/useDocuments/useDocuments';
 import { useTranslation } from 'react-i18next';
 import { ContentLanguage } from '../../../editor/data/ContentLanguage';
 import { useContentLanguages } from '../../hooks/useContentLanguages/useContentLanguage';
-import StatementElementCell from './StatementElementCell';
+import StatementsOverviewElementCell from './StatementsOverviewElementCell';
 import {
   getDefaultContentLanguages,
   updateDefaultLangCodes,
@@ -372,7 +372,7 @@ function StatementsOverview(props: StatementsOverviewProps) {
         filterable: false,
         renderCell: (row) => {
           return (
-            <StatementElementCell
+            <StatementsOverviewElementCell
               statement={row.row.statement}
               langCode={lang.code}
             />

@@ -33,6 +33,7 @@ import { ConnectedSheetDoc } from '../../data/ConnectedColabDoc';
 import { useTheme } from '@mui/material/styles';
 import getStmtEditColumn from './columns/StmtEditColumn';
 import { useSetActiveCell } from './context/StatementGridEditorContextProvider';
+import StatementGridEditorRow from './rows/StatementGridEditorRow';
 
 export type StatementGridEditorTableProps = {
   containerId: ContainerID;
@@ -247,9 +248,11 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
 
     if (newStatementData && controller) {
       // Figure out the type
-      let type: 'new' | 'reference' = 'new';
+      let type: 'new' | 'live-reference' | 'frozen-reference' = 'new';
       if (newStatementData.statementSource === 'library') {
-        type = 'reference';
+        type = 'frozen-reference';
+      } else if (newStatementData.statementSource === 'my-statements') {
+        type = 'live-reference';
       } else {
         type = 'new';
       }
@@ -334,7 +337,7 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
   const gridSlots = useMemo(
     () => ({
       toolbar: StatementGridEditorToolbar,
-      row: GridRow,
+      row: StatementGridEditorRow,
     }),
     [],
   );

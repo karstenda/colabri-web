@@ -121,6 +121,44 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
   }
 
   /**
+   * Get the referenced statement
+   *
+   * @param rowContainerId
+   */
+  public getStatementReference(rowContainerId: ContainerID): {
+    docId: string;
+    versionV: string;
+  } {
+    const rowMap = this.loroDoc.getContainerById(
+      rowContainerId,
+    ) as SheetStatementGridRowLoro;
+    if (!rowMap) {
+      throw new Error(
+        `Could not find row map for container ID ${rowContainerId}`,
+      );
+    }
+
+    const rowType = rowMap.get('type');
+    if (rowType !== StatementGridRowType.StatementGridRowTypeReference) {
+      throw new Error(
+        `Row container ID ${rowContainerId} is not a statement reference`,
+      );
+    }
+
+    const stmtRefMap = rowMap.get('statementRef');
+    if (!stmtRefMap) {
+      throw new Error(
+        `Could not find statement reference map for row container ID ${rowContainerId}`,
+      );
+    }
+
+    return {
+      docId: stmtRefMap.get('docId'),
+      versionV: stmtRefMap.get('versionV'),
+    };
+  }
+
+  /**
    * Whether all approvals have been done on the document
    */
   public isFullyApproved(): boolean {
@@ -701,7 +739,7 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
    */
   addStatementToStatementGridBlock(
     containerId: ContainerID,
-    type: 'reference' | 'new',
+    type: 'live-reference' | 'frozen-reference' | 'new',
     newStatementData: {
       statements?: StatementDocument[];
       contentType?: string;
@@ -720,7 +758,10 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
       );
       return false;
     }
-    if (type === 'reference' && newStatementData.statements === undefined) {
+    if (
+      (type === 'frozen-reference' || type === 'live-reference') &&
+      newStatementData.statements === undefined
+    ) {
       console.warn(
         'Invalid new statement data provided, when referencing statements',
       );
@@ -750,12 +791,23 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
       position = position + 1;
     }
 
-    if (type === 'reference') {
+    if (type === 'frozen-reference') {
       // Insert each referenced statement
       for (const stmtDoc of newStatementData.statements!) {
+        // Figure out the statement version to reference
+        let version = 0;
+        for (const streamKey of Object.keys(stmtDoc.streams)) {
+          if (streamKey !== 'main') {
+            continue;
+          }
+          const mainStream = stmtDoc.streams[streamKey];
+          version = Math.max(version, mainStream.version);
+        }
+
         // Create the statement as a loro map
         const statementRefMap = new LoroMap<StmtRefSchema>();
         statementRefMap.set('docId', stmtDoc.id);
+        statementRefMap.set('version', version);
         statementRefMap.set('versionV', JSON.stringify(stmtDoc.versionV));
 
         // Insert the statement map into a new row
@@ -767,6 +819,21 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
         rowList.insertContainer(position, rowMap);
       }
       return true;
+    } else if (type === 'live-reference') {
+      // Insert each referenced statement
+      for (const stmtDoc of newStatementData.statements!) {
+        // Create the statement as a loro map
+        const statementRefMap = new LoroMap<StmtRefSchema>();
+        statementRefMap.set('docId', stmtDoc.id);
+
+        // Insert the statement map into a new row
+        const rowMap: SheetStatementGridRowLoro = new LoroMap();
+        rowMap.setContainer('statementRef', statementRefMap);
+        rowMap.set('type', StatementGridRowType.StatementGridRowTypeReference);
+
+        // Insert the row into the list
+        rowList.insertContainer(position, rowMap);
+      }
     }
     // When we need to create a new statement
     else if (type === 'new') {

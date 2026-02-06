@@ -19,6 +19,17 @@ class StatementDocController extends StatementController<StmtLoroDoc> {
   }
 
   /**
+   * Get the content type of the document
+   *
+   * @returns
+   */
+  getContentType(): string | undefined {
+    const propertiesMap = this.getPropertiesMap();
+    const contentType = propertiesMap.get('contentType');
+    return contentType;
+  }
+
+  /**
    * Get the main properties map
    */
   getPropertiesMap(): LoroMap<Record<string, any>> {

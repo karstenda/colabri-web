@@ -242,6 +242,7 @@
       "title": "Add Statement",
       "newStatementTab": "New Statement",
       "newStatementDescription": "Create a new statement to add to this block. This statement will only be available in this document.",
+      "myStatementsTab": "My Statements",
       "libraryStatementTab": "Library",
       "libraryStatementDescription": "Select from existing statements in the statement library."
     },

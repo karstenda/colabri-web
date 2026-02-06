@@ -15,12 +15,14 @@ import {
 import { textElementToHTML } from '../../../editor/util/ProseMirrorContentUtil';
 import { useTranslation } from 'react-i18next';
 
-export type StatementElementCellProps = {
+export type StatementsOverviewElementCellProps = {
   statement: ColabStatementModel;
   langCode: string;
 };
 
-const StatementElementCell = (props: StatementElementCellProps) => {
+const StatementsOverviewElementCell = (
+  props: StatementsOverviewElementCellProps,
+) => {
   const { mode } = useColorScheme();
   const theme = useTheme();
   const organization = useOrganization();
@@ -128,4 +130,4 @@ const StatementElementCell = (props: StatementElementCellProps) => {
   }
 };
 
-export default StatementElementCell;
+export default StatementsOverviewElementCell;

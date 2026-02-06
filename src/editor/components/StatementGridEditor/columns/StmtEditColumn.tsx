@@ -1,9 +1,9 @@
 import { TFunction } from 'i18next';
 import { StatementGridEditorTableRow } from '../StatementGridEditorTable';
 import { StatementGridRowType } from '../../../../api/ColabriAPI';
-import LocalStmtEditCell from '../cells/LocalStmtElementCell/LocalStmtElementCell';
+import LocalStmtElementCell from '../cells/StmtElementCell/LocalStmtElementCell';
+import RefStmtElementCell from '../cells/StmtElementCell/RefStmtElementCell';
 import { ContentLanguage } from '../../../data/ContentLanguage';
-import { JSX } from 'react';
 
 const getStmtEditColumn = (language: ContentLanguage, t: TFunction) => ({
   field: 'lang-' + language.code,
@@ -20,7 +20,7 @@ const getStmtEditColumn = (language: ContentLanguage, t: TFunction) => ({
         return <>{t('editor.sheetStatementGridBlock.noStatement')}</>;
       } else {
         return (
-          <LocalStmtEditCell
+          <LocalStmtElementCell
             langCode={language.code}
             statement={row.statement}
             field={'lang-' + language.code}
@@ -29,7 +29,13 @@ const getStmtEditColumn = (language: ContentLanguage, t: TFunction) => ({
         );
       }
     } else {
-      return <>Remote</>;
+      return (
+        <RefStmtElementCell
+          langCode={language.code}
+          field={'lang-' + language.code}
+          rowId={row.id}
+        />
+      );
     }
   },
 });

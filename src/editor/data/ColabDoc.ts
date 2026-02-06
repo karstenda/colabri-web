@@ -96,6 +96,7 @@ export type SheetStatementGridRowLoro = LoroMap<{
 
 export type StmtRefSchema = {
   docId: string;
+  version: number;
   versionV: string;
 };
 

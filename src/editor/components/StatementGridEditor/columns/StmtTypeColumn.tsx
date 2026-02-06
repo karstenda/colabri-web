@@ -3,6 +3,7 @@ import LocalTypeCell from '../cells/LocalTypeCell/LocalTypeCell';
 import { StatementGridEditorTableRow } from '../StatementGridEditorTable';
 import { StatementGridRowType } from '../../../../api/ColabriAPI';
 import CellWrapper from '../cells/CellWrapper';
+import RefTypeCell from '../cells/RefTypeCell/RefTypeCell';
 
 const getStmtTypeColumn = (t: TFunction) => ({
   field: 'name',
@@ -23,7 +24,7 @@ const getStmtTypeColumn = (t: TFunction) => ({
         return <LocalTypeCell statement={row.statement} hasFocus={hasFocus} />;
       }
     } else {
-      return <CellWrapper>Remote</CellWrapper>;
+      return <RefTypeCell hasFocus={hasFocus} />;
     }
   },
 });

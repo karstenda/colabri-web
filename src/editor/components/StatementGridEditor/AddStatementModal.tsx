@@ -27,7 +27,7 @@ import { useLibraries } from '../../../ui/hooks/useLibraries/useLibraries';
 import { DocumentType } from '../../../api/ColabriAPI';
 
 export interface NewStatementData {
-  statementSource: 'new' | 'library';
+  statementSource: 'new' | 'my-statements' | 'library';
   statements?: StatementDocument[];
   contentType?: string;
   langCodes?: string[];
@@ -58,9 +58,16 @@ export const AddStatementModal: React.FC<AddStatementModalProps> = ({
 
   // Selected tab state
   const [selectedTab, setSelectedTab] = useState(0);
-  const statementSource = selectedTab === 0 ? 'new' : 'library';
+  let statementSource: 'new' | 'my-statements' | 'library';
+  if (selectedTab === 0) {
+    statementSource = 'new';
+  } else if (selectedTab === 1) {
+    statementSource = 'my-statements';
+  } else {
+    statementSource = 'library';
+  }
   const activeLibrary =
-    statementSource === 'library' ? stmtLibraries[selectedTab - 1] : null;
+    statementSource === 'library' ? stmtLibraries[selectedTab - 2] : null;
 
   // Selected content type state
   const [selectedContentType, setSelectedContentType] = useState<
@@ -72,28 +79,26 @@ export const AddStatementModal: React.FC<AddStatementModalProps> = ({
     useState<ContentLanguage[]>(docLanguages);
 
   // Selected library statements state
-  const [selectedLibStatements, setSelectedLibStatements] = useState<
+  const [selectedStatements, setSelectedStatements] = useState<
     StatementDocument[]
   >([]);
 
   // whether to enable the Add button
-  const enableAddButton = () => {
-    if (statementSource === 'library') {
-      return selectedLibStatements.length > 0;
-    } else if (statementSource === 'new') {
-      return selectedLanguages.length > 0 && selectedContentType;
-    }
-    return false;
-  };
+  let enableAddButton = false;
+  if (statementSource === 'library' || statementSource === 'my-statements') {
+    enableAddButton = selectedStatements.length > 0;
+  } else if (statementSource === 'new') {
+    enableAddButton = selectedLanguages.length > 0 && !!selectedContentType;
+  }
 
   const handleAdd = () => {
-    if (statementSource === 'library') {
-      if (selectedLibStatements.length > 0) {
+    if (statementSource === 'library' || statementSource === 'my-statements') {
+      if (selectedStatements.length > 0) {
         onClose({
-          statementSource: 'library',
-          statements: selectedLibStatements,
+          statementSource: statementSource,
+          statements: selectedStatements,
         });
-        setSelectedLibStatements([]);
+        setSelectedStatements([]);
       }
     } else if (statementSource === 'new') {
       if (selectedLanguages.length > 0) {
@@ -144,11 +149,16 @@ export const AddStatementModal: React.FC<AddStatementModalProps> = ({
     }
   };
 
-  const handleLibStatementsSelect = (
-    selectedStatements: StatementDocument[],
-  ) => {
+  const handleTabChange = (newValue: number) => {
+    setSelectedTab(newValue);
+    setSelectedContentType(undefined);
+    setSelectedLanguages(docLanguages);
+    setSelectedStatements([]);
+  };
+
+  const handleStatementsSelect = (selectedStatements: StatementDocument[]) => {
     // Save the state
-    setSelectedLibStatements(selectedStatements);
+    setSelectedStatements(selectedStatements);
   };
 
   return (
@@ -162,12 +172,17 @@ export const AddStatementModal: React.FC<AddStatementModalProps> = ({
         <Stack spacing={2}>
           <Tabs
             value={selectedTab}
-            onChange={(e, newValue) => setSelectedTab(newValue)}
+            onChange={(e, newValue) => handleTabChange(newValue)}
           >
             <Tab
-              label="New Statement"
+              label={t('editor.addStatementModal.newStatementTab')}
               id="new-statement"
               aria-controls="tabpanel-new"
+            />
+            <Tab
+              label={t('editor.addStatementModal.myStatementsTab')}
+              id="my-statements"
+              aria-controls="tabpanel-my-statements"
             />
             {stmtLibraries.length > 0 &&
               stmtLibraries.map((lib) => (
@@ -215,11 +230,18 @@ export const AddStatementModal: React.FC<AddStatementModalProps> = ({
               </Grid>
             </>
           )}
+          {statementSource === 'my-statements' && (
+            <StatementsGrid
+              selectable={true}
+              scope={{ type: 'my' }}
+              onSelectionChange={handleStatementsSelect}
+            />
+          )}
           {statementSource === 'library' && (
             <StatementsGrid
               selectable={true}
               scope={{ type: 'lib', libraryId: activeLibrary?.id }}
-              onSelectionChange={handleLibStatementsSelect}
+              onSelectionChange={handleStatementsSelect}
             />
           )}
         </Stack>
@@ -229,7 +251,7 @@ export const AddStatementModal: React.FC<AddStatementModalProps> = ({
         <Button
           onClick={handleAdd}
           variant="contained"
-          disabled={!enableAddButton()}
+          disabled={!enableAddButton}
         >
           {t('common.add')}
         </Button>

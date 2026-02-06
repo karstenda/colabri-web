@@ -238,13 +238,18 @@ class StatementController<
     }
 
     // Check if the user has edit permission on the element
-    const elementAclMap = this.getStmtElementAclMap(langCode);
-    for (const prpl of this.authPrpls) {
-      const editPrpls = elementAclMap[Permission.Approve] || [];
-      if (editPrpls.includes(prpl)) {
-        return true;
+    try {
+      const elementAclMap = this.getStmtElementAclMap(langCode);
+      for (const prpl of this.authPrpls) {
+        const editPrpls = elementAclMap[Permission.Approve] || [];
+        if (editPrpls.includes(prpl)) {
+          return true;
+        }
       }
+    } catch (error) {
+      return false;
     }
+
     return false;
   }
 

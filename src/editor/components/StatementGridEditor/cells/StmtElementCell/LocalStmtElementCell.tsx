@@ -16,14 +16,14 @@ import {
   useStatementGridEditorReadOnly,
 } from '../../context/StatementGridEditorContextProvider';
 
-export type LocalStmtEditCellProps = {
+export type LocalStmtElementCellProps = {
   field: string;
   rowId: string;
   statement: LoroMap<StmtDocSchema>;
   langCode: string;
 };
 
-const LocalStmtEditCell = (props: LocalStmtEditCellProps) => {
+const LocalStmtElementCell = (props: LocalStmtElementCellProps) => {
   const { t } = useTranslation();
   const setActiveStatementElement = useSetActiveStatementElement();
   const readOnly = useStatementGridEditorReadOnly();
@@ -35,7 +35,7 @@ const LocalStmtEditCell = (props: LocalStmtEditCellProps) => {
   const { colabDoc } = useColabDoc();
   if (colabDoc && !(colabDoc instanceof ConnectedSheetDoc)) {
     throw new Error(
-      'LocalStmtLangCell can only be used within connected sheet documents.',
+      'LocalStmtElementCell can only be used within connected sheet documents.',
     );
   }
 
@@ -204,4 +204,4 @@ const LocalStmtEditCell = (props: LocalStmtEditCellProps) => {
   }
 };
 
-export default LocalStmtEditCell;
+export default LocalStmtElementCell;

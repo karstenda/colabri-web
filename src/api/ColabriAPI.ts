@@ -127,7 +127,7 @@ export interface AttributeValueOnly {
 
 export interface AttributeValueStruct {
   display: string;
-  value: Record<string, any>;
+  value: any;
 }
 
 export interface CheckOrganizationNameRequest {
@@ -187,6 +187,7 @@ export interface ColabSheetStatementGridRow {
 
 export interface ColabSheetStatementRef {
   docId: string;
+  version: number;
   versionV: string;
 }
 
@@ -305,7 +306,7 @@ export interface Document {
   id: string;
   name: string;
   owner: string;
-  streams: Record<string, DocumentStream[]>;
+  streams: Record<string, DocumentStream>;
   type: string;
   updatedAt: string;
   updatedBy: string;
@@ -462,7 +463,7 @@ export interface SheetDocument {
   owner: string;
   peerMap: Record<string, string>;
   sheet: ColabSheetModel;
-  streams: Record<string, DocumentStream[]>;
+  streams: Record<string, DocumentStream>;
   type: string;
   updatedAt: string;
   updatedBy: string;
@@ -551,7 +552,7 @@ export interface StatementDocument {
   owner: string;
   peerMap: Record<string, string>;
   statement: ColabStatementModel;
-  streams: Record<string, DocumentStream[]>;
+  streams: Record<string, DocumentStream>;
   type: string;
   updatedAt: string;
   updatedBy: string;
