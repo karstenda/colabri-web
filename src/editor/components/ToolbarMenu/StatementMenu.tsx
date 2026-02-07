@@ -23,7 +23,9 @@ import { useTranslation } from 'react-i18next';
 import {
   ConnectedSheetDoc,
   ConnectedStmtDoc,
-} from '../../data/ConnectedColabDoc';
+  FrozenSheetDoc,
+  FrozenStmtDoc,
+} from '../../data/ColabDoc';
 import LanguageAddIcon from '../icons/LanguageAddIcon';
 import LanguageRemoveIcon from '../icons/LanguageRemoveIcon';
 import LanguageSettingsIcon from '../icons/LanguageSettingsIcon';
@@ -82,11 +84,17 @@ export default function StatementMenu({
   if (activeStatementElementRef) {
     const refColabDoc = activeStatementElementRef.colabDoc;
     // If it's a statement doc, just get the main controller
-    if (refColabDoc instanceof ConnectedStmtDoc) {
+    if (
+      refColabDoc instanceof ConnectedStmtDoc ||
+      refColabDoc instanceof FrozenStmtDoc
+    ) {
       stmtController = refColabDoc.getDocController() as StatementDocController;
     }
     // If it's a sheet doc, get the local statement controller
-    else if (refColabDoc instanceof ConnectedSheetDoc) {
+    else if (
+      refColabDoc instanceof ConnectedSheetDoc ||
+      refColabDoc instanceof FrozenSheetDoc
+    ) {
       const sheetController = refColabDoc.getDocController();
       const stmtContainerId = activeStatementElementRef.stmtContainerId;
       if (!stmtContainerId) {
@@ -101,12 +109,13 @@ export default function StatementMenu({
   }
   // No active statement element ref, then we can only assume the main doc is a statement doc
   else {
-    if (colabDoc instanceof ConnectedStmtDoc) {
+    if (
+      colabDoc instanceof ConnectedStmtDoc ||
+      colabDoc instanceof FrozenStmtDoc
+    ) {
       stmtController = colabDoc.getDocController() as StatementDocController;
     } else {
-      throw new Error(
-        'StatementMenu can only be used with connected statement docs.',
-      );
+      throw new Error('StatementMenu can only be used with statement docs.');
     }
   }
   const controller: StatementDocController | StatementLocalController | null =

@@ -6,11 +6,13 @@ import { useCallback, useEffect, useState } from 'react';
 import SheetsGrid from '../../components/SheetsOverview/SheetsOverview';
 import Box from '@mui/material/Box';
 import { DocumentType } from '../../../api/ColabriAPI';
+import { useTranslation } from 'react-i18next';
 
 export type SheetLibListPanelProps = {};
 
 const SheetLibListPanel = ({}: SheetLibListPanelProps) => {
   const organization = useOrganization();
+  const { t } = useTranslation();
   const { libraries } = useLibraries(
     organization?.id || '',
     organization !== undefined,
@@ -67,7 +69,13 @@ const SheetLibListPanel = ({}: SheetLibListPanelProps) => {
               <Tab
                 id={'tab-' + library.id}
                 aria-controls={'tabpanel-' + library.id}
-                label={library.name}
+                label={
+                  library.name
+                    .toLocaleLowerCase()
+                    .endsWith(t('common.library').toLocaleLowerCase())
+                    ? library.name
+                    : library.name + ' ' + t('common.library')
+                }
                 value={library.id}
               />
             ))}

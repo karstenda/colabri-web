@@ -7,7 +7,7 @@ import {
   StmtElementLoro,
   StmtLoroDoc,
   UserApprovalLoro,
-} from '../data/ColabDoc';
+} from '../data/ColabLoroDoc';
 import { Permission } from '../../ui/data/Permission';
 import ColabDocController from './ColabDocController';
 import { ColabApprovalState, ColabApprovalType } from '../../api/ColabriAPI';
@@ -288,7 +288,7 @@ class StatementController<
         approvalKey,
         new LoroMap(),
       );
-      approval.set('type', ColabApprovalType.User);
+      approval.set('type', ColabApprovalType.ColabApprovalTypeUser);
       approval.set('user', this.userId);
       approval.set('state', ColabApprovalState.Approved);
       approval.set('date', new Date());
@@ -301,7 +301,7 @@ class StatementController<
         return false;
       }
       // Update the approval
-      approval.set('type', ColabApprovalType.User);
+      approval.set('type', ColabApprovalType.ColabApprovalTypeUser);
       approval.set('user', this.userId);
       approval.set('state', ColabApprovalState.Approved);
       approval.set('date', new Date());
@@ -345,7 +345,7 @@ class StatementController<
         approvalKey,
         new LoroMap(),
       );
-      approval.set('type', ColabApprovalType.User);
+      approval.set('type', ColabApprovalType.ColabApprovalTypeUser);
       approval.set('user', this.userId);
       approval.set('state', ColabApprovalState.Rejected);
       approval.set('date', new Date());
@@ -357,7 +357,7 @@ class StatementController<
         return false;
       }
       // Update the approval
-      approval.set('type', ColabApprovalType.User);
+      approval.set('type', ColabApprovalType.ColabApprovalTypeUser);
       approval.set('user', this.userId);
       approval.set('state', ColabApprovalState.Rejected);
       approval.set('date', new Date());

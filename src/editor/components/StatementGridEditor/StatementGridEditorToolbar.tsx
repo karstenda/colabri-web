@@ -3,12 +3,13 @@ import { useColabDoc } from '../../context/ColabDocContext/ColabDocProvider';
 import Button from '@mui/material/Button';
 import { GridSlotProps, Toolbar } from '@mui/x-data-grid';
 import { styled, useTheme } from '@mui/material/styles';
-import OutlinedColabTextEditor from '../ColabTextEditor/ColabTextEditorOutlined';
+import ColabTextEditorOutlined from '../ColabTextEditor/ColabTextEditorOutlined';
 import { useEffect } from 'react';
 import { ContainerID, LoroDoc } from 'loro-crdt';
 import { LoroDocType } from 'loro-prosemirror';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { ConnectedSheetDoc, FrozenSheetDoc } from '../../data/ColabDoc';
 
 export type StatementGridEditorToolbarProps = {
   titleContainerId?: ContainerID;
@@ -63,6 +64,15 @@ const StatementGridEditorToolbar = ({
   const { t } = useTranslation();
   const theme = useTheme();
 
+  if (
+    !(colabDoc instanceof ConnectedSheetDoc) &&
+    !(colabDoc instanceof FrozenSheetDoc)
+  ) {
+    throw new Error(
+      'StatementGridEditorToolbar can only be used with sheet docs.',
+    );
+  }
+
   const loroDoc = colabDoc?.getLoroDoc();
   const ephStoreMgr = colabDoc?.getEphStoreMgr();
 
@@ -88,7 +98,7 @@ const StatementGridEditorToolbar = ({
         <ToolbarLeft>
           {showTitleEditor && (
             <Typography variant="h6" component="div" sx={{ width: '100%' }}>
-              <OutlinedColabTextEditor
+              <ColabTextEditorOutlined
                 showOutlines={showOutlines && !readOnly}
                 loro={loroDoc as any as LoroDocType}
                 ephStoreMgr={ephStoreMgr}

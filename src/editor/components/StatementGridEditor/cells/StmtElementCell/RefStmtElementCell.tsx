@@ -1,9 +1,10 @@
 import { LoroMap } from 'loro-crdt';
-import { StmtDocSchema } from '../../../../data/ColabDoc';
+import { StmtDocSchema } from '../../../../data/ColabLoroDoc';
 import {
   ConnectedSheetDoc,
   ConnectedStmtDoc,
-} from '../../../../data/ConnectedColabDoc';
+  FrozenStmtDoc,
+} from '../../../../data/ColabDoc';
 import { LoroDocType } from 'loro-prosemirror';
 import { useColabDoc } from '../../../../context/ColabDocContext/ColabDocProvider';
 import CellWrapper from '../CellWrapper';
@@ -35,9 +36,12 @@ const RefStmtElementCell = (props: RefStmtCellProps) => {
 
   // The connected document
   const { colabDoc } = useColabDoc();
-  if (colabDoc && !(colabDoc instanceof ConnectedStmtDoc)) {
+  if (
+    !(colabDoc instanceof ConnectedStmtDoc) &&
+    !(colabDoc instanceof FrozenStmtDoc)
+  ) {
     throw new Error(
-      'RefStmtElementCell can only be used within connected statement documents.',
+      'RefStmtElementCell can only be used within statement documents.',
     );
   }
 

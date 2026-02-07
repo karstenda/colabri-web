@@ -9,16 +9,14 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { ContainerID, LoroDoc } from 'loro-crdt';
 import { StyledDocEditorBlock } from './DocEditorBlockStyles';
-import {
-  ConnectedSheetDoc,
-  ConnectedStmtDoc,
-} from '../../../data/ConnectedColabDoc';
+import { ColabDoc } from '../../../data/ColabDoc';
+import { ColabLoroDoc } from '../../../data/ColabLoroDoc';
 
 export type DocEditorBlockProps = BoxProps & {
   blockId: string;
   blockType: string;
   loroContainerId: ContainerID;
-  colabDoc: ConnectedSheetDoc | ConnectedStmtDoc;
+  colabDoc: ColabDoc<ColabLoroDoc>;
   editable: boolean;
   readOnly?: boolean;
   showUpDownControls?: boolean;

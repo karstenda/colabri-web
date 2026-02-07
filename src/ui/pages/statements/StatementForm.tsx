@@ -7,12 +7,7 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from 'react-router';
-import {
-  ColabModelType,
-  ColabStatementModel,
-  DocumentType,
-  type StatementDocument,
-} from '../../../api/ColabriAPI';
+import { DocumentType, ColabStatementModel } from '../../../api/ColabriAPI';
 import { ContentTypeSelector } from '../../components/ContentTypeSelector';
 import { useOrganization } from '../../context/UserOrganizationContext/UserOrganizationProvider';
 import { useTheme } from '@mui/material/styles';

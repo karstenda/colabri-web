@@ -1,7 +1,7 @@
 import React from 'react';
-import { ColabDocProvider } from '../../../editor/context/ColabDocContext/ColabDocProvider';
 import ColabDocEditor from '../../../editor/components/ColabDocEditor/ColabDocEditor';
 import { useParams } from 'react-router';
+import { ConnectedColabDocProvider } from '../../../editor/context/ColabDocContext/ConnectedColabDocProvider';
 
 const ColabDocEditorPage: React.FC = () => {
   // Get the docId from params
@@ -11,9 +11,9 @@ const ColabDocEditorPage: React.FC = () => {
     return <div>No document ID provided.</div>;
   } else {
     return (
-      <ColabDocProvider docId={docId}>
+      <ConnectedColabDocProvider docId={docId}>
         <ColabDocEditor />
-      </ColabDocProvider>
+      </ConnectedColabDocProvider>
     );
   }
 };

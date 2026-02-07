@@ -58,11 +58,6 @@ export enum ColabSheetBlockType {
   ColabSheetBlockTypeStatementGrid = "statement-grid",
 }
 
-export enum ColabModelType {
-  ColabModelStatementType = "colab-statement",
-  ColabModelSheetType = "colab-sheet",
-}
-
 export enum ColabCommentType {
   ColabCommentUserType = "user",
 }
@@ -73,8 +68,8 @@ export enum ColabCommentState {
 }
 
 export enum ColabApprovalType {
-  User = "user",
-  Group = "group",
+  ColabApprovalTypeUser = "user",
+  ColabApprovalTypeGroup = "group",
 }
 
 export enum ColabApprovalState {
@@ -157,7 +152,7 @@ export interface ColabModelProperties {
   countryCodes?: string[];
   langCodes?: string[];
   masterLangCode?: string;
-  type: ColabModelType;
+  type: DocumentType;
 }
 
 export interface ColabSheetBlockDictionary {

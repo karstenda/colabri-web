@@ -9,11 +9,7 @@ import SheetForm, {
 } from './SheetForm';
 import PageContainer from '../../components/MainLayout/PageContainer';
 import { useUserOrganizationContext } from '../../context/UserOrganizationContext/UserOrganizationProvider';
-import {
-  ColabModelType,
-  ColabSheetModel,
-  StatementGridRowType,
-} from '../../../api/ColabriAPI';
+import { DocumentType } from '../../../api/ColabriAPI';
 
 export default function SheetCreatePage() {
   const navigate = useNavigate();
@@ -91,7 +87,7 @@ export default function SheetCreatePage() {
       // Create the sheet structure based on the form values
       const newSheet = {
         properties: {
-          type: ColabModelType.ColabModelSheetType,
+          type: DocumentType.DocumentTypeColabSheet,
           contentType: 'PRODUCT',
           countryCodes:
             formValues.countries

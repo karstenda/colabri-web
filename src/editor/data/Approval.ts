@@ -1,5 +1,5 @@
 import { ColabApprovalState, ColabUserApproval } from '../../api/ColabriAPI';
-import { UserApprovalLoro } from './ColabDoc';
+import { UserApprovalLoro } from './ColabLoroDoc';
 
 export const getApprovalColor = (
   state: string,

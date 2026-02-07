@@ -5,7 +5,7 @@ import {
   StmtDocSchema,
   StmtElementLoro,
   StmtLoroDoc,
-} from '../data/ColabDoc';
+} from '../data/ColabLoroDoc';
 import ColabDocController from './ColabDocController';
 import { pathStartsWith } from '../util/LoroPathUtil';
 import StatementController from './StatementController';

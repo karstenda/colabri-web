@@ -1,5 +1,5 @@
 import { LoroEventBatch, LoroList, LoroMap, Subscription } from 'loro-crdt';
-import { AclLoroMap, StmtElementLoro, StmtLoroDoc } from '../data/ColabDoc';
+import { AclLoroMap, StmtElementLoro, StmtLoroDoc } from '../data/ColabLoroDoc';
 import StatementController from './StatementController';
 import { pathStartsWith } from '../util/LoroPathUtil';
 import { Permission } from '../../ui/data/Permission';

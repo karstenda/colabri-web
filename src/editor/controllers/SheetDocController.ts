@@ -19,7 +19,7 @@ import {
   StmtRefSchema,
   TextElementLoro,
   UserApprovalLoro,
-} from '../data/ColabDoc';
+} from '../data/ColabLoroDoc';
 import { Permission } from '../../ui/data/Permission';
 import ColabDocController from './ColabDocController';
 import { pathEquals, pathStartsWith } from '../util/LoroPathUtil';
@@ -32,8 +32,6 @@ import {
   StatementGridRowType,
   StatementDocument,
 } from '../../api/ColabriAPI';
-import StatementController from './StatementController';
-import StatementEmbedController from './StatementLocalController';
 import StatementLocalController from './StatementLocalController';
 
 export type ColabSheetBlock =
@@ -444,7 +442,7 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
         approvalKey,
         new LoroMap(),
       );
-      approval.set('type', ColabApprovalType.User);
+      approval.set('type', ColabApprovalType.ColabApprovalTypeUser);
       approval.set('user', this.userId);
       approval.set('state', ColabApprovalState.Approved);
       approval.set('date', new Date());
@@ -457,7 +455,7 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
         return false;
       }
       // Update the approval
-      approval.set('type', ColabApprovalType.User);
+      approval.set('type', ColabApprovalType.ColabApprovalTypeUser);
       approval.set('user', this.userId);
       approval.set('state', ColabApprovalState.Approved);
       approval.set('date', new Date());
@@ -501,7 +499,7 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
         approvalKey,
         new LoroMap(),
       );
-      approval.set('type', ColabApprovalType.User);
+      approval.set('type', ColabApprovalType.ColabApprovalTypeUser);
       approval.set('user', this.userId);
       approval.set('state', ColabApprovalState.Rejected);
       approval.set('date', new Date());
@@ -513,7 +511,7 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
         return false;
       }
       // Update the approval
-      approval.set('type', ColabApprovalType.User);
+      approval.set('type', ColabApprovalType.ColabApprovalTypeUser);
       approval.set('user', this.userId);
       approval.set('state', ColabApprovalState.Rejected);
       approval.set('date', new Date());

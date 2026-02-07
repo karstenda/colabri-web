@@ -1,10 +1,10 @@
 import { createContext } from 'react';
-import { ConnectedColabDoc } from '../../data/ConnectedColabDoc';
-import { ColabLoroDoc } from '../../data/ColabDoc';
+import { ColabDoc } from '../../data/ColabDoc';
+import { ColabLoroDoc } from '../../data/ColabLoroDoc';
 
 export type ColabDocContextType = {
   docId: string | null;
-  colabDoc: ConnectedColabDoc<ColabLoroDoc> | null;
+  colabDoc: ColabDoc<ColabLoroDoc> | null;
   error: Error | null;
 };
 

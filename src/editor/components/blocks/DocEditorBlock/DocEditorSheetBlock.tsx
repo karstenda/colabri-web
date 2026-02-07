@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useDialogs } from '../../../../ui/hooks/useDialogs/useDialogs';
 import { useColabDoc } from '../../../context/ColabDocContext/ColabDocProvider';
-import { ConnectedSheetDoc } from '../../../data/ConnectedColabDoc';
+import { ConnectedSheetDoc, FrozenSheetDoc } from '../../../data/ColabDoc';
 import DocEditorBlock, { DocEditorBlockProps } from './DocEditorBlock';
 import ManageModal from '../../ManageModal/ManageModal';
 import { ManageSheetBlockModalPayload } from '../../ManageModal/ManageModalPayloads';
@@ -19,10 +19,11 @@ const DocEditorSheetBlock: React.FC<DocEditorSheetBlockProps> = (props) => {
 
   // Get the current ColabDoc
   const { colabDoc } = useColabDoc();
-  if (!(colabDoc instanceof ConnectedSheetDoc)) {
-    throw new Error(
-      'SheetTextBlock can only be used with connected sheet docs.',
-    );
+  if (
+    !(colabDoc instanceof ConnectedSheetDoc) &&
+    !(colabDoc instanceof FrozenSheetDoc)
+  ) {
+    throw new Error('SheetTextBlock can only be used with sheet docs.');
   }
 
   // Get the controller

@@ -6,12 +6,14 @@ import { useCallback, useEffect, useState } from 'react';
 import StatementsGrid from '../../components/StatementsOverview/StatementsOverview';
 import Box from '@mui/material/Box';
 import { DocumentType } from '../../../api/ColabriAPI';
+import { useTranslation } from 'react-i18next';
 
 export type StatementLibListPanelProps = {};
 
 const StatementLibListPanel = ({}: StatementLibListPanelProps) => {
   const organization = useOrganization();
-  const { libraries, isLoading } = useLibraries(
+  const { t } = useTranslation();
+  const { libraries } = useLibraries(
     organization?.id || '',
     organization !== undefined,
   );
@@ -67,7 +69,13 @@ const StatementLibListPanel = ({}: StatementLibListPanelProps) => {
               <Tab
                 id={'tab-' + library.id}
                 aria-controls={'tabpanel-' + library.id}
-                label={library.name}
+                label={
+                  library.name
+                    .toLocaleLowerCase()
+                    .endsWith(t('common.library').toLocaleLowerCase())
+                    ? library.name
+                    : library.name + ' ' + t('common.library')
+                }
                 value={library.id}
               />
             ))}

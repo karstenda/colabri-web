@@ -1,6 +1,10 @@
 import { LoroEventBatch, LoroList, LoroMap } from 'loro-crdt';
 import { Permission } from '../../ui/data/Permission';
-import { AclLoroMap, ColabLoroDoc, UserApprovalLoro } from '../data/ColabDoc';
+import {
+  AclLoroMap,
+  ColabLoroDoc,
+  UserApprovalLoro,
+} from '../data/ColabLoroDoc';
 import { pathStartsWith } from '../util/LoroPathUtil';
 import { ColabApprovalState } from '../../api/ColabriAPI';
 

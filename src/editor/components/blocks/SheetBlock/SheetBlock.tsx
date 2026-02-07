@@ -6,9 +6,9 @@ import { LoroEventBatch, LoroList, LoroMap, LoroMovableList } from 'loro-crdt';
 import { Alert, Box, CircularProgress, Skeleton, Stack } from '@mui/material';
 import { useContentLanguages } from '../../../../ui/hooks/useContentLanguages/useContentLanguage';
 import { useOrganization } from '../../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
-import { ConnectedSheetDoc } from '../../../data/ConnectedColabDoc';
+import { ConnectedSheetDoc, FrozenSheetDoc } from '../../../data/ColabDoc';
 import { useTranslation } from 'react-i18next';
-import { SheetBlockLoro, SheetLoroDoc } from '../../../data/ColabDoc';
+import { SheetBlockLoro, SheetLoroDoc } from '../../../data/ColabLoroDoc';
 import { ColabSheetBlockType } from '../../../../api/ColabriAPI';
 import { SheetTextBlockBP } from '../SheetTextBlock/SheetTextBlockBP';
 import { SheetStatementGridBlockBP } from '../SheetStatementGridBlock/SheetStatementGridBlockBP';
@@ -27,8 +27,11 @@ const SheetBlock = ({ bp, readOnly }: SheetBlockProps) => {
 
   // Get the current ColabDoc
   const { colabDoc } = useColabDoc();
-  if (!(colabDoc instanceof ConnectedSheetDoc)) {
-    throw new Error('SheetBlock can only be used with connected sheet docs.');
+  if (
+    !(colabDoc instanceof ConnectedSheetDoc) &&
+    !(colabDoc instanceof FrozenSheetDoc)
+  ) {
+    throw new Error('SheetBlock can only be used with sheet docs.');
   }
 
   // Get the LoroDoc

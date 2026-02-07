@@ -16,7 +16,7 @@ import { useDialogs } from '../../../ui/hooks/useDialogs/useDialogs';
 import { useActiveBlock } from '../../context/ColabDocEditorContext/ColabDocEditorProvider';
 import { useTranslation } from 'react-i18next';
 import { ContainerID, LoroMap } from 'loro-crdt';
-import { ConnectedSheetDoc } from '../../data/ConnectedColabDoc';
+import { ConnectedSheetDoc, FrozenSheetDoc } from '../../data/ColabDoc';
 import AddBlockModal, {
   AddBlockModalPayload,
 } from '../AddBlockModal/AddBlockModal';
@@ -36,7 +36,10 @@ export default function SheetMenu({ readOnly }: SheetMenuProps) {
 
   // Get the document
   const { colabDoc } = useColabDoc();
-  if (!(colabDoc instanceof ConnectedSheetDoc)) {
+  if (
+    !(colabDoc instanceof ConnectedSheetDoc) &&
+    !(colabDoc instanceof FrozenSheetDoc)
+  ) {
     throw new Error('SheetMenu can only be used with connected sheet docs.');
   }
 

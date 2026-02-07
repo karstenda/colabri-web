@@ -30,13 +30,23 @@ import StatementBlock from '../blocks/StatementBlock/StatementBlock';
 import { useContentTypes } from '../../../ui/hooks/useTemplates/useTemplates';
 import { useOrganization } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
 import { ContentType, DocumentType } from '../../../api/ColabriAPI';
-import { ColabLoroDoc } from '../../data/ColabDoc';
+import {
+  ColabLoroDoc,
+  SheetLoroDoc,
+  StmtLoroDoc,
+} from '../../data/ColabLoroDoc';
 import ManageDocButton from '../ManageDocButton/ManageDocButton';
 import { useTranslation } from 'react-i18next';
 import SheetBlock from '../blocks/SheetBlock/SheetBlock';
 import LibraryLabel from '../DocLabels/LibraryLabel';
 import DocumentTypeLabel from '../DocLabels/DocumentTypeLabel';
 import ContentTypeLabel from '../DocLabels/ContentTypeLabel';
+import {
+  ConnectedSheetDoc,
+  ConnectedStmtDoc,
+  FrozenSheetDoc,
+  FrozenStmtDoc,
+} from '../../data/ColabDoc';
 
 export type ColabDocEditorProps = {
   readOnly?: boolean;
@@ -83,12 +93,35 @@ export default function ColabDocEditor({
       return;
     }
 
-    // Get the loroDoc
-    const loroDoc = colabDoc.getLoroDoc();
+    if (
+      !(colabDoc instanceof ConnectedStmtDoc) &&
+      !(colabDoc instanceof FrozenStmtDoc) &&
+      !(colabDoc instanceof ConnectedSheetDoc) &&
+      !(colabDoc instanceof FrozenSheetDoc)
+    ) {
+      throw new Error(
+        'ColabDocEditor can only be used with statement or sheet docs.',
+      );
+    }
+
+    // Get the doc controller
     const controller = colabDoc.getDocController();
 
-    // Get the content type from the properties
-    const propertiesMap = loroDoc.getMap('properties') as LoroMap | undefined;
+    // Get the content type from the properties (narrow the LoroDoc type first)
+    let loroDoc: ColabLoroDoc;
+    let propertiesMap: LoroMap | undefined;
+    if (
+      colabDoc instanceof ConnectedStmtDoc ||
+      colabDoc instanceof FrozenStmtDoc
+    ) {
+      const stmtLoroDoc = colabDoc.getLoroDoc() as StmtLoroDoc;
+      propertiesMap = stmtLoroDoc.getMap('properties') as LoroMap | undefined;
+      loroDoc = stmtLoroDoc;
+    } else {
+      const sheetLoroDoc = colabDoc.getLoroDoc() as SheetLoroDoc;
+      propertiesMap = sheetLoroDoc.getMap('properties') as LoroMap | undefined;
+      loroDoc = sheetLoroDoc;
+    }
     if (propertiesMap) {
       const contentTypeCode = propertiesMap.get('contentType') as
         | string

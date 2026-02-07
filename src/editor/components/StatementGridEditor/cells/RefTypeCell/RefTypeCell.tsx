@@ -1,10 +1,10 @@
 import { LoroMap } from 'loro-crdt';
-import { StmtDocSchema } from '../../../../data/ColabDoc';
+import { StmtDocSchema } from '../../../../data/ColabLoroDoc';
 import CellWrapper from '../CellWrapper';
 import ContentTag from '../../../ContentTag/ContentTag';
 import { Skeleton } from '@mui/material';
 import { useColabDoc } from '../../../../context/ColabDocContext/ColabDocProvider';
-import { ConnectedStmtDoc } from '../../../../data/ConnectedColabDoc';
+import { ConnectedStmtDoc, FrozenStmtDoc } from '../../../../data/ColabDoc';
 
 export type RefTypeCellProps = {
   hasFocus: boolean;
@@ -12,10 +12,11 @@ export type RefTypeCellProps = {
 
 const RefTypeCell = ({ hasFocus }: RefTypeCellProps) => {
   const { colabDoc } = useColabDoc();
-  if (colabDoc && !(colabDoc instanceof ConnectedStmtDoc)) {
-    throw new Error(
-      'RefTypeCell can only be used within connected statement documents.',
-    );
+  if (
+    !(colabDoc instanceof ConnectedStmtDoc) &&
+    !(colabDoc instanceof FrozenStmtDoc)
+  ) {
+    throw new Error('RefTypeCell can only be used within statement documents.');
   }
 
   const controller = colabDoc?.getDocController();

@@ -1,6 +1,6 @@
 import { LoroMap } from 'loro-crdt';
-import { StmtDocSchema } from '../../../../data/ColabDoc';
-import { ConnectedSheetDoc } from '../../../../data/ConnectedColabDoc';
+import { StmtDocSchema } from '../../../../data/ColabLoroDoc';
+import { ConnectedSheetDoc, FrozenSheetDoc } from '../../../../data/ColabDoc';
 import { LoroDocType } from 'loro-prosemirror';
 import { useColabDoc } from '../../../../context/ColabDocContext/ColabDocProvider';
 import CellWrapper from '../CellWrapper';
@@ -33,9 +33,12 @@ const LocalStmtElementCell = (props: LocalStmtElementCellProps) => {
 
   // The connected document
   const { colabDoc } = useColabDoc();
-  if (colabDoc && !(colabDoc instanceof ConnectedSheetDoc)) {
+  if (
+    !(colabDoc instanceof ConnectedSheetDoc) &&
+    !(colabDoc instanceof FrozenSheetDoc)
+  ) {
     throw new Error(
-      'LocalStmtElementCell can only be used within connected sheet documents.',
+      'LocalStmtElementCell can only be used within sheet documents.',
     );
   }
 

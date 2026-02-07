@@ -7,7 +7,7 @@ import StatementElementBlock from '../StatementElementBlock/StatementElementBloc
 import { Alert, Box, CircularProgress, Skeleton, Stack } from '@mui/material';
 import { useContentLanguages } from '../../../../ui/hooks/useContentLanguages/useContentLanguage';
 import { useOrganization } from '../../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
-import { ConnectedStmtDoc } from '../../../data/ConnectedColabDoc';
+import { ConnectedStmtDoc, FrozenStmtDoc } from '../../../data/ColabDoc';
 import { useTranslation } from 'react-i18next';
 
 export type StatementBlockProps = {
@@ -20,10 +20,11 @@ const StatementBlock = ({ bp, readOnly }: StatementBlockProps) => {
 
   // Get the current ColabDoc
   const { colabDoc } = useColabDoc();
-  if (!(colabDoc instanceof ConnectedStmtDoc)) {
-    throw new Error(
-      'StatementBlock can only be used with connected statement docs.',
-    );
+  if (
+    !(colabDoc instanceof ConnectedStmtDoc) &&
+    !(colabDoc instanceof FrozenStmtDoc)
+  ) {
+    throw new Error('StatementBlock can only be used with statement docs.');
   }
 
   // Get the LoroDoc

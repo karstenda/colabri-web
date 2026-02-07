@@ -21,7 +21,7 @@ import {
   TypographyReadOnly,
 } from './StatementElementBlockStyle';
 import { useDialogs } from '../../../../ui/hooks/useDialogs/useDialogs';
-import { ConnectedStmtDoc } from '../../../data/ConnectedColabDoc';
+import { ConnectedStmtDoc, FrozenStmtDoc } from '../../../data/ColabDoc';
 import ErrorIcon from '@mui/icons-material/Error';
 import { useGoogleFonts } from '../../../../ui/hooks/useFonts/useFonts';
 import { ContentLanguage } from '../../../data/ContentLanguage';
@@ -42,7 +42,10 @@ export type StatementElementBlockProps = {
 const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
   // Get the current ColabDoc
   const { colabDoc } = useColabDoc();
-  if (!(colabDoc instanceof ConnectedStmtDoc)) {
+  if (
+    !(colabDoc instanceof ConnectedStmtDoc) &&
+    !(colabDoc instanceof FrozenStmtDoc)
+  ) {
     throw new Error(
       'StatementElementBlock can only be used with connected statement docs.',
     );

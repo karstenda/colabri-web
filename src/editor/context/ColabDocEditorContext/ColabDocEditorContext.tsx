@@ -2,11 +2,8 @@ import { createContext } from 'react';
 import { EditorView } from 'prosemirror-view';
 import { FormattingSetup } from '../../components/ToolbarMenu/FormattingMenuSetup';
 import { ContainerID, LoroDoc } from 'loro-crdt';
-import {
-  ConnectedColabDoc,
-  ConnectedSheetDoc,
-  ConnectedStmtDoc,
-} from '../../data/ConnectedColabDoc';
+import { ColabDoc } from '../../data/ColabDoc';
+import { ColabLoroDoc } from '../../data/ColabLoroDoc';
 
 export type ToolbarSetups = Record<string, ToolbarSetup>;
 
@@ -19,13 +16,13 @@ export type ActiveBlockRef = {
   id: string;
   blockType: string;
   loroContainerId?: ContainerID;
-  colabDoc: ConnectedStmtDoc | ConnectedSheetDoc;
+  colabDoc: ColabDoc<ColabLoroDoc>;
 };
 
 export type ActiveStatementElementRef = {
   stmtContainerId?: ContainerID;
   langCode: string;
-  colabDoc: ConnectedStmtDoc | ConnectedSheetDoc;
+  colabDoc: ColabDoc<ColabLoroDoc>;
 };
 
 export type ColabDocEditorContextType = {

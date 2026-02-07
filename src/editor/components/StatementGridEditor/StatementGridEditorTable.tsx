@@ -7,7 +7,7 @@ import {
   StmtDocSchema,
   StmtRefSchema,
   TextElementLoro,
-} from '../../data/ColabDoc';
+} from '../../data/ColabLoroDoc';
 import { DataGrid, GridRow } from '@mui/x-data-grid';
 import { StatementGridRowType } from '../../../api/ColabriAPI';
 import { useState, useMemo, useCallback, useEffect, use } from 'react';
@@ -29,7 +29,7 @@ import AddStatementModal, {
   AddStatementModalPayload,
   NewStatementData,
 } from './AddStatementModal';
-import { ConnectedSheetDoc } from '../../data/ConnectedColabDoc';
+import { ConnectedSheetDoc, FrozenSheetDoc } from '../../data/ColabDoc';
 import { useTheme } from '@mui/material/styles';
 import getStmtEditColumn from './columns/StmtEditColumn';
 import { useSetActiveCell } from './context/StatementGridEditorContextProvider';
@@ -63,10 +63,11 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
   const setActiveCell = useSetActiveCell();
   const dialogs = useDialogs();
 
-  if (!(colabDoc instanceof ConnectedSheetDoc)) {
-    throw new Error(
-      'StatementGridEditor can only be used with connected sheet docs.',
-    );
+  if (
+    !(colabDoc instanceof ConnectedSheetDoc) &&
+    !(colabDoc instanceof FrozenSheetDoc)
+  ) {
+    throw new Error('StatementGridEditor can only be used with sheet docs.');
   }
 
   // Get the LoroDoc and Controller

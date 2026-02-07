@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { DialogProps } from '../../../ui/hooks/useDialogs/useDialogs';
 import { useTranslation } from 'react-i18next';
-import { ConnectedColabDoc } from '../../data/ConnectedColabDoc';
+import { ColabDoc } from '../../data/ColabDoc';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -18,10 +18,10 @@ import { useOrganization } from '../../../ui/context/UserOrganizationContext/Use
 import { Permission } from '../../../ui/data/Permission';
 import { useUserAuth } from '../../../ui/hooks/useUserAuth/useUserAuth';
 import { Menu, MenuItem, Select } from '@mui/material';
-import { ColabLoroDoc } from '../../data/ColabDoc';
+import { ColabLoroDoc } from '../../data/ColabLoroDoc';
 
 export interface MoveLibraryModalPayload {
-  doc: ConnectedColabDoc<ColabLoroDoc>;
+  doc: ColabDoc<ColabLoroDoc>;
 }
 
 export interface MoveLibraryModalProps

@@ -1,5 +1,5 @@
 import { LoroMap } from 'loro-crdt';
-import { StmtDocSchema } from '../../../../data/ColabDoc';
+import { StmtDocSchema } from '../../../../data/ColabLoroDoc';
 import CellWrapper from '../CellWrapper';
 import ContentTag from '../../../ContentTag/ContentTag';
 import { Skeleton } from '@mui/material';

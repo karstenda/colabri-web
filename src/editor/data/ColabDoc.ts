@@ -1,130 +1,275 @@
-import { LoroDoc, LoroList, LoroMap, LoroMovableList } from 'loro-crdt';
+import { ColabLoroDoc, SheetLoroDoc, StmtLoroDoc } from './ColabLoroDoc';
+import ColabDocController from '../controllers/ColabDocController';
+import ColabEphemeralStoreManager from '../components/ColabDocEditor/EphemeralStoreManager';
+import StatementDocController from '../controllers/StatementDocController';
 import {
-  ColabApprovalState,
-  ColabApprovalType,
-  ColabModelType,
-  ColabSheetBlockType,
-  DocumentStream,
+  SheetDocument,
   StatementDocument,
-  StatementGridRowType,
+  DocumentType,
 } from '../../api/ColabriAPI';
-import { Permission } from '../../ui/data/Permission';
+import SheetDocController from '../controllers/SheetDocController';
+import { DocContainer } from './DocContainer';
+import { EphemeralStore, Value, VersionVector } from 'loro-crdt';
+import EphemeralStoreManager from '../components/ColabDocEditor/EphemeralStoreManager';
 
-export type ColabDocType =
-  | ColabModelType.ColabModelStatementType
-  | ColabModelType.ColabModelSheetType;
+/**
+ * A Colab document
+ */
+export class ColabDoc<T extends ColabLoroDoc> {
+  protected loroDoc: T;
 
-export type ColabDoc =
-  | StatementDocument
-  | {
-      acls: Record<string, string[]>;
-      createdAt: string;
-      createdBy: string;
-      id: string;
-      name: string;
-      owner: string;
-      streams: Record<string, DocumentStream[]>;
-      type: string;
-      updatedAt: string;
-      updatedBy: string;
-    };
+  protected loroDocController: ColabDocController<T>;
 
-export type StmtDocSchema = {
-  properties: DocPropertiesLoro;
-  content: LoroMap<Record<string, StmtElementLoro>>;
-  acls: AclLoroMap;
-};
+  constructor(loroDoc: T, loroDocController: ColabDocController<T>) {
+    this.loroDoc = loroDoc;
+    this.loroDocController = loroDocController;
+  }
 
-export type SheetDocSchema = {
-  properties: DocPropertiesLoro;
-  content: LoroMovableList<SheetBlockLoro>;
-  acls: AclLoroMap;
-  approvals: LoroMap<Record<string, ApprovalLoro>>;
-};
+  public getDocId(): string {
+    throw new Error('Method not implemented.');
+  }
 
-export type ColabLoroDoc = LoroDoc<StmtDocSchema | SheetDocSchema>;
+  public getDocName(): string {
+    throw new Error('Method not implemented.');
+  }
 
-export type StmtLoroDoc = LoroDoc<StmtDocSchema>;
+  public getDocType(): DocumentType {
+    throw new Error('Method not implemented.');
+  }
 
-export type SheetLoroDoc = LoroDoc<SheetDocSchema>;
+  public getDocContainer(): DocContainer | undefined {
+    throw new Error('Method not implemented.');
+  }
 
-export type AclLoroMap = LoroMap<Record<Permission, LoroList<string>>>;
+  public getLoroDoc(): T {
+    return this.loroDoc;
+  }
 
-export type DocPropertiesLoro = LoroMap<{
-  type: string;
-  contentType: string;
-  masterLangCode?: string;
-  langCodes?: LoroList<string>;
-  countryCodes?: LoroList<string>;
-}>;
+  public getDocController(): ColabDocController<T> {
+    return this.loroDocController;
+  }
+}
 
-export type StmtElementLoro = LoroMap<{
-  textElement: TextElementLoro;
-  acls: AclLoroMap;
-  approvals: LoroMap<Record<string, UserApprovalLoro>>;
-}>;
+/**
+ * A sheet document
+ */
+export class ColabSheetDoc extends ColabDoc<SheetLoroDoc> {
+  private sheetDoc: SheetDocument;
 
-export type SheetBlockLoro = LoroMap<
-  SheetTextBlockSchema | SheetStatementGridBlockSchema
->;
+  constructor(
+    loroDoc: SheetLoroDoc,
+    loroDocController: SheetDocController,
+    sheetDoc: SheetDocument,
+  ) {
+    super(loroDoc, loroDocController);
+    this.sheetDoc = sheetDoc;
+  }
 
-export type SheetTextBlockSchema = {
-  type: ColabSheetBlockType;
-  acls: AclLoroMap;
-  title: TextElementLoro;
-  textElement: TextElementLoro;
-  approvals: LoroMap<Record<string, UserApprovalLoro>>;
-};
+  public getDocController(): SheetDocController {
+    return this.loroDocController as SheetDocController;
+  }
 
-export type SheetTextBlockLoro = LoroMap<SheetTextBlockSchema>;
+  public getLoroDoc(): SheetLoroDoc {
+    return this.loroDoc;
+  }
 
-export type SheetStatementGridBlockSchema = {
-  type: ColabSheetBlockType;
-  acls: AclLoroMap;
-  title: TextElementLoro;
-  rows: LoroMovableList<SheetStatementGridRowLoro>;
-};
+  public getSheetDoc(): SheetDocument {
+    return this.sheetDoc;
+  }
 
-export type SheetStatementGridBlockLoro =
-  LoroMap<SheetStatementGridBlockSchema>;
+  public getDocId(): string {
+    return this.sheetDoc.id;
+  }
 
-export type SheetStatementGridRowLoro = LoroMap<{
-  type: StatementGridRowType;
-  statement?: LoroMap<StmtDocSchema>;
-  statementRef?: LoroMap<StmtRefSchema>;
-}>;
+  public getDocName(): string {
+    return this.sheetDoc.name;
+  }
 
-export type StmtRefSchema = {
-  docId: string;
-  version: number;
-  versionV: string;
-};
+  public getDocContainer(): DocContainer | undefined {
+    if (this.sheetDoc.container) {
+      return {
+        type: this.sheetDoc.containerType as 'library' | undefined,
+        id: this.sheetDoc.container,
+      };
+    }
+    return undefined;
+  }
 
-export type ApprovalLoro = GroupApprovalLoro | UserApprovalLoro;
+  public getDocType(): DocumentType {
+    return DocumentType.DocumentTypeColabSheet;
+  }
+}
 
-export type UserApprovalLoro = LoroMap<{
-  type: ColabApprovalType.User;
-  state: ColabApprovalState;
-  user: string;
-  date: Date;
-}>;
+/**
+ * A connected Colab sheet document
+ */
+export class ConnectedSheetDoc extends ColabSheetDoc {
+  protected ephStoreMgr: ColabEphemeralStoreManager;
 
-export type GroupApprovalLoro = LoroMap<{
-  type: ColabApprovalType.Group;
-  state: ColabApprovalState;
-  group: string;
-  onOfGroup: boolean;
-  approvals: LoroMap<Record<string, UserApprovalLoro>>;
-}>;
+  constructor(
+    loroDoc: SheetLoroDoc,
+    loroDocController: SheetDocController,
+    sheetDoc: SheetDocument,
+    ephStoreMgr: ColabEphemeralStoreManager,
+  ) {
+    super(loroDoc, loroDocController, sheetDoc);
+    this.ephStoreMgr = ephStoreMgr;
+  }
 
-export type TextElementLoro = LoroMap<{
-  nodeName: string;
-  children?: LoroList<TextElementChild>;
-  attributes?: LoroMap<{ [key: string]: string }>;
-}>;
+  public getEphStoreMgr(): ColabEphemeralStoreManager {
+    return this.ephStoreMgr;
+  }
+}
 
-export type TextElementChild = LoroMap<{
-  nodeName: string;
-  children?: LoroList<TextElementChild> | string;
-  attributes?: LoroMap<{ [key: string]: string }>;
-}>;
+/**
+ * A frozen sheet document
+ */
+export class FrozenSheetDoc extends ColabSheetDoc {
+  protected version: number;
+  protected versionV: VersionVector;
+
+  constructor(
+    loroDoc: SheetLoroDoc,
+    loroDocController: SheetDocController,
+    sheetDoc: SheetDocument,
+    version: number,
+    versionV: VersionVector,
+  ) {
+    super(loroDoc, loroDocController, sheetDoc);
+    this.version = version;
+    this.versionV = versionV;
+  }
+
+  public getVersion(): number {
+    return this.version;
+  }
+
+  public getVersionV(): VersionVector {
+    return this.versionV;
+  }
+
+  public getEphStoreMgr(): ColabEphemeralStoreManager {
+    // Return a dummy Ephemeral store
+    return new EphemeralStoreManager(
+      new EphemeralStore<Record<string, Value>>(),
+      this.loroDoc.peerId + '',
+      {
+        name: '',
+        color: '',
+        id: '',
+      },
+    );
+  }
+}
+
+/**
+ * A statement document
+ */
+export class ColabStmtDoc extends ColabDoc<StmtLoroDoc> {
+  private statementDoc: StatementDocument;
+
+  constructor(
+    loroDoc: StmtLoroDoc,
+    loroDocController: StatementDocController,
+    statementDoc: StatementDocument,
+  ) {
+    super(loroDoc, loroDocController);
+    this.statementDoc = statementDoc;
+  }
+
+  public getDocController(): StatementDocController {
+    return this.loroDocController as StatementDocController;
+  }
+
+  public getLoroDoc(): StmtLoroDoc {
+    return this.loroDoc;
+  }
+
+  public getStatementDoc(): StatementDocument {
+    return this.statementDoc;
+  }
+
+  public getDocId(): string {
+    return this.statementDoc.id;
+  }
+
+  public getDocName(): string {
+    return this.statementDoc.name;
+  }
+
+  public getDocContainer(): DocContainer | undefined {
+    if (this.statementDoc.container) {
+      return {
+        type: this.statementDoc.containerType as 'library' | undefined,
+        id: this.statementDoc.container,
+      };
+    }
+    return undefined;
+  }
+
+  public getDocType(): DocumentType {
+    return DocumentType.DocumentTypeColabStatement;
+  }
+}
+
+/**
+ * A connected Colab statement document
+ */
+export class ConnectedStmtDoc extends ColabStmtDoc {
+  protected ephStoreMgr: ColabEphemeralStoreManager;
+
+  constructor(
+    loroDoc: StmtLoroDoc,
+    loroDocController: StatementDocController,
+    statementDoc: StatementDocument,
+    ephStoreMgr: ColabEphemeralStoreManager,
+  ) {
+    super(loroDoc, loroDocController, statementDoc);
+    this.ephStoreMgr = ephStoreMgr;
+  }
+
+  public getEphStoreMgr(): ColabEphemeralStoreManager {
+    return this.ephStoreMgr;
+  }
+}
+
+/**
+ * A frozen statement document
+ */
+export class FrozenStmtDoc extends ColabStmtDoc {
+  protected version: number;
+  protected versionV: VersionVector;
+
+  constructor(
+    loroDoc: StmtLoroDoc,
+    loroDocController: StatementDocController,
+    statementDoc: StatementDocument,
+    version: number,
+    versionV: VersionVector,
+  ) {
+    super(loroDoc, loroDocController, statementDoc);
+    this.version = version;
+    this.versionV = versionV;
+  }
+
+  public getVersion(): number {
+    return this.version;
+  }
+
+  public getVersionV(): VersionVector {
+    return this.versionV;
+  }
+
+  public getEphStoreMgr(): ColabEphemeralStoreManager {
+    // Return a dummy Ephemeral store
+    return new EphemeralStoreManager(
+      new EphemeralStore<Record<string, Value>>(),
+      this.loroDoc.peerId + '',
+      {
+        name: '',
+        color: '',
+        id: '',
+      },
+    );
+  }
+}

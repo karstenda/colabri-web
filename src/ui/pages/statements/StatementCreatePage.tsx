@@ -9,7 +9,7 @@ import StatementForm, {
 } from './StatementForm';
 import PageContainer from '../../components/MainLayout/PageContainer';
 import { useUserOrganizationContext } from '../../context/UserOrganizationContext/UserOrganizationProvider';
-import { ColabModelType, ColabStatementModel } from '../../../api/ColabriAPI';
+import { DocumentType, ColabStatementModel } from '../../../api/ColabriAPI';
 
 export default function StatementCreate() {
   const navigate = useNavigate();
@@ -87,7 +87,7 @@ export default function StatementCreate() {
       // Create the statement doc with the selected content type
       const newStatement = {
         properties: {
-          type: ColabModelType.ColabModelStatementType,
+          type: DocumentType.DocumentTypeColabStatement,
           contentType: formValues.contentType,
         },
         content: {},

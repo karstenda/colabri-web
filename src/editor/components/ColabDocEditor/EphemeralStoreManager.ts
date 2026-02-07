@@ -41,9 +41,9 @@ export default class EphemeralStoreManager {
     peerId: string,
     userPresence: UserPresence,
   ) {
-    this.ephemeralStore = ephemeralStore;
     this.peerId = peerId;
     this.userPresence = userPresence;
+    this.ephemeralStore = ephemeralStore;
   }
 
   // Broadcast user presence at regular intervals

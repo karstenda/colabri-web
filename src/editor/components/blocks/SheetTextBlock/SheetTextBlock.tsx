@@ -19,7 +19,7 @@ import {
   SheetTextBlockHeaderWrapper,
 } from './SheetTextBlockStyle';
 import { useDialogs } from '../../../../ui/hooks/useDialogs/useDialogs';
-import { ConnectedSheetDoc } from '../../../data/ConnectedColabDoc';
+import { ConnectedSheetDoc, FrozenSheetDoc } from '../../../data/ColabDoc';
 import ApprovalDropdown from '../../ApprovalDropdown/ApprovalDropdown';
 import ErrorIcon from '@mui/icons-material/Error';
 import { useGoogleFonts } from '../../../../ui/hooks/useFonts/useFonts';
@@ -28,6 +28,7 @@ import { t } from 'i18next';
 import { ColabApprovalState } from '../../../../api/ColabriAPI';
 import DocEditorSheetBlock from '../DocEditorBlock/DocEditorSheetBlock';
 import ColabTextEditorOutlined from '../../ColabTextEditor/ColabTextEditorOutlined';
+import EphemeralStoreManager from '../../ColabDocEditor/EphemeralStoreManager';
 
 export type SheetTextBlockProps = {
   bp: SheetTextBlockBP;
@@ -36,10 +37,11 @@ export type SheetTextBlockProps = {
 const SheetTextBlock: React.FC<SheetTextBlockProps> = ({ bp }) => {
   // Get the current ColabDoc
   const { colabDoc } = useColabDoc();
-  if (!(colabDoc instanceof ConnectedSheetDoc)) {
-    throw new Error(
-      'SheetTextBlock can only be used with connected sheet docs.',
-    );
+  if (
+    !(colabDoc instanceof ConnectedSheetDoc) &&
+    !(colabDoc instanceof FrozenSheetDoc)
+  ) {
+    throw new Error('SheetTextBlock can only be used with sheet docs.');
   }
 
   // Get the current organization
@@ -87,7 +89,7 @@ const SheetTextBlock: React.FC<SheetTextBlockProps> = ({ bp }) => {
   useGoogleFonts(customFonts);
 
   // Get the ephemeral store manager
-  const ephStoreMgr = colabDoc?.getEphStoreMgr();
+  const ephStoreMgr = colabDoc.getEphStoreMgr();
 
   // Get the LoroDoc
   const loroDoc = colabDoc?.getLoroDoc();

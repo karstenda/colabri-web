@@ -2,9 +2,9 @@ import { SheetStatementGridBlockBP } from './SheetStatementGridBlockBP';
 import { useTranslation } from 'react-i18next';
 import React, { useEffect, useState } from 'react';
 import StatementGridEditor from '../../StatementGridEditor/StatementGridEditor';
-import { ConnectedSheetDoc } from '../../../data/ConnectedColabDoc';
+import { ConnectedSheetDoc, FrozenSheetDoc } from '../../../data/ColabDoc';
 import { useColabDoc } from '../../../context/ColabDocContext/ColabDocProvider';
-import { SheetStatementGridBlockLoro } from '../../../data/ColabDoc';
+import { SheetStatementGridBlockLoro } from '../../../data/ColabLoroDoc';
 import DocEditorSheetBlock from '../DocEditorBlock/DocEditorSheetBlock';
 
 export type SheetStatementGridBlockProps = {
@@ -16,9 +16,12 @@ const SheetStatementGridBlock: React.FC<SheetStatementGridBlockProps> = ({
 }) => {
   // Get the current ColabDoc
   const { colabDoc } = useColabDoc();
-  if (!(colabDoc instanceof ConnectedSheetDoc)) {
+  if (
+    !(colabDoc instanceof ConnectedSheetDoc) &&
+    !(colabDoc instanceof FrozenSheetDoc)
+  ) {
     throw new Error(
-      'SheetStatementGridBlock can only be used with connected sheet docs.',
+      'SheetStatementGridBlock can only be used with sheet docs.',
     );
   }
 

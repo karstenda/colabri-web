@@ -1,17 +1,18 @@
 import { GridRow, GridRowProps } from '@mui/x-data-grid/components';
 import { StatementGridRowType } from '../../../../api/ColabriAPI';
-import {
-  ColabDocProvider,
-  useColabDoc,
-} from '../../../context/ColabDocContext/ColabDocProvider';
-import { ConnectedSheetDoc } from '../../../data/ConnectedColabDoc';
+import { useColabDoc } from '../../../context/ColabDocContext/ColabDocProvider';
+import { ConnectedSheetDoc, FrozenSheetDoc } from '../../../data/ColabDoc';
+import { ConnectedColabDocProvider } from '../../../context/ColabDocContext/ConnectedColabDocProvider';
 
 const StatementGridEditorRow = (props: GridRowProps) => {
   const { colabDoc } = useColabDoc();
 
-  if (colabDoc && !(colabDoc instanceof ConnectedSheetDoc)) {
+  if (
+    !(colabDoc instanceof ConnectedSheetDoc) &&
+    !(colabDoc instanceof FrozenSheetDoc)
+  ) {
     throw new Error(
-      'StatementGridEditorRow can only be used within connected sheet documents.',
+      'StatementGridEditorRow can only be used within sheet documents.',
     );
   }
   if (!colabDoc) {
@@ -30,9 +31,9 @@ const StatementGridEditorRow = (props: GridRowProps) => {
     const stmtRef = controller.getStatementReference(props.row.id);
 
     return (
-      <ColabDocProvider docId={stmtRef.docId}>
+      <ConnectedColabDocProvider docId={stmtRef.docId}>
         <GridRow {...props} style={{ backgroundColor: '#f0f0f0' }} />
-      </ColabDocProvider>
+      </ConnectedColabDocProvider>
     );
   } else {
     return <></>;
