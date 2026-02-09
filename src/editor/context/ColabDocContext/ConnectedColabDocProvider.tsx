@@ -20,7 +20,7 @@ import { Document, SheetDocument } from '../../../api/ColabriAPI';
 import ColabDocContext, { ColabDocContextType } from './ColabDocContext';
 
 import { CrdtType } from 'loro-protocol';
-import { useDocument } from '../../../ui/hooks/useDocuments/useDocuments';
+import { useColabDocument } from '../../../ui/hooks/useDocuments/useDocuments';
 import {
   DocumentType,
   Organization,
@@ -50,7 +50,7 @@ export function ConnectedColabDocProvider({
   const authPrpls = usePrpls();
 
   // Fetch the targeted document
-  const { document } = useDocument(
+  const { document } = useColabDocument(
     org?.id || '',
     docId || '',
     org != null && docId != null,

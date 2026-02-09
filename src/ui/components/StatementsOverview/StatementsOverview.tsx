@@ -330,7 +330,7 @@ function StatementsOverview(props: StatementsOverviewProps) {
         onSelectionChange(selectedStatements);
       }
     },
-    [onSelectionChange],
+    [onSelectionChange, statements],
   );
 
   // When the statement is clicked for inspection

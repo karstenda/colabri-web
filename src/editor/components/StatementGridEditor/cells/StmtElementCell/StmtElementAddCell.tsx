@@ -50,7 +50,10 @@ const StmtElementAddCell = ({
         onMouseEnter={() => setHasHover(true)}
         onMouseLeave={() => setHasHover(false)}
       >
-        {hasHover && (hasManage || hasAddRemove) && (
+        {readOnly && (
+          <Box sx={{ opacity: 0.5 }}>{t('languages.noLanguage')}</Box>
+        )}
+        {!readOnly && hasHover && (hasManage || hasAddRemove) && (
           <Button
             sx={{
               height: '28px',
@@ -61,10 +64,10 @@ const StmtElementAddCell = ({
             {t('languages.addLanguage')}
           </Button>
         )}
-        {!hasHover && (hasManage || hasAddRemove) && (
+        {!readOnly && !hasHover && (hasManage || hasAddRemove) && (
           <Box sx={{ opacity: 0.5 }}>{t('languages.addLanguage')}</Box>
         )}
-        {!(hasManage || hasAddRemove) && (
+        {!readOnly && !(hasManage || hasAddRemove) && (
           <Box sx={{ opacity: 0.5 }}>{t('languages.noLanguage')}</Box>
         )}
       </Box>

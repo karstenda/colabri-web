@@ -37,6 +37,7 @@ const RefStmtElementCell = (props: RefStmtCellProps) => {
   // The connected document
   const { colabDoc } = useColabDoc();
   if (
+    colabDoc &&
     !(colabDoc instanceof ConnectedStmtDoc) &&
     !(colabDoc instanceof FrozenStmtDoc)
   ) {
@@ -44,6 +45,9 @@ const RefStmtElementCell = (props: RefStmtCellProps) => {
       'RefStmtElementCell can only be used within statement documents.',
     );
   }
+
+  // The cell is editable if the document is a connected document and not in read-only mode
+  const isCellEditable = colabDoc instanceof ConnectedStmtDoc && !readOnly;
 
   // Get the LoroDoc, controller, and ephStoreMgr
   const loroDoc = colabDoc?.getLoroDoc();
@@ -153,18 +157,14 @@ const RefStmtElementCell = (props: RefStmtCellProps) => {
   }, [controller, props.langCode]);
 
   if (isLoading) {
-    return (
-      <CellWrapper hasFocus={hasFocus}>
-        <Skeleton variant="rectangular" width="100%" height={40} />
-      </CellWrapper>
-    );
+    return <Skeleton variant="rectangular" width="100%" height="100%" />;
   } else if (isNotAdded) {
     return (
       <StmtElementAddCell
         controller={controller}
         hasFocus={hasFocus}
         onAdd={handleLanguageAdd}
-        readOnly={readOnly}
+        readOnly={!isCellEditable}
       />
     );
     ``;
@@ -186,7 +186,7 @@ const RefStmtElementCell = (props: RefStmtCellProps) => {
         loroDoc={loroDoc as any as LoroDocType}
         ephStoreMgr={ephStoreMgr!}
         textElementContainerId={textElementContainerId!}
-        canEdit={canEdit && !readOnly}
+        canEdit={canEdit && isCellEditable}
         approvalState={approvalState}
         hasFocus={hasFocus}
         langCode={props.langCode}

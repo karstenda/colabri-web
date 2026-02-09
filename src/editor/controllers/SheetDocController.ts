@@ -125,7 +125,8 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
    */
   public getStatementReference(rowContainerId: ContainerID): {
     docId: string;
-    versionV: string;
+    version: number | undefined;
+    versionV: Record<string, number> | undefined;
   } {
     const rowMap = this.loroDoc.getContainerById(
       rowContainerId,
@@ -150,9 +151,20 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
       );
     }
 
+    const docId = stmtRefMap.get('docId');
+    const version = stmtRefMap.get('version');
+    const versionVStr = stmtRefMap.get('versionV');
+
+    // Parse the version vector string into a Record<string, number>
+    let versionV: Record<string, number> | undefined = undefined;
+    if (versionVStr) {
+      versionV = JSON.parse(versionVStr) as Record<string, number>;
+    }
+
     return {
-      docId: stmtRefMap.get('docId'),
-      versionV: stmtRefMap.get('versionV'),
+      docId,
+      version,
+      versionV,
     };
   }
 
@@ -832,6 +844,7 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
         // Insert the row into the list
         rowList.insertContainer(position, rowMap);
       }
+      return true;
     }
     // When we need to create a new statement
     else if (type === 'new') {

@@ -267,6 +267,13 @@
       "addButton": "Add Statement",
       "removeStatementConfirm": "Are you sure you want to remove this statement from this block?"
     },
+    "frozenReferenceTag": {
+      "latest": "This statement reference is frozen and will not automatically update.",
+      "notLatest": "This reference is frozen and points to an older version of a statement."
+    },
+    "liveReferenceTag": {
+      "tooltip": "This statement reference is live and will always point to the latest version."
+    },
     "errors": {
       "authFailed": "Oops! We couldn't open this document. Please make sure you have access. You may need the document owner to grant you permission."
     }

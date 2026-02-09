@@ -64,6 +64,23 @@ export const useDocument = (orgId: string, docId: string, enabled = true) => {
   return { document: data?.data, isLoading, error, refetch };
 };
 
+export const useColabDocument = (
+  orgId: string,
+  docId: string,
+  enabled = true,
+) => {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: documentKeys.detail(orgId, docId),
+    queryFn: () => {
+      return apiClient.orgId.getDocumentsColab(orgId, docId);
+    },
+    enabled: enabled && !!orgId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+  });
+  return { document: data?.data, isLoading, error, refetch };
+};
+
 export const useDeleteDocument = (orgId: string) => {
   const queryClient = useQueryClient();
   const {

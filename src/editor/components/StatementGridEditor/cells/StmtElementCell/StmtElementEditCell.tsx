@@ -16,7 +16,6 @@ import {
 } from '../../../../../ui/hooks/useContentLanguages/useContentLanguage';
 import { ContentLanguage } from '../../../../data/ContentLanguage';
 import { useGoogleFonts } from '../../../../../ui/hooks/useFonts/useFonts';
-import { useActiveCell } from '../../context/StatementGridEditorContextProvider';
 
 export type StmtElementEditCellProps = {
   loroDoc: LoroDocType;

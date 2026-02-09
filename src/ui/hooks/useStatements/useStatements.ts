@@ -25,6 +25,13 @@ export const statementKeys = {
   details: () => [...statementKeys.all, 'detail'] as const,
   detail: (orgId: string, statementId: string) =>
     [...statementKeys.details(), orgId, statementId] as const,
+  version: (
+    orgId: string,
+    statementId: string,
+    version: number,
+    versionV: Record<string, number>,
+  ) =>
+    [...statementKeys.detail(orgId, statementId), version, versionV] as const,
 };
 
 // Stable empty array reference to avoid unnecessary re-renders
@@ -76,6 +83,43 @@ export const useStatements = (
   });
   return {
     statements: data?.data ?? EMPTY_STATEMENTS,
+    isLoading,
+    error,
+    refetch,
+  };
+};
+
+/**
+ * Hook to fetch a specific version of a statement document
+ *
+ * @param orgId
+ * @param docId
+ * @param version
+ * @param versionV
+ * @param enabled
+ * @returns
+ */
+export const useStatementVersion = (
+  orgId: string,
+  docId: string,
+  version: number,
+  versionV: Record<string, number>,
+  enabled = true,
+) => {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: statementKeys.version(orgId, docId, version, versionV),
+    queryFn: () =>
+      apiClient.orgId.postStatementsVersion(orgId, docId, {
+        version,
+        versionV,
+      }),
+    enabled,
+  });
+  return {
+    statement: data?.data.statement ?? null,
+    binary: data?.data.binary ?? null,
+    version: data?.data.version ?? null,
+    versionV: data?.data.versionV ?? null,
     isLoading,
     error,
     refetch,

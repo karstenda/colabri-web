@@ -147,6 +147,27 @@ export interface ColabComment {
   type: ColabCommentType;
 }
 
+export interface ColabDocument {
+  acls: Record<string, string[]>;
+  container?: string;
+  containerType?: string;
+  createdAt: string;
+  createdBy: string;
+  id: string;
+  json: string;
+  name: string;
+  owner: string;
+  peerMap: Record<string, string>;
+  sheet?: ColabSheetModel;
+  statement?: ColabStatementModel;
+  streams: Record<string, DocumentStream>;
+  synced: boolean;
+  type: string;
+  updatedAt: string;
+  updatedBy: string;
+  versionV: Record<string, number>;
+}
+
 export interface ColabModelProperties {
   contentType: string;
   countryCodes?: string[];
@@ -301,10 +322,14 @@ export interface Document {
   id: string;
   name: string;
   owner: string;
+  peerMap: Record<string, string>;
+  sheet?: ColabSheetModel;
+  statement?: ColabStatementModel;
   streams: Record<string, DocumentStream>;
   type: string;
   updatedAt: string;
   updatedBy: string;
+  versionV: Record<string, number>;
 }
 
 export interface DocumentStream {
@@ -323,6 +348,20 @@ export interface GPCNode {
   description?: string;
   parentNodes?: GPCNode[];
   scope?: GPCScope;
+}
+
+export interface GetColabDocVersionRequest {
+  version: number;
+  versionV: Record<string, number>;
+}
+
+export interface GetStatementVersionResponse {
+  binary: string;
+  createdAt: string;
+  peerMap: Record<string, string>;
+  statement: ColabStatementModel;
+  version: number;
+  versionV: Record<string, number>;
 }
 
 export interface Group {
@@ -458,6 +497,7 @@ export interface SheetDocument {
   owner: string;
   peerMap: Record<string, string>;
   sheet: ColabSheetModel;
+  statement?: ColabStatementModel;
   streams: Record<string, DocumentStream>;
   type: string;
   updatedAt: string;
@@ -546,6 +586,7 @@ export interface StatementDocument {
   name: string;
   owner: string;
   peerMap: Record<string, string>;
+  sheet?: ColabSheetModel;
   statement: ColabStatementModel;
   streams: Record<string, DocumentStream>;
   type: string;
@@ -1480,6 +1521,27 @@ export class Api<
       }),
 
     /**
+     * @description Retrieve a ColabDocument by its ID in the specified organization
+     *
+     * @tags documents
+     * @name GetDocumentsColab
+     * @summary Get a Colabdocument by ID
+     * @request GET:/{orgId}/documents/{docId}/colab
+     */
+    getDocumentsColab: (
+      orgId: string,
+      docId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<ColabDocument, HTTPError>({
+        path: `/${orgId}/documents/${docId}/colab`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description This endpoint will parse a ColabDoc and alters the appropiate database relations.
      *
      * @tags documents
@@ -2193,6 +2255,28 @@ export class Api<
     ) =>
       this.request<StatementDocument, HTTPError>({
         path: `/${orgId}/statements`,
+        method: "POST",
+        body: statement,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description This endpoint will retrieve the state of a specific version of a statement as opposed to the latest. Since the version vector can be quite large, this endpoint supports POST instead of GET. It does not modify any state.
+     *
+     * @tags statements
+     * @name PostStatementsVersion
+     * @request POST:/{orgId}/statements/{docId}/version
+     */
+    postStatementsVersion: (
+      orgId: string,
+      docId: string,
+      statement: GetColabDocVersionRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<GetStatementVersionResponse, HTTPError>({
+        path: `/${orgId}/statements/${docId}/version`,
         method: "POST",
         body: statement,
         type: ContentType.Json,

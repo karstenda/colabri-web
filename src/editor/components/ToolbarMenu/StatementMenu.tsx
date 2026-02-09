@@ -400,7 +400,12 @@ export default function StatementMenu({
               }}
             >
               {canAddRemove && (
-                <MenuItem onClick={handleAddLanguageClicked}>
+                <MenuItem
+                  onClick={handleAddLanguageClicked}
+                  disabled={
+                    activeStatementElementRef?.colabDoc instanceof FrozenStmtDoc
+                  }
+                >
                   <ListItemIcon>
                     <LanguageAddIcon width={20} height={20} />
                   </ListItemIcon>
@@ -410,7 +415,12 @@ export default function StatementMenu({
                 </MenuItem>
               )}
               {canAddRemove && activeStatementElementRef && (
-                <MenuItem onClick={handleRemoveLanguageClicked}>
+                <MenuItem
+                  onClick={handleRemoveLanguageClicked}
+                  disabled={
+                    activeStatementElementRef?.colabDoc instanceof FrozenStmtDoc
+                  }
+                >
                   <ListItemIcon>
                     <SvgIcon
                       component={LanguageRemoveIcon}
@@ -423,7 +433,12 @@ export default function StatementMenu({
                 </MenuItem>
               )}
               {canManage && activeStatementElementRef && (
-                <MenuItem onClick={handleManageStatementElementClicked}>
+                <MenuItem
+                  onClick={handleManageStatementElementClicked}
+                  disabled={
+                    activeStatementElementRef?.colabDoc instanceof FrozenStmtDoc
+                  }
+                >
                   <ListItemIcon>
                     <LanguageSettingsIcon />
                   </ListItemIcon>
