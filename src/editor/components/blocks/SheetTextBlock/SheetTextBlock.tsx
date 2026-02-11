@@ -28,7 +28,6 @@ import { t } from 'i18next';
 import { ColabApprovalState } from '../../../../api/ColabriAPI';
 import DocEditorSheetBlock from '../DocEditorBlock/DocEditorSheetBlock';
 import ColabTextEditorOutlined from '../../ColabTextEditor/ColabTextEditorOutlined';
-import EphemeralStoreManager from '../../ColabDocEditor/EphemeralStoreManager';
 
 export type SheetTextBlockProps = {
   bp: SheetTextBlockBP;
@@ -151,7 +150,7 @@ const SheetTextBlock: React.FC<SheetTextBlockProps> = ({ bp }) => {
   // State to track focus and hover
   const [focus, setFocus] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const showOutlines = (focus || isHovered) && canEdit;
+  const showOutlines = (focus || isHovered) && (canEdit || canManage);
 
   useEffect(() => {
     if (controller && bp.containerId && loroDoc) {
@@ -274,7 +273,7 @@ const SheetTextBlock: React.FC<SheetTextBlockProps> = ({ bp }) => {
                           langCode: language?.spellCheckLangCode,
                         }}
                         schema="simple"
-                        canEdit={canEdit && !bp.readOnly}
+                        canEdit={canManage && !bp.readOnly}
                         txtDir={language?.textDirection}
                         customFonts={customFonts}
                       />

@@ -54,8 +54,15 @@ export enum ContentLanguageDirection {
 }
 
 export enum ColabSheetBlockType {
+  ColabSheetBlockTypeProperties = "properties",
+  ColabSheetBlockTypeAttributes = "attributes",
   ColabSheetBlockTypeText = "text",
   ColabSheetBlockTypeStatementGrid = "statement-grid",
+}
+
+export enum ColabDocVersionFormat {
+  ColabDocVersionFormatJSON = "json",
+  ColabDocVersionFormatBinary = "binary",
 }
 
 export enum ColabCommentType {
@@ -351,15 +358,25 @@ export interface GPCNode {
 }
 
 export interface GetColabDocVersionRequest {
+  format: ColabDocVersionFormat;
+  version: number;
+  versionV: Record<string, number>;
+}
+
+export interface GetSheetVersionResponse {
+  binary: string;
+  createdAt: string;
+  peerMap: Record<string, string>;
+  sheet: ColabSheetModel;
   version: number;
   versionV: Record<string, number>;
 }
 
 export interface GetStatementVersionResponse {
-  binary: string;
+  binary?: string;
   createdAt: string;
   peerMap: Record<string, string>;
-  statement: ColabStatementModel;
+  statement?: ColabStatementModel;
   version: number;
   versionV: Record<string, number>;
 }
@@ -2174,6 +2191,28 @@ export class Api<
     ) =>
       this.request<SheetDocument, HTTPError>({
         path: `/${orgId}/sheets`,
+        method: "POST",
+        body: sheet,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description This endpoint will retrieve the state of a specific version of a sheet as opposed to the latest. Since the version vector can be quite large, this endpoint supports POST instead of GET. It does not modify any state.
+     *
+     * @tags sheets
+     * @name PostSheetsVersion
+     * @request POST:/{orgId}/sheets/{docId}/version
+     */
+    postSheetsVersion: (
+      orgId: string,
+      docId: string,
+      sheet: GetColabDocVersionRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<GetSheetVersionResponse, HTTPError>({
+        path: `/${orgId}/sheets/${docId}/version`,
         method: "POST",
         body: sheet,
         type: ContentType.Json,

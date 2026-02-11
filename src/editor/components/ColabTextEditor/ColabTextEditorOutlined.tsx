@@ -8,19 +8,25 @@ import Box from '@mui/material/Box';
 
 const ColabTextEditorOutlineBox = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'showOutlines',
-})<{ showOutlines?: boolean }>(({ theme, showOutlines }) => ({
-  padding: '4px',
-  border: showOutlines
-    ? `1px solid ${(theme.vars || theme).palette.grey[100]}`
-    : `1px solid transparent`,
-  borderRadius: '4px',
-  transition: 'border 0.2s ease-in-out',
-  ...theme.applyStyles('dark', {
+})<{ showOutlines?: boolean; editable?: boolean }>(
+  ({ theme, showOutlines, editable }) => ({
+    padding: '4px',
     border: showOutlines
-      ? `1px solid ${(theme.vars || theme).palette.grey[700]}`
+      ? `1px solid ${(theme.vars || theme).palette.grey[100]}`
       : `1px solid transparent`,
+    backgroundColor:
+      showOutlines && editable
+        ? (theme.vars || theme).palette.background.default
+        : 'transparent',
+    borderRadius: '4px',
+    transition: 'border 0.2s ease-in-out',
+    ...theme.applyStyles('dark', {
+      border: showOutlines
+        ? `1px solid ${(theme.vars || theme).palette.grey[700]}`
+        : `1px solid transparent`,
+    }),
   }),
-}));
+);
 
 export type ColabTextEditorOutlinedProps = {
   showOutlines?: boolean;
@@ -44,6 +50,7 @@ const ColabTextEditorOutlined = (props: ColabTextEditorOutlinedProps) => {
     <ColabTextEditorOutlineBox
       onClick={handleOutlineClick}
       showOutlines={showOutlines}
+      editable={editorProps.canEdit}
     >
       <ColabTextEditor ref={editorRef} {...editorProps} />
     </ColabTextEditorOutlineBox>

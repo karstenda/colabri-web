@@ -14,6 +14,8 @@ import { SheetTextBlockBP } from '../SheetTextBlock/SheetTextBlockBP';
 import { SheetStatementGridBlockBP } from '../SheetStatementGridBlock/SheetStatementGridBlockBP';
 import SheetTextBlock from '../SheetTextBlock/SheetTextBlock';
 import SheetStatementGridBlock from '../SheetStatementGridBlock/SheetStatementGridBlock';
+import { SheetPropertiesBlockBP } from '../SheetPropertiesBlock/SheetPropertiesBlockBP';
+import SheetPropertiesBlock from '../SheetPropertiesBlock/SheetPropertiesBlock';
 
 export type SheetBlockProps = {
   bp: SheetBlockBP;
@@ -125,6 +127,16 @@ const SheetBlock = ({ bp, readOnly }: SheetBlockProps) => {
           newSheetBlockBPs.push(statementGridBlockBP);
           break;
         }
+        case 'properties': {
+          // Properties Block
+          const propertiesBlockBP: SheetPropertiesBlockBP = {
+            id: sheetContentBlock.id,
+            type: 'properties' as ColabSheetBlockType,
+            containerId: sheetContentBlock.id,
+          };
+          newSheetBlockBPs.push(propertiesBlockBP);
+          break;
+        }
       }
     }
 
@@ -166,6 +178,14 @@ const SheetBlock = ({ bp, readOnly }: SheetBlockProps) => {
                   <SheetStatementGridBlock
                     key={sheetContentBlockBP.id}
                     bp={sheetContentBlockBP as SheetStatementGridBlockBP}
+                  />
+                );
+              }
+              case ColabSheetBlockType.ColabSheetBlockTypeProperties: {
+                return (
+                  <SheetPropertiesBlock
+                    key={sheetContentBlockBP.id}
+                    bp={sheetContentBlockBP as SheetPropertiesBlockBP}
                   />
                 );
               }

@@ -13,6 +13,7 @@ import {
 import ColabDocContext from './ColabDocContext';
 import { useColabDocument } from '../../../ui/hooks/useDocuments/useDocuments';
 import {
+  ColabDocVersionFormat,
   DocumentType,
   SheetDocument,
   StatementDocument,
@@ -21,6 +22,7 @@ import { LoroDoc, PeerID, VersionVector } from 'loro-crdt';
 import SheetDocController from '../../controllers/SheetDocController';
 import StatementDocController from '../../controllers/StatementDocController';
 import { useStatementVersion } from '../../../ui/hooks/useStatements/useStatements';
+import { useSheetVersion } from '../../../ui/hooks/useSheets/useSheets';
 
 export type FrozenColabDocProviderProps = {
   docId: string;
@@ -55,7 +57,16 @@ export function FrozenColabDocProvider({
     docId || '',
     version,
     versionV,
+    ColabDocVersionFormat.ColabDocVersionFormatBinary,
     loadedDocument && document.type === DocumentType.DocumentTypeColabStatement,
+  );
+  const { binary: sheetBinary, error: sheetError } = useSheetVersion(
+    org?.id || '',
+    docId || '',
+    version,
+    versionV,
+    ColabDocVersionFormat.ColabDocVersionFormatBinary,
+    loadedDocument && document.type === DocumentType.DocumentTypeColabSheet,
   );
 
   // The connected doc state.
@@ -72,8 +83,19 @@ export function FrozenColabDocProvider({
 
     // If it's a sheet document, we create a frozen sheet doc
     if (document.type === DocumentType.DocumentTypeColabSheet) {
-      // TODO
+      // Base64 decoding of the binary statement content
+      if (!stmtBinary) {
+        return;
+      }
+      const decodedStmtBinary = Uint8Array.from(atob(stmtBinary), (c) =>
+        c.charCodeAt(0),
+      );
+
+      // Construct the loroDoc
       const loroDoc = new LoroDoc() as SheetLoroDoc;
+      loroDoc.import(decodedStmtBinary);
+
+      // Create the doc controller
       const docSheetController = new SheetDocController(
         loroDoc,
         org.id,
@@ -81,6 +103,8 @@ export function FrozenColabDocProvider({
         userId,
         new Set(authPrpls),
       );
+
+      // Create the frozen sheet doc
       const colabSheetDoc = new FrozenSheetDoc(
         loroDoc,
         docSheetController,

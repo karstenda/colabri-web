@@ -8,8 +8,10 @@ import {
 } from 'loro-crdt';
 import {
   AclLoroMap,
+  SheetAttributesBlockLoro,
   SheetBlockLoro,
   SheetLoroDoc,
+  SheetPropertiesBlockLoro,
   SheetStatementGridBlockLoro,
   SheetStatementGridRowLoro,
   SheetTextBlockLoro,
@@ -116,6 +118,27 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
       this.userId,
       this.authPrpls,
     );
+  }
+
+  /**
+   * Get the blocks of a given type in the document
+   *
+   * @param type
+   * @returns
+   */
+  public getBlocksOfType(type: ColabSheetBlockType): ContainerID[] {
+    const contentList = this.loroDoc.getMovableList('content');
+    const blockIds: ContainerID[] = [];
+    for (let i = 0; i < contentList.length; i++) {
+      const container = contentList.get(i);
+      if (container instanceof LoroMap) {
+        const blockType = container.get('type');
+        if (blockType === type) {
+          blockIds.push(container.id);
+        }
+      }
+    }
+    return blockIds;
   }
 
   /**
@@ -663,7 +686,8 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
 
       return blockMap.id;
     }
-    if (ColabSheetBlockType === 'statement-grid') {
+    // Statement grid block
+    else if (ColabSheetBlockType === 'statement-grid') {
       const blockMap = contentList.insertContainer(
         position,
         new LoroMap(),
@@ -673,6 +697,56 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
       blockMap.set('type', 'statement-grid' as ColabSheetBlockType);
       blockMap.setContainer('acls', new LoroMap());
       blockMap.setContainer('rows', new LoroMovableList());
+
+      // Set the title element
+      const titleElementMap = blockMap.getOrCreateContainer(
+        'title',
+        new LoroMap(),
+      );
+      titleElementMap.set('nodeName', 'doc');
+
+      return blockMap.id;
+    }
+    // Properties block
+    else if (ColabSheetBlockType === 'properties') {
+      // First ensure that there isn't already a properties block in the document, since we only allow one
+      const contentList = this.loroDoc.getMovableList('content');
+      for (let i = 0; i < contentList.length; i++) {
+        const container = contentList.get(i);
+        if (container instanceof LoroMap) {
+          const type = container.get('type');
+          if (type === 'properties') {
+            throw new Error(
+              'There is already a properties block in the document. Only one is allowed.',
+            );
+          }
+        }
+      }
+
+      // Insert the block
+      const blockMap = contentList.insertContainer(
+        position,
+        new LoroMap(),
+      ) as SheetPropertiesBlockLoro;
+
+      // Initialize the block
+      blockMap.set('type', 'properties' as ColabSheetBlockType);
+
+      return blockMap.id;
+    }
+    // Attributes block
+    else if (ColabSheetBlockType === 'attributes') {
+      // Insert the block
+      const blockMap = contentList.insertContainer(
+        position,
+        new LoroMap(),
+      ) as SheetAttributesBlockLoro;
+
+      // Initialize the block
+      blockMap.set('type', 'attributes' as ColabSheetBlockType);
+      blockMap.setContainer('acls', new LoroMap());
+      blockMap.setContainer('attributes', new LoroMap());
+      blockMap.set('config', {});
 
       // Set the title element
       const titleElementMap = blockMap.getOrCreateContainer(
@@ -910,7 +984,6 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
         langElementMap.getOrCreateContainer('textElement', new LoroMap());
 
       textElementMap.set('nodeName', 'doc');
-      textElementMap.getOrCreateContainer('children', new LoroList());
     }
 
     return statementMap;

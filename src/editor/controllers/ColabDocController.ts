@@ -1,11 +1,20 @@
-import { LoroEventBatch, LoroList, LoroMap } from 'loro-crdt';
+import {
+  ContainerID,
+  LoroCounter,
+  LoroEventBatch,
+  LoroList,
+  LoroMap,
+  LoroMovableList,
+  LoroText,
+  LoroTree,
+} from 'loro-crdt';
 import { Permission } from '../../ui/data/Permission';
 import {
   AclLoroMap,
   ColabLoroDoc,
   UserApprovalLoro,
 } from '../data/ColabLoroDoc';
-import { pathStartsWith } from '../util/LoroPathUtil';
+import { pathEquals, pathStartsWith } from '../util/LoroPathUtil';
 import { ColabApprovalState } from '../../api/ColabriAPI';
 
 export default class ColabDocController<T extends ColabLoroDoc> {
@@ -53,6 +62,107 @@ export default class ColabDocController<T extends ColabLoroDoc> {
   public getDocAclMap(): Record<Permission, string[]> {
     const aclMap = this.loroDoc.getMap('acls');
     return aclMap.toJSON();
+  }
+
+  /**
+   * Get the value of a field given the parent container ID and the field name.
+   *
+   * @param containerId
+   * @param fieldName
+   */
+  public getFieldValue(containerId: ContainerID, fieldName: string): any {
+    const container = this.loroDoc.getContainerById(
+      containerId,
+    ) as LoroMap<any>;
+    if (!container) {
+      console.warn(
+        `Container with ID ${containerId} not found in the document. Returning undefined for field ${fieldName}.`,
+      );
+      return undefined;
+    }
+
+    const field = container.get(fieldName);
+    if (!field) {
+      console.warn(
+        `Field ${fieldName} not found in container ${containerId}. Returning undefined.`,
+      );
+      return undefined;
+    }
+    return field;
+  }
+
+  /**
+   * Set the value of a field given the parent container ID and the field name.
+   *
+   * @param containerId
+   * @param fieldName
+   * @param value
+   * @returns
+   */
+  public setFieldValue(
+    containerId: ContainerID,
+    fieldName: string,
+    value: any,
+  ) {
+    const container = this.loroDoc.getContainerById(
+      containerId,
+    ) as LoroMap<any>;
+    if (!container) {
+      console.warn(
+        `Container with ID ${containerId} not found in the document. Cannot set field ${fieldName}.`,
+      );
+      return;
+    }
+
+    // Set the value
+    if (
+      value instanceof LoroList ||
+      value instanceof LoroMap ||
+      value instanceof LoroMovableList ||
+      value instanceof LoroText ||
+      value instanceof LoroCounter ||
+      value instanceof LoroTree
+    ) {
+      container.setContainer(fieldName, value);
+    } else {
+      container.set(fieldName, value);
+    }
+  }
+
+  /**
+   * Subscribe to changes on a specific field given the parent container ID and the field name.
+   *
+   * @param containerId
+   * @param fieldName
+   * @param callback
+   * @returns
+   */
+  subscribeToFieldChanges(
+    containerId: ContainerID,
+    fieldName: string,
+    callback: (ev: LoroEventBatch) => void,
+  ) {
+    return this.loroDoc.subscribe((event: LoroEventBatch) => {
+      const containerPath = this.loroDoc.getPathToContainer(containerId);
+      if (!containerPath) {
+        // Probably because the container was deleted
+        return;
+      }
+      for (const ev of event.events) {
+        if (pathEquals(ev.path, [...containerPath])) {
+          if (ev.diff?.type === 'map' && ev.diff.updated[fieldName]) {
+            callback(event);
+            break;
+          }
+          callback(event);
+          break;
+        }
+        if (pathEquals(ev.path, [...containerPath, fieldName])) {
+          callback(event);
+          break;
+        }
+      }
+    });
   }
 
   /**

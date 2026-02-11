@@ -1,5 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Api, CreateStatementDocRequest } from '../../../api/ColabriAPI';
+import {
+  Api,
+  ColabDocVersionFormat,
+  CreateStatementDocRequest,
+} from '../../../api/ColabriAPI';
 import {
   GridListFilterModel,
   GridListSortModel,
@@ -30,8 +34,14 @@ export const statementKeys = {
     statementId: string,
     version: number,
     versionV: Record<string, number>,
+    format: string,
   ) =>
-    [...statementKeys.detail(orgId, statementId), version, versionV] as const,
+    [
+      ...statementKeys.detail(orgId, statementId),
+      version,
+      versionV,
+      format,
+    ] as const,
 };
 
 // Stable empty array reference to avoid unnecessary re-renders
@@ -104,14 +114,16 @@ export const useStatementVersion = (
   docId: string,
   version: number,
   versionV: Record<string, number>,
+  format: ColabDocVersionFormat,
   enabled = true,
 ) => {
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: statementKeys.version(orgId, docId, version, versionV),
+    queryKey: statementKeys.version(orgId, docId, version, versionV, format),
     queryFn: () =>
       apiClient.orgId.postStatementsVersion(orgId, docId, {
         version,
         versionV,
+        format,
       }),
     enabled,
   });

@@ -161,6 +161,23 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
         },
       );
 
+      // Subscribe to language changes in the sheet
+      const propertiesContainer = loroDoc.getMap('properties').id;
+      controller.subscribeToFieldChanges(
+        propertiesContainer,
+        'langCodes',
+        () => {
+          updateColumns(propertiesMap);
+        },
+      );
+      controller.subscribeToFieldChanges(
+        propertiesContainer,
+        'masterLangCode',
+        () => {
+          updateColumns(propertiesMap);
+        },
+      );
+
       // Return unsubscribe function
       return () => {
         unsubscribeAcls();

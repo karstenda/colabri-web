@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { Api } from '../../../api/ColabriAPI';
 import type { ContentLanguage } from '../../../editor/data/ContentLanguage';
 
@@ -111,8 +112,9 @@ export const usePlatformContentLanguages = (enabled = true) => {
     enabled: enabled,
     staleTime: 60 * 60 * 1000, // 1 hour
   });
+  const languages = useMemo(() => data?.data ?? EMPTY_LANGUAGES, [data?.data]);
   return {
-    languages: data?.data ?? EMPTY_LANGUAGES,
+    languages,
     isLoading,
     error,
     refetch,
@@ -139,8 +141,9 @@ export const useContentLanguages = (orgId?: string, enabled = true) => {
     enabled: enabled,
     staleTime: 60 * 60 * 1000, // 1 hour
   });
+  const languages = useMemo(() => data?.data ?? EMPTY_LANGUAGES, [data?.data]);
   return {
-    languages: data?.data ?? EMPTY_LANGUAGES,
+    languages,
     isLoading,
     error,
     refetch,

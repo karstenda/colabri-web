@@ -1,5 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Api, CreateSheetDocRequest } from '../../../api/ColabriAPI';
+import {
+  Api,
+  ColabDocVersionFormat,
+  CreateSheetDocRequest,
+} from '../../../api/ColabriAPI';
 import {
   GridListFilterModel,
   GridListSortModel,
@@ -25,6 +29,19 @@ export const sheetKeys = {
   details: () => [...sheetKeys.all, 'detail'] as const,
   detail: (orgId: string, sheetId: string) =>
     [...sheetKeys.details(), orgId, sheetId] as const,
+  version: (
+    orgId: string,
+    statementId: string,
+    version: number,
+    versionV: Record<string, number>,
+    format: string,
+  ) =>
+    [
+      ...sheetKeys.detail(orgId, statementId),
+      version,
+      versionV,
+      format,
+    ] as const,
 };
 
 // Stable empty array reference to avoid unnecessary re-renders
@@ -75,6 +92,45 @@ export const useSheets = (
     gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
   });
   return { sheets: data?.data ?? EMPTY_SHEETS, isLoading, error, refetch };
+};
+
+/**
+ * Hook to fetch a specific version of a sheet document
+ *
+ * @param orgId
+ * @param docId
+ * @param version
+ * @param versionV
+ * @param enabled
+ * @returns
+ */
+export const useSheetVersion = (
+  orgId: string,
+  docId: string,
+  version: number,
+  versionV: Record<string, number>,
+  format: ColabDocVersionFormat,
+  enabled = true,
+) => {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: sheetKeys.version(orgId, docId, version, versionV, format),
+    queryFn: () =>
+      apiClient.orgId.postSheetsVersion(orgId, docId, {
+        version,
+        versionV,
+        format,
+      }),
+    enabled,
+  });
+  return {
+    sheet: data?.data.sheet ?? null,
+    binary: data?.data.binary ?? null,
+    version: data?.data.version ?? null,
+    versionV: data?.data.versionV ?? null,
+    isLoading,
+    error,
+    refetch,
+  };
 };
 
 /**

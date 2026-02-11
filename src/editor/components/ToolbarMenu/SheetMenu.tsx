@@ -54,7 +54,9 @@ export default function SheetMenu({ readOnly }: SheetMenuProps) {
   // Check if a sheetBlock is focussed
   const isSheetBlockFocused =
     activeBlock?.blockType === 'SheetTextBlock' ||
-    activeBlock?.blockType === 'SheetStatementGridBlock';
+    activeBlock?.blockType === 'SheetStatementGridBlock' ||
+    activeBlock?.blockType === 'SheetPropertiesBlock' ||
+    activeBlock?.blockType === 'SheetAttributesBlock';
 
   // The refs to control menu state
   const showMenuRef = useRef<boolean>(false);
@@ -171,7 +173,7 @@ export default function SheetMenu({ readOnly }: SheetMenuProps) {
     const blockType = await dialogs.open<
       AddBlockModalPayload,
       ColabSheetBlockType | undefined
-    >(AddBlockModal, {});
+    >(AddBlockModal, { controller: sheetDocController });
 
     // If no block type was selected, return
     if (!blockType) {
@@ -281,7 +283,10 @@ export default function SheetMenu({ readOnly }: SheetMenuProps) {
                 </MenuItem>
               )}
               {canManage && isSheetBlockFocused && (
-                <MenuItem onClick={handleManageSheetBlockClicked}>
+                <MenuItem
+                  onClick={handleManageSheetBlockClicked}
+                  disabled={activeBlock?.blockType === 'SheetPropertiesBlock'}
+                >
                   <ListItemIcon>
                     <BlockSettingsIcon />
                   </ListItemIcon>

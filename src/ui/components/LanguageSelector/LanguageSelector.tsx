@@ -36,7 +36,7 @@ const MORE_RESULTS_OPTION: PlatformContentLanguage = {
   textDirection: 'ltr' as ContentLanguageDirection,
 };
 
-interface LanguageSelectorProps {
+export type LanguageSelectorProps = {
   /**
    * The scope of languages to display
    * - 'platform': All platform languages
@@ -66,7 +66,7 @@ interface LanguageSelectorProps {
    * Optional function to filter available options
    */
   filterOptions?: (options: ContentLanguage[]) => ContentLanguage[];
-}
+};
 
 export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   scope,
@@ -137,7 +137,13 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
       return values.map(normalizeValue).filter(Boolean) as ContentLanguage[];
     } else {
       if (!value) return null;
-      if (Array.isArray(value)) return null; // Invalid case
+      if (Array.isArray(value)) {
+        if (value.length === 1) {
+          return normalizeValue(value[0]);
+        } else {
+          return null;
+        }
+      }
       return normalizeValue(value);
     }
   }, [value, languages, multiple]);
@@ -275,7 +281,6 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
       }}
       renderValue={(selected, getItemProps) => {
         if (!selected) return null;
-
         if (multiple && Array.isArray(selected)) {
           return selected.map((option, index) => {
             const { onDelete, ...other } = getItemProps({ index });
@@ -288,10 +293,28 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
               />
             );
           });
+        } else if (!multiple) {
+          const { onDelete, ...other } = getItemProps({ index: 0 });
+          if (Array.isArray(selected)) {
+            return (
+              <LanguageChip
+                key={selected[0].code}
+                language={selected[0]}
+                onDelete={onDelete}
+                chipProps={other}
+              />
+            );
+          } else {
+            return (
+              <LanguageChip
+                key={selected.code}
+                language={selected}
+                onDelete={onDelete}
+                chipProps={other}
+              />
+            );
+          }
         }
-
-        const singleValue = Array.isArray(selected) ? selected[0] : selected;
-        return getLanguageName(singleValue);
       }}
       noOptionsText={
         isLoading ? t('common.loading') : t('languages.selector.noOptions')

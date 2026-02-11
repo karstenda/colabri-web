@@ -53,6 +53,22 @@ export type SheetBlockLoro = LoroMap<
   SheetTextBlockSchema | SheetStatementGridBlockSchema
 >;
 
+export type SheetPropertiesBlockSchema = {
+  type: ColabSheetBlockType;
+};
+
+export type SheetPropertiesBlockLoro = LoroMap<SheetPropertiesBlockSchema>;
+
+export type SheetAttributesBlockSchema = {
+  type: ColabSheetBlockType;
+  acls: AclLoroMap;
+  title: TextElementLoro;
+  attributes: LoroMap<Record<string, string>>;
+  config: any;
+};
+
+export type SheetAttributesBlockLoro = LoroMap<SheetAttributesBlockSchema>;
+
 export type SheetTextBlockSchema = {
   type: ColabSheetBlockType;
   acls: AclLoroMap;

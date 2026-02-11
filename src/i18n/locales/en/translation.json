@@ -256,6 +256,14 @@
     "sheetBlock": {
       "noBlocksAdded": "No blocks have been added to this sheet yet."
     },
+    "sheetPropertiesBlock": {
+      "name": "Properties",
+      "description": "A block to display and edit the properties of this sheet."
+    },
+    "sheetAttributesBlock": {
+      "name": "Attributes",
+      "description": "A block to display and edit the attributes of this sheet."
+    },
     "sheetTextBlock": {
       "name": "Text",
       "description": "A block to add rich text content to your sheet."
@@ -280,6 +288,7 @@
   },
   "languages": {
     "title": "Languages",
+    "masterLanguage": "Master Language",
     "addLanguage": "Add Language",
     "noLanguage": "Not Added",
     "selectLanguages": "Languages",
