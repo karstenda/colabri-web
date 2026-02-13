@@ -36,6 +36,7 @@ const ManageSheetStatementElementPanel = ({
   const docAcls = sheetDocController.getDocAclMap();
   const blockAcls = sheetDocController.getBlockAclMap(blockId);
   const stmtAcls = docController.getStmtAclMap();
+  const stmtElementAcls = docController.getStmtElementAclMap(langCode);
 
   const initPermissionChain: PermissionChain = {
     chain: [
@@ -66,7 +67,7 @@ const ManageSheetStatementElementPanel = ({
           localization: language?.name || langCode,
         }),
         type: 'element',
-        acls: stmtAcls,
+        acls: stmtElementAcls,
         canManage: docController.hasManagePermission(),
       },
     ],

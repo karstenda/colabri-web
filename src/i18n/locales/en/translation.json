@@ -129,7 +129,7 @@
       },
       "languages": {
         "title": "Select Languages",
-        "description": "Choose the languages you're supporting."
+        "description": "Choose the languages you want to support."
       },
       "products": {
         "title": "Create Example Product",
@@ -150,13 +150,15 @@
       },
       "sheets": {
         "title": "Create Example Sheet",
-        "description": "Create a sample content sheet for the product you've just created.",
+        "description1": "Great product!",
+        "description2": "In this step, we'll create an example packaging content sheet for your product.",
+        "description3": "Choose the target country and languages for your sheet, and Colabri will automatically generate it with example text to demonstrate how your packaging content could look.",
         "loading": {
           "title": "Creating Example Sheet",
           "m1": "Recruiting highly qualified monkeys to draft your sheet...",
           "m2": "Equipping monkeys with typewriters, coffee, and questionable confidence...",
-          "m3": "Uploading your product data into the monkey knowledge base...",
-          "m4": "Redirecting monkeys from writing Shakespeare fan fiction...",
+          "m3": "Redirecting monkeys from writing Shakespeare fan fiction...",
+          "m4": "Uploading your product data into the monkey knowledge base...",
           "m5": "Confiscating the espresso machine...",
           "m6": "Dodging airborne typewriters...",
           "m7": "Replacing banana placeholders with real content...",
@@ -175,7 +177,7 @@
         "description1": "Our team of highly caffeinated monkeys has drafted an example sheet for:",
         "description2": "Note that this sheet is purely illustrative. It should not be used in production, sent to customers, or shown to serious people in suits.",
         "description3": "We hope this gives you a great first impression of Colabri and that you'll enjoy working with it!",
-        "button": "View the sheet in Colabri!"
+        "button": "Go to the sheet in Colabri"
       }
     },
     "stepError": "Error occurred while executing this step."
@@ -464,6 +466,7 @@
   "sheets": {
     "type": "Sheet",
     "title": "Sheets",
+    "sheetName": "Sheet Name",
     "mySheets": "My Sheets",
     "sharedSheets": "Shared With Me",
     "librarySheets": "Sheet Library",

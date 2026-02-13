@@ -1051,7 +1051,7 @@ export class Api<
      * @tags organizations
      * @name GetOrganizations
      * @summary List organizations
-     * @request GET:/organizations
+     * @request GET:/organizations/
      */
     getOrganizations: (
       query?: {
@@ -1069,7 +1069,7 @@ export class Api<
       params: RequestParams = {},
     ) =>
       this.request<Organization, HTTPError>({
-        path: `/organizations`,
+        path: `/organizations/`,
         method: "GET",
         query: query,
         type: ContentType.Json,
@@ -1083,14 +1083,14 @@ export class Api<
      * @tags organizations
      * @name PostOrganization
      * @summary Create a new organization
-     * @request POST:/organizations
+     * @request POST:/organizations/
      */
     postOrganization: (
       organization: CreateOrganizationRequest,
       params: RequestParams = {},
     ) =>
       this.request<Organization, HTTPError>({
-        path: `/organizations`,
+        path: `/organizations/`,
         method: "POST",
         body: organization,
         type: ContentType.Json,
@@ -1203,14 +1203,14 @@ export class Api<
      * @tags trials
      * @name PostTrial
      * @summary Create a new trial organization
-     * @request POST:/trials
+     * @request POST:/trials/
      */
     postTrial: (
       organization: CreateTrialOrganizationRequest,
       params: RequestParams = {},
     ) =>
       this.request<Organization, HTTPError>({
-        path: `/trials`,
+        path: `/trials/`,
         method: "POST",
         body: organization,
         type: ContentType.Json,
@@ -1620,7 +1620,7 @@ export class Api<
      * @tags groups
      * @name GetGroups
      * @summary List all groups in an organization
-     * @request GET:/{orgId}/groups
+     * @request GET:/{orgId}/groups/
      */
     getGroups: (
       orgId: string,
@@ -1643,7 +1643,7 @@ export class Api<
       params: RequestParams = {},
     ) =>
       this.request<Group[], HTTPError>({
-        path: `/${orgId}/groups`,
+        path: `/${orgId}/groups/`,
         method: "GET",
         query: query,
         type: ContentType.Json,
@@ -1657,7 +1657,7 @@ export class Api<
      * @tags groups
      * @name PostGroup
      * @summary Create a new group
-     * @request POST:/{orgId}/groups
+     * @request POST:/{orgId}/groups/
      */
     postGroup: (
       orgId: string,
@@ -1665,7 +1665,7 @@ export class Api<
       params: RequestParams = {},
     ) =>
       this.request<Group, HTTPError>({
-        path: `/${orgId}/groups`,
+        path: `/${orgId}/groups/`,
         method: "POST",
         body: group,
         type: ContentType.Json,
@@ -2364,7 +2364,7 @@ export class Api<
      * @tags users
      * @name GetUsers
      * @summary List all users in an organization
-     * @request GET:/{orgId}/users
+     * @request GET:/{orgId}/users/
      */
     getUsers: (
       orgId: string,
@@ -2387,7 +2387,7 @@ export class Api<
       params: RequestParams = {},
     ) =>
       this.request<User[], HTTPError>({
-        path: `/${orgId}/users`,
+        path: `/${orgId}/users/`,
         method: "GET",
         query: query,
         type: ContentType.Json,
@@ -2401,7 +2401,7 @@ export class Api<
      * @tags users
      * @name PostUser
      * @summary Create a new user
-     * @request POST:/{orgId}/users
+     * @request POST:/{orgId}/users/
      */
     postUser: (
       orgId: string,
@@ -2409,7 +2409,7 @@ export class Api<
       params: RequestParams = {},
     ) =>
       this.request<User, HTTPError>({
-        path: `/${orgId}/users`,
+        path: `/${orgId}/users/`,
         method: "POST",
         body: user,
         type: ContentType.Json,

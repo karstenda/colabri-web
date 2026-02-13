@@ -1,4 +1,5 @@
 import {
+  OrgCountry,
   PlatformContentLanguage,
   PlatformCountry,
 } from '../../../api/ColabriAPI';
@@ -14,8 +15,8 @@ export type AutoSetupFormData = {
   };
   sheet: {
     name?: string;
-    langCodes?: ContentLanguage[];
-    masterLangCode?: ContentLanguage | null;
-    countryCodes?: ContentLanguage[];
+    languages?: ContentLanguage[];
+    masterLanguage?: ContentLanguage | null;
+    countries?: OrgCountry[];
   };
 };

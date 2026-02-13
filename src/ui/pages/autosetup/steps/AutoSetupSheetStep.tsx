@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useUpdateOrganizationSetting } from '../../../hooks/useOrganizationSettings/useOrganizationSettings';
 import { OrganizationSettingsKey } from '../../../../api/ColabriAPI';
@@ -30,24 +30,37 @@ const AutoSetupSheetStep = forwardRef<
   AutoSetupSheetStepProps
 >(({ setupFormData, setSetupFormData }, ref) => {
   const { t } = useTranslation();
+  const notifications = useNotifications();
   const organization = useOrganization();
+
   const { dreamSheet } = useDreamSheet(organization?.id || '');
   const { updateOrganizationSetting } = useUpdateOrganizationSetting(
     organization?.id || '',
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
-  const notifications = useNotifications();
-
-  // Preselect languages and countries
-  const preselection = preselectCountriesAndLanguages(
-    setupFormData.countries,
-    setupFormData.languages,
-    3,
-  );
-
   const [sheetFormState, setSheetFormState] = useState<AutoSetupSheetFormState>(
     {
+      values: {
+        name: setupFormData.product.name ?? '',
+        countries: [],
+        languages: [],
+        masterLanguage: null,
+      },
+      errors: {},
+    },
+  );
+
+  // Preselect already good form values.
+  useEffect(() => {
+    // Preselect languages and countries
+    const preselection = preselectCountriesAndLanguages(
+      setupFormData.countries,
+      setupFormData.languages,
+      3,
+    );
+
+    setSheetFormState({
       values: {
         name: setupFormData.product.name,
         countries: preselection.countries,
@@ -55,8 +68,18 @@ const AutoSetupSheetStep = forwardRef<
         masterLanguage: preselection.masterLanguage,
       },
       errors: {},
-    },
-  );
+    });
+
+    setSetupFormData((prev) => ({
+      ...prev,
+      sheet: {
+        name: prev.product.name,
+        countries: preselection.countries,
+        languages: preselection.languages,
+        masterLanguage: preselection.masterLanguage,
+      },
+    }));
+  }, []);
 
   // When moving to the next step, save the selected languages
   useImperativeHandle(ref, () => ({
@@ -66,7 +89,7 @@ const AutoSetupSheetStep = forwardRef<
 
       // Set the issues
       setSheetFormState((prev) => {
-        const newState = {
+        const newState: AutoSetupSheetFormState = {
           ...prev,
           errors: {} as AutoSetupSheetFormState['errors'],
         };
@@ -91,8 +114,8 @@ const AutoSetupSheetStep = forwardRef<
         // Mark as completed
         setIsCompleted(true);
 
-        // Wait for 2 seconds for the AutoSetupSheetLoader to properly complete.
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        // Wait for 3 seconds for the AutoSetupSheetLoader to properly complete.
+        await new Promise((resolve) => setTimeout(resolve, 3000));
 
         // Finish the setup
         await finishSetup();
@@ -188,9 +211,17 @@ const AutoSetupSheetStep = forwardRef<
   } else {
     return (
       <Stack spacing={4}>
-        <Typography variant="body2" gutterBottom>
-          {t('autosetup.steps.sheets.description')}
-        </Typography>
+        <Stack spacing={2}>
+          <Typography variant="body2" gutterBottom>
+            {t('autosetup.steps.sheets.description1')}
+          </Typography>
+          <Typography variant="body2" gutterBottom>
+            {t('autosetup.steps.sheets.description2')}
+          </Typography>
+          <Typography variant="body2" gutterBottom>
+            {t('autosetup.steps.sheets.description3')}
+          </Typography>
+        </Stack>
         <AutoSetupSheetForm
           formState={sheetFormState}
           onFieldChange={handleFormFieldChange}

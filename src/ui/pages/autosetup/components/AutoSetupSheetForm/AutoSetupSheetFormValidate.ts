@@ -18,6 +18,44 @@ export function validate(
     ];
   }
 
+  if (sheetFormEntries.languages && sheetFormEntries.languages.length > 4) {
+    issues = [
+      ...issues,
+      {
+        message:
+          'Only a maximum of 4 languages are allowed for an example sheet',
+        path: ['languages'],
+      },
+    ];
+  }
+
+  if (sheetFormEntries.languages && sheetFormEntries.languages.length > 0) {
+    // Check if a generic and local version of the same language is selected (e.g. "en" and "en-US").
+    const genericLangCodes = sheetFormEntries.languages.map(
+      (lang) => lang.code.split('-')[0],
+    );
+    for (const genericLangCode of genericLangCodes) {
+      let sameLangs = [];
+      for (const lang of sheetFormEntries.languages) {
+        if (
+          lang.code === genericLangCode ||
+          lang.code.startsWith(genericLangCode + '-')
+        ) {
+          sameLangs.push(lang);
+        }
+      }
+      if (sameLangs.length > 1) {
+        issues = [
+          ...issues,
+          {
+            message: `Multiple versions of the same language are selected: '${sameLangs[0].name}' and '${sameLangs[1].name}'`,
+            path: ['languages'],
+          },
+        ];
+      }
+    }
+  }
+
   if (!sheetFormEntries.masterLanguage) {
     issues = [
       ...issues,
