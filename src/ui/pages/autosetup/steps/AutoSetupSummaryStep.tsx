@@ -1,4 +1,3 @@
-import { forwardRef, useImperativeHandle, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useUpdateOrganizationSetting } from '../../../hooks/useOrganizationSettings/useOrganizationSettings';
@@ -37,9 +36,22 @@ const AutoSetupSummaryStep = ({
   };
 
   return (
-    <Stack spacing={4}>
+    <Stack spacing={3}>
+      <Typography variant="h6" style={{ textAlign: 'center' }}>
+        {t('autosetup.steps.summary.title')}
+      </Typography>
+
       <Typography variant="body2" gutterBottom>
-        {t('autosetup.steps.summary.description')}
+        {t('autosetup.steps.summary.description1')}
+      </Typography>
+      <Typography variant="body2" gutterBottom>
+        <b>{setupFormData.sheet?.name}</b>
+      </Typography>
+      <Typography variant="body2" gutterBottom>
+        {t('autosetup.steps.summary.description2')}
+      </Typography>
+      <Typography variant="body2" gutterBottom>
+        {t('autosetup.steps.summary.description3')}
       </Typography>
 
       <Button onClick={finishSetup} variant="contained">

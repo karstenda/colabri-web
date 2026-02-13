@@ -16,9 +16,9 @@ import AutoSetupLanguageStep, {
 } from './steps/AutoSetupLanguageStep';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
-import AutoSetupProductCategoriesStep, {
-  AutoSetupProductCategoriesStepRef,
-} from './steps/AutoSetupProductCategoriesStep';
+import AutoSetupProductStep, {
+  AutoSetupProductStepRef,
+} from './steps/AutoSetupProductStep';
 import useNotifications from '../../hooks/useNotifications/useNotifications';
 import AutoSetupSheetStep, {
   AutoSetupSheetStepRef,
@@ -35,13 +35,14 @@ const AutoSetupForm = ({ onCancel }: { onCancel: () => void }) => {
   const theme = useTheme();
   const countriesStepRef = useRef<AutoSetupCountriesStepRef>(null);
   const languageStepRef = useRef<AutoSetupLanguageStepRef>(null);
-  const productStepRef = useRef<AutoSetupProductCategoriesStepRef>(null);
+  const productStepRef = useRef<AutoSetupProductStepRef>(null);
   const sheetStepRef = useRef<AutoSetupSheetStepRef>(null);
 
   const [setupFormData, setSetupFormData] = useState<AutoSetupFormData>({
     countries: [],
     languages: [],
     product: {},
+    sheet: {},
   });
 
   const steps = [
@@ -135,7 +136,7 @@ const AutoSetupForm = ({ onCancel }: { onCancel: () => void }) => {
               />
             )}
             {activeStep === 2 && (
-              <AutoSetupProductCategoriesStep
+              <AutoSetupProductStep
                 ref={productStepRef}
                 setupFormData={setupFormData}
                 setSetupFormData={setSetupFormData}

@@ -150,12 +150,32 @@
       },
       "sheets": {
         "title": "Create Example Sheet",
-        "description": "Create a sample content sheet for the product you've just created."
+        "description": "Create a sample content sheet for the product you've just created.",
+        "loading": {
+          "title": "Creating Example Sheet",
+          "m1": "Recruiting highly qualified monkeys to draft your sheet...",
+          "m2": "Equipping monkeys with typewriters, coffee, and questionable confidence...",
+          "m3": "Uploading your product data into the monkey knowledge base...",
+          "m4": "Redirecting monkeys from writing Shakespeare fan fiction...",
+          "m5": "Confiscating the espresso machine...",
+          "m6": "Dodging airborne typewriters...",
+          "m7": "Replacing banana placeholders with real content...",
+          "m8": "Reminding the team this is not a jungle-themed document...",
+          "m9": "Negotiating performance bonuses in bananas...",
+          "m10": "Calming the monkey union representative...",
+          "m11": "Polishing your sheet to a non-primate standard...",
+          "m12": "Removing suspicious paw prints from the margins...",
+          "m13": "Final quality check: 98% fewer bananas...",
+          "m14": "Bribing the monkeys for the final version of your sheet...",
+          "completed": "Exporting document before the monkeys change it again!"
+        }
       },
       "summary": {
-        "title": "Setup Complete",
-        "description": "Your example sheet was created successfully! You can now start using Colabri!",
-        "button": "Edit your product content sheet"
+        "title": "Created Example Sheet",
+        "description1": "Our team of highly caffeinated monkeys has drafted an example sheet for:",
+        "description2": "Note that this sheet is purely illustrative. It should not be used in production, sent to customers, or shown to serious people in suits.",
+        "description3": "We hope this gives you a great first impression of Colabri and that you'll enjoy working with it!",
+        "button": "View the sheet in Colabri!"
       }
     },
     "stepError": "Error occurred while executing this step."

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { AutoSetupFormData } from '../AutoSetupData';
 import Typography from '@mui/material/Typography';
 import { Stack } from '@mui/material';
-import OrgProductForm, {
+import AutoSetupProductForm, {
   FormFieldValue,
   AutoSetupProductFormState,
 } from '../components/AutoSetupProductForm/AutoSetupProductForm';
@@ -13,18 +13,18 @@ import { CreateAttributeValueRequest } from '../../../../api/ColabriAPI';
 import { validate } from '../components/AutoSetupProductForm/AutoSetupProductFormValidate';
 import useNotifications from '../../../hooks/useNotifications/useNotifications';
 
-export type AutoSetupProductCategoriesStepProps = {
+export type AutoSetupProductStepProps = {
   setupFormData: AutoSetupFormData;
   setSetupFormData: React.Dispatch<React.SetStateAction<AutoSetupFormData>>;
 };
 
-export type AutoSetupProductCategoriesStepRef = {
+export type AutoSetupProductStepRef = {
   onNext: () => Promise<boolean>;
 };
 
-const AutoSetupProductCategoriesStep = forwardRef<
-  AutoSetupProductCategoriesStepRef,
-  AutoSetupProductCategoriesStepProps
+const AutoSetupProductStep = forwardRef<
+  AutoSetupProductStepRef,
+  AutoSetupProductStepProps
 >(({ setupFormData, setSetupFormData }, ref) => {
   const { t } = useTranslation();
   const organization = useOrganization();
@@ -92,10 +92,17 @@ const AutoSetupProductCategoriesStep = forwardRef<
     try {
       // Create the product
       setIsSubmitting(true);
-      await createProduct({
+      const { data } = await createProduct({
         name: productFormState.values.name,
         attributeValues: attributeCreateRequests,
       });
+      setSetupFormData((prev) => ({
+        ...prev,
+        product: {
+          ...prev.product,
+          id: data.id,
+        },
+      }));
       setIsSubmitting(false);
       return true;
     } catch (error) {
@@ -137,6 +144,7 @@ const AutoSetupProductCategoriesStep = forwardRef<
     setSetupFormData((prev) => ({
       ...prev,
       product: {
+        ...prev.product,
         [name]:
           name === 'attributeValues' && value instanceof Object
             ? {
@@ -154,7 +162,7 @@ const AutoSetupProductCategoriesStep = forwardRef<
         {t('autosetup.steps.products.description')}
       </Typography>
 
-      <OrgProductForm
+      <AutoSetupProductForm
         formState={productFormState}
         onFieldChange={handleFormFieldChange}
         isSubmitting={isSubmitting}
@@ -176,4 +184,4 @@ const AutoSetupProductCategoriesStep = forwardRef<
   );
 });
 
-export default AutoSetupProductCategoriesStep;
+export default AutoSetupProductStep;

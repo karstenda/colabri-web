@@ -350,6 +350,19 @@ export interface DocumentStream {
   version: number;
 }
 
+export interface DreamSheetRequest {
+  countryCodes?: string[];
+  langCodes?: string[];
+  masterLangCode?: string;
+  name?: string;
+  productId?: string;
+}
+
+export interface DreamSheetResponse {
+  docId?: string;
+  summary?: string;
+}
+
 export interface GPCNode {
   code?: string;
   description?: string;
@@ -1574,6 +1587,28 @@ export class Api<
       this.request<SyncColabDocResponse, HTTPError>({
         path: `/${orgId}/documents/${docId}/sync`,
         method: "POST",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description This endpoint will automatically generate a sheet based on the input using AI. The content can't be trusted, this is only meant for quickly generating sample sheets to be used as a starting point for users to edit.
+     *
+     * @tags dream
+     * @name PostDreamSheet
+     * @summary Autogenerates a sample Colab Sheet for the specified input
+     * @request POST:/{orgId}/dream/sheet
+     */
+    postDreamSheet: (
+      orgId: string,
+      dreamsheet: DreamSheetRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<DreamSheetResponse, HTTPError>({
+        path: `/${orgId}/dream/sheet`,
+        method: "POST",
+        body: dreamsheet,
         type: ContentType.Json,
         format: "json",
         ...params,
