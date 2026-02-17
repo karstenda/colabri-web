@@ -249,7 +249,7 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
                 </StmtElementHeaderRight>
               </StmtElementHeaderWrapper>
             </Stack>
-            {textElementContainerId != null && (
+            {textElementContainerId != null && language && (
               <ColabTextEditorOutlined
                 showOutlines={showOutlines && !bp.readOnly}
                 loro={loroDoc as any as LoroDocType}
@@ -257,9 +257,9 @@ const StatementElementBlock = ({ bp }: StatementElementBlockProps) => {
                 containerId={textElementContainerId}
                 spellCheck={{
                   enabled: true,
-                  supported: language?.spellCheck || false,
+                  supported: language.spellCheck || false,
                   orgId: organization?.id || '',
-                  langCode: language?.spellCheckLangCode,
+                  langCode: language.spellCheckLangCode,
                 }}
                 canEdit={canEdit && !bp.readOnly}
                 txtDir={language?.textDirection}

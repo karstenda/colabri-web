@@ -113,7 +113,7 @@
   },
   "autosetup": {
     "title": "Quick Setup",
-    "intro": "This wizard will help you to quickly setup up an initial minimal configuration for this Colabri setup. This is a fast and easy way to get started with Colabri. You can always modify or extend your configuration later from within the admin section.",
+    "intro": "Let's get you started! This wizard will help you to quickly setup up an initial minimal configuration for this Colabri setup. This is a fast and easy way to get started with Colabri. You can always modify or extend your configuration later from within the admin section.",
     "skipWarning": "Are you sure you want to skip this? You will need to configure your setup from scratch yourself.",
     "skipSetup": "Skip Setup",
     "startSetup": "Start Setup",
@@ -135,11 +135,11 @@
         "title": "Create Example Product",
         "description": "Specify a single product for which you want to manage the content in Colabri. Don't worry after the setup you can add more products.",
         "placeholders": {
-          "name": "E.g.: NA - Coca-Cola Zero - Six Pack - 12oz Sleek Cans",
+          "name": "E.g.: NA - StarFizz-Cola Zero - Six Pack - 12oz Sleek Cans",
           "obhDivision": "E.g.: North America",
-          "obhBrand": "E.g.: Coca-Cola",
+          "obhBrand": "E.g.: StarFizz-Cola",
           "obhSubbrand": "E.g.: Zero",
-          "obhProduct": "E.g.: Coca-Cola Zero",
+          "obhProduct": "E.g.: StarFizz-Cola Zero",
           "obhVariant": "E.g.: Six Pack",
           "obhSize": "E.g.: 12oz Sleek Can",
           "gpcSegment": "E.g.: 50000000 - Food/Beverage/Tobacco",
@@ -169,7 +169,7 @@
           "m12": "Removing suspicious paw prints from the margins...",
           "m13": "Final quality check: 98% fewer bananas...",
           "m14": "Bribing the monkeys for the final version of your sheet...",
-          "completed": "Exporting document before the monkeys change it again!"
+          "completed": "Successfully generated final version of the example sheet!"
         }
       },
       "summary": {

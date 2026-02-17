@@ -7,7 +7,7 @@ import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 
 const ColabTextEditorOutlineBox = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'showOutlines',
+  shouldForwardProp: (prop) => prop !== 'showOutlines' && prop !== 'editable',
 })<{ showOutlines?: boolean; editable?: boolean }>(
   ({ theme, showOutlines, editable }) => ({
     padding: '4px',

@@ -79,6 +79,42 @@ export type SheetTextBlockSchema = {
 
 export type SheetTextBlockLoro = LoroMap<SheetTextBlockSchema>;
 
+export type SheetBarcodeGridBlockSchema = {
+  type: ColabSheetBlockType;
+  acls: AclLoroMap;
+  title: TextElementLoro;
+  rows: LoroMovableList<SheetBarcodeGridRowLoro>;
+};
+
+export type SheetBarcodeGridBlockLoro = LoroMap<SheetBarcodeGridBlockSchema>;
+
+export type SheetBarcodeGridRowLoro = LoroMap<{
+  barcode: BarcodeDataLoro;
+}>;
+
+export type BarcodeDataLoro = LoroMap<{
+  type: string;
+  data: string;
+  symbolComponentCode?: string;
+}>;
+
+export type SheetSymbolGridBlockSchema = {
+  type: ColabSheetBlockType;
+  acls: AclLoroMap;
+  title: TextElementLoro;
+  rows: LoroMovableList<SheetSymbolGridRowLoro>;
+};
+
+export type SheetSymbolGridBlockLoro = LoroMap<SheetSymbolGridBlockSchema>;
+
+export type SheetSymbolGridRowLoro = LoroMap<{
+  symbol: SymbolDataLoro;
+}>;
+
+export type SymbolDataLoro = LoroMap<{
+  type: string;
+}>;
+
 export type SheetStatementGridBlockSchema = {
   type: ColabSheetBlockType;
   acls: AclLoroMap;

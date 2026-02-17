@@ -45,7 +45,10 @@ const RefTypeCell = ({ hasFocus }: RefTypeCellProps) => {
           <FrozenReferenceTag onClick={() => {}} />
         )}
         {colabDoc instanceof ConnectedStmtDoc && (
-          <LiveReferenceTag onClick={() => {}} />
+          <LiveReferenceTag
+            stmtDocId={colabDoc.getDocId()}
+            onClick={() => {}}
+          />
         )}
       </Stack>
     </CellWrapper>

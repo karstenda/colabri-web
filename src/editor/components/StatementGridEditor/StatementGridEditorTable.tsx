@@ -303,6 +303,7 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
 
   const gridSx = useMemo(
     () => ({
+      '--DataGrid-overlayHeight': '150px',
       [`&`]: { border: '0px' },
       [`& .${gridClasses.columnHeader}, & .${gridClasses.cell}`]: {
         outline: 'transparent',

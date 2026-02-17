@@ -34,7 +34,9 @@ const StatementBlock = ({ bp, readOnly }: StatementBlockProps) => {
   const organization = useOrganization();
 
   // Get the configured languages
-  const { languages } = useContentLanguages(organization?.id);
+  const { languages, isLoading: isLanguagesLoading } = useContentLanguages(
+    organization?.id,
+  );
 
   // The state to track the StatementElementBPs
   const [smtmElementsBPs, setStmtElementsBPs] = useState<
@@ -122,7 +124,7 @@ const StatementBlock = ({ bp, readOnly }: StatementBlockProps) => {
         {smtmElementsBPs == null && (
           <Skeleton variant="rounded" width="100%" height={100} />
         )}
-        {languages.length === 0 && (
+        {languages.length === 0 && !isLanguagesLoading && (
           <Box>
             <Alert severity="info">
               {t('editor.statementBlock.noLanguagesConfigured')}

@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { createPortal } from 'react-dom';
 import {
   CursorEphemeralStore,
   LoroEphemeralCursorPlugin,
@@ -282,12 +283,14 @@ const ColabTextEditor = forwardRef<ColabTextEditorHandle, ColabTextEditorProps>(
     return (
       <>
         <div id={'editor'} className={className} ref={editorDom} />
-        {spellCheckSuggestionBox && (
-          <SpellCheckSuggestionBox
-            {...spellCheckSuggestionBox}
-            readOnly={!canEdit}
-          />
-        )}
+        {spellCheckSuggestionBox &&
+          createPortal(
+            <SpellCheckSuggestionBox
+              {...spellCheckSuggestionBox}
+              readOnly={!canEdit}
+            />,
+            document.body,
+          )}
       </>
     );
   },
