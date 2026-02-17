@@ -198,17 +198,22 @@ const ColabTextEditor = forwardRef<ColabTextEditorHandle, ColabTextEditorProps>(
       }
 
       // Generate the custom editor attributes
-      const attributes = {};
+      const attributes: Record<string, any> = {};
+      const styleAttrs: string[] = [];
       // Check if we need a text direction attribute
       if (txtDir === 'rtl') {
         Object.assign(attributes, { dir: 'rtl' });
+        styleAttrs.push('text-align: right;');
       }
       // Check if we need a custom font families
       if (customFonts && customFonts.length > 0) {
-        Object.assign(attributes, {
-          style: `font-family: ${customFonts.join(', ')};`,
-        });
+        styleAttrs.push(`font-family: ${customFonts.join(', ')};`);
       }
+      // Combine the style attributes into the attributes object
+      Object.assign(attributes, {
+        style: styleAttrs.join(' '),
+      });
+
       // Wether we need to enable the browsers default spell checking
       if (spellCheck.enabled) {
         if (spellCheck.supported) {
