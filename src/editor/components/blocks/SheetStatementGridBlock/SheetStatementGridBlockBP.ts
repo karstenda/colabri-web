@@ -1,7 +1,7 @@
 import { ContainerID } from 'loro-crdt';
-import { SheetContentBlockBP } from '../SheetBlock/SheetContentBlockBP';
+import { SheetTrackBlockBP } from '../SheetTrack/SheetTrackBlockBP';
 
-export type SheetStatementGridBlockBP = SheetContentBlockBP & {
+export type SheetStatementGridBlockBP = SheetTrackBlockBP & {
   containerId: ContainerID;
   readOnly?: boolean;
 };

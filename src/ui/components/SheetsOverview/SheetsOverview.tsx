@@ -239,7 +239,7 @@ function SheetsOverview(props: SheetsOverviewProps) {
   // When a sheet is clicked for editing
   const handleRowEdit = React.useCallback(
     (sheet: SheetDocument) => async () => {
-      navigate(`/org/${organization?.id}/sheets/${sheet.id}/edit`);
+      navigate(`/org/${organization?.id}/sheets/${sheet.id}`);
     },
     [organization, navigate],
   );

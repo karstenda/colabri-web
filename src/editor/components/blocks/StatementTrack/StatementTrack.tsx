@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { StatementBlockBP } from './StatementBlockBP';
+import { StatementTrackBP } from './StatementTrackBP';
 import { useColabDoc } from '../../../context/ColabDocContext/ColabDocProvider';
 import { StatementElementBlockBP } from '../StatementElementBlock/StatementElementBlockBP';
 import { LoroDoc, LoroEventBatch, LoroMap } from 'loro-crdt';
@@ -10,12 +10,11 @@ import { useOrganization } from '../../../../ui/context/UserOrganizationContext/
 import { ConnectedStmtDoc, FrozenStmtDoc } from '../../../data/ColabDoc';
 import { useTranslation } from 'react-i18next';
 
-export type StatementBlockProps = {
-  bp: StatementBlockBP;
+export type StatementTrackProps = {
   readOnly?: boolean;
 };
 
-const StatementBlock = ({ bp, readOnly }: StatementBlockProps) => {
+const StatementTrack = ({ readOnly }: StatementTrackProps) => {
   const { t } = useTranslation();
 
   // Get the current ColabDoc
@@ -24,7 +23,7 @@ const StatementBlock = ({ bp, readOnly }: StatementBlockProps) => {
     !(colabDoc instanceof ConnectedStmtDoc) &&
     !(colabDoc instanceof FrozenStmtDoc)
   ) {
-    throw new Error('StatementBlock can only be used with statement docs.');
+    throw new Error('StatementTrack can only be used with statement docs.');
   }
 
   // Get the LoroDoc
@@ -61,7 +60,7 @@ const StatementBlock = ({ bp, readOnly }: StatementBlockProps) => {
 
     // Bind to the LoroMap to listen for changes
     bindToLoro(loroDoc);
-  }, [loroDoc, bp, languages]);
+  }, [loroDoc, languages]);
 
   /*
    * Bind this statement block to the LoroMap to listen for changes
@@ -127,7 +126,7 @@ const StatementBlock = ({ bp, readOnly }: StatementBlockProps) => {
         {languages.length === 0 && !isLanguagesLoading && (
           <Box>
             <Alert severity="info">
-              {t('editor.statementBlock.noLanguagesConfigured')}
+              {t('editor.statementTrack.noLanguagesConfigured')}
             </Alert>
           </Box>
         )}
@@ -136,7 +135,7 @@ const StatementBlock = ({ bp, readOnly }: StatementBlockProps) => {
           smtmElementsBPs.length === 0 && (
             <Box>
               <Alert severity="info">
-                {t('editor.statementBlock.noLocalizations')}
+                {t('editor.statementTrack.noLocalizations')}
               </Alert>
             </Box>
           )}
@@ -151,4 +150,4 @@ const StatementBlock = ({ bp, readOnly }: StatementBlockProps) => {
     </>
   );
 };
-export default StatementBlock;
+export default StatementTrack;

@@ -1,6 +1,6 @@
 import { TextElement } from '../../api/ColabriAPI';
 import { statementTextSchema } from '../components/ColabTextEditor/schemas/StatementTextSchema';
-import { DOMSerializer, Schema, Node } from 'prosemirror-model';
+import { DOMSerializer, Schema, Node, Attrs } from 'prosemirror-model';
 
 export const objToProseMirrorNode = (
   schema: Schema,
@@ -8,7 +8,7 @@ export const objToProseMirrorNode = (
 ): Node | Node[] | null => {
   let retval: Node | Node[] | null = null;
 
-  if (typeof obj === 'object') {
+  if (typeof obj === 'object' && obj.nodeName) {
     const attributes = obj.attributes || {};
     const children = obj.children || [];
     const nodeName = obj.nodeName;
@@ -32,9 +32,19 @@ export const objToProseMirrorNode = (
       // This is probably a result of a concurrent action.
       console.error(e);
     }
-  } else if (typeof obj === 'string') {
+  } else if (typeof obj === 'object' && Array.isArray(obj)) {
     retval = [];
-    retval.push(schema.text(obj, []));
+    for (const delta of obj) {
+      if (delta.insert == null || typeof delta.insert !== 'string') {
+        throw new Error('Invalid delta insert');
+      }
+      const marks = [];
+      for (const [markName, mark] of Object.entries(delta.attributes ?? {})) {
+        const markAttrs = valueToAttrs(mark);
+        marks.push(schema.mark(markName, markAttrs ?? undefined));
+      }
+      retval.push(schema.text(delta.insert, marks));
+    }
   } else {
     /* v8 ignore next */
     throw new Error('Invalid type');
@@ -61,3 +71,15 @@ export const textElementToHTML = (textElement: TextElement): string => {
   div.appendChild(fragment);
   return div.innerHTML;
 };
+
+function valueToAttrs(value: any): Attrs | null {
+  if (
+    value != null &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    !(value instanceof Uint8Array)
+  ) {
+    return value as Attrs;
+  }
+  return null;
+}

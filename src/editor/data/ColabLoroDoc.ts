@@ -1,14 +1,19 @@
-import { LoroDoc, LoroList, LoroMap, LoroMovableList } from 'loro-crdt';
+import {
+  LoroDoc,
+  LoroList,
+  LoroMap,
+  LoroMovableList,
+  LoroText,
+} from 'loro-crdt';
 import {
   ColabApprovalState,
   ColabApprovalType,
   DocumentType,
   ColabSheetBlockType,
-  DocumentStream,
-  StatementDocument,
   StatementGridRowType,
 } from '../../api/ColabriAPI';
 import { Permission } from '../../ui/data/Permission';
+import { LoroNodeContainerType } from 'loro-prosemirror';
 
 export type ColabDocType =
   | DocumentType.DocumentTypeColabStatement
@@ -41,6 +46,7 @@ export type DocPropertiesLoro = LoroMap<{
   masterLangCode?: string;
   langCodes?: LoroList<string>;
   countryCodes?: LoroList<string>;
+  scope?: LoroMap<Record<string, LoroList<string>>>;
 }>;
 
 export type StmtElementLoro = LoroMap<{
@@ -90,6 +96,8 @@ export type SheetBarcodeGridBlockLoro = LoroMap<SheetBarcodeGridBlockSchema>;
 
 export type SheetBarcodeGridRowLoro = LoroMap<{
   barcode: BarcodeDataLoro;
+  instance: number;
+  scope?: LoroMap<Record<string, LoroList<string>>>;
 }>;
 
 export type BarcodeDataLoro = LoroMap<{
@@ -109,6 +117,8 @@ export type SheetSymbolGridBlockLoro = LoroMap<SheetSymbolGridBlockSchema>;
 
 export type SheetSymbolGridRowLoro = LoroMap<{
   symbol: SymbolDataLoro;
+  instance: number;
+  scope?: LoroMap<Record<string, LoroList<string>>>;
 }>;
 
 export type SymbolDataLoro = LoroMap<{
@@ -129,6 +139,8 @@ export type SheetStatementGridRowLoro = LoroMap<{
   type: StatementGridRowType;
   statement?: LoroMap<StmtDocSchema>;
   statementRef?: LoroMap<StmtRefSchema>;
+  instance: number;
+  scope?: LoroMap<Record<string, LoroList<string>>>;
 }>;
 
 export type StmtRefSchema = {
@@ -154,14 +166,4 @@ export type GroupApprovalLoro = LoroMap<{
   approvals: LoroMap<Record<string, UserApprovalLoro>>;
 }>;
 
-export type TextElementLoro = LoroMap<{
-  nodeName: string;
-  children?: LoroList<TextElementChild>;
-  attributes?: LoroMap<{ [key: string]: string }>;
-}>;
-
-export type TextElementChild = LoroMap<{
-  nodeName: string;
-  children?: LoroList<TextElementChild> | string;
-  attributes?: LoroMap<{ [key: string]: string }>;
-}>;
+export type TextElementLoro = LoroNodeContainerType;

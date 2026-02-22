@@ -250,7 +250,7 @@
       "blockPermissions": "Block Permissions",
       "noPermissions": "No permissions assigned."
     },
-    "statementBlock": {
+    "statementTrack": {
       "noLanguagesConfigured": "No languages configured.",
       "noLocalizations": "No localizations."
     },
@@ -275,7 +275,7 @@
       "title": "Move to Library",
       "description": "Select the library to which you want to move this document."
     },
-    "sheetBlock": {
+    "sheetTrack": {
       "noBlocksAdded": "No blocks have been added to this sheet yet."
     },
     "sheetPropertiesBlock": {

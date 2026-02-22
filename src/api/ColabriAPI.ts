@@ -58,6 +58,8 @@ export enum ColabSheetBlockType {
   ColabSheetBlockTypeAttributes = "attributes",
   ColabSheetBlockTypeText = "text",
   ColabSheetBlockTypeStatementGrid = "statement-grid",
+  ColabSheetBlockTypeBarcodeGrid = "barcode-grid",
+  ColabSheetBlockTypeSymbolGrid = "symbol-grid",
 }
 
 export enum ColabDocVersionFormat {
@@ -183,8 +185,30 @@ export interface ColabModelProperties {
   type: DocumentType;
 }
 
+export interface ColabSheetAttributesBlock {
+  acls: Record<string, string[]>;
+  attributes: Record<string, AttributeValueStruct>;
+  title: TextElement;
+  type: ColabSheetBlockType;
+}
+
+export interface ColabSheetBarcodeGridBlock {
+  acls: Record<string, string[]>;
+  rows: ColabSheetBarcodeGridRow[];
+  title: TextElement;
+  type: ColabSheetBlockType;
+}
+
+export interface ColabSheetBarcodeGridRow {
+  barcode: SchemasColabBarcodeModel;
+}
+
 export interface ColabSheetBlockDictionary {
+  attributes?: ColabSheetAttributesBlock;
+  "barcode-grid"?: ColabSheetBarcodeGridBlock;
+  properties?: ColabSheetPropertiesBlock;
   "statement-grid"?: ColabSheetStatementGridBlock;
+  "symbol-grid"?: ColabSheetSymbolGridBlock;
   text?: ColabSheetTextBlock;
 }
 
@@ -193,6 +217,10 @@ export interface ColabSheetModel {
   approvals: Record<string, ColabApproval>;
   content: any[];
   properties: ColabModelProperties;
+}
+
+export interface ColabSheetPropertiesBlock {
+  type: ColabSheetBlockType;
 }
 
 export interface ColabSheetStatementGridBlock {
@@ -211,7 +239,18 @@ export interface ColabSheetStatementGridRow {
 export interface ColabSheetStatementRef {
   docId: string;
   version: number;
-  versionV: string;
+  versionV: Record<string, number>;
+}
+
+export interface ColabSheetSymbolGridBlock {
+  acls: Record<string, string[]>;
+  rows: ColabSheetSymbolGridRow[];
+  title: TextElement;
+  type: ColabSheetBlockType;
+}
+
+export interface ColabSheetSymbolGridRow {
+  symbol: SchemasColabSymbolModel;
 }
 
 export interface ColabSheetTextBlock {
@@ -361,6 +400,10 @@ export interface DreamSheetRequest {
 export interface DreamSheetResponse {
   docId?: string;
   summary?: string;
+}
+
+export interface ExportAcrGS1Request {
+  localeMapping?: Record<string, string>;
 }
 
 export interface GPCNode {
@@ -692,6 +735,16 @@ export interface User {
   lastName?: string;
   updatedAt?: string;
   updatedBy?: string;
+}
+
+export interface SchemasColabBarcodeModel {
+  data: string;
+  symbolComponentCode: string;
+  type: string;
+}
+
+export interface SchemasColabSymbolModel {
+  type: string;
 }
 
 export type QueryParamsType = Record<string | number, any>;
@@ -1611,6 +1664,28 @@ export class Api<
         body: dreamsheet,
         type: ContentType.Json,
         format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Export a sheet to the GS1 defined Artwork Content Response XML format
+     *
+     * @tags export
+     * @name PostExportGs1AcrXml
+     * @summary Export a ColabSheet to GS1 ACR XML
+     * @request POST:/{orgId}/export/{docId}/gs1-acr-xml
+     */
+    postExportGs1AcrXml: (
+      orgId: string,
+      docId: string,
+      acr: ExportAcrGS1Request,
+      params: RequestParams = {},
+    ) =>
+      this.request<string, HTTPError>({
+        path: `/${orgId}/export/${docId}/gs1-acr-xml`,
+        method: "POST",
+        body: acr,
+        type: ContentType.Json,
         ...params,
       }),
 

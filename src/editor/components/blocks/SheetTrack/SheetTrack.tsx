@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { SheetBlockBP } from './SheetBlockBP';
-import { SheetContentBlockBP } from './SheetContentBlockBP';
+import { SheetTrackBlockBP } from './SheetTrackBlockBP';
 import { useColabDoc } from '../../../context/ColabDocContext/ColabDocProvider';
 import { LoroEventBatch, LoroList, LoroMap, LoroMovableList } from 'loro-crdt';
 import { Alert, Box, CircularProgress, Skeleton, Stack } from '@mui/material';
@@ -16,15 +15,15 @@ import SheetTextBlock from '../SheetTextBlock/SheetTextBlock';
 import SheetStatementGridBlock from '../SheetStatementGridBlock/SheetStatementGridBlock';
 import { SheetPropertiesBlockBP } from '../SheetPropertiesBlock/SheetPropertiesBlockBP';
 import SheetPropertiesBlock from '../SheetPropertiesBlock/SheetPropertiesBlock';
+import { SheetBarcodeGridBlockBP } from '../SheetBarcodeGridBlock/SheetBarcodeGridBlockBP';
 
-export type SheetBlockProps = {
-  bp: SheetBlockBP;
+export type SheetTrackProps = {
   readOnly?: boolean;
 };
 
 const DEFAULT_LANGCODE = 'en';
 
-const SheetBlock = ({ bp, readOnly }: SheetBlockProps) => {
+const SheetTrack = ({ readOnly }: SheetTrackProps) => {
   const { t } = useTranslation();
 
   // Get the current ColabDoc
@@ -33,7 +32,7 @@ const SheetBlock = ({ bp, readOnly }: SheetBlockProps) => {
     !(colabDoc instanceof ConnectedSheetDoc) &&
     !(colabDoc instanceof FrozenSheetDoc)
   ) {
-    throw new Error('SheetBlock can only be used with sheet docs.');
+    throw new Error('SheetTrack can only be used with sheet docs.');
   }
 
   // Get the LoroDoc
@@ -45,9 +44,9 @@ const SheetBlock = ({ bp, readOnly }: SheetBlockProps) => {
   // Get the configured languages
   const { languages } = useContentLanguages(organization?.id);
 
-  // The state to track the SheetBlockBPs
-  const [sheetContentBlockBPs, setSheetContentBlockBPs] = useState<
-    SheetContentBlockBP[] | null
+  // The state to track the SheetTrackBlockBPs
+  const [sheetTrackBlockBPs, setSheetTrackBlockBPs] = useState<
+    SheetTrackBlockBP[] | null
   >(null);
 
   useEffect(() => {
@@ -63,15 +62,15 @@ const SheetBlock = ({ bp, readOnly }: SheetBlockProps) => {
       return;
     }
 
-    // Generate the StatementElementBPs for each child
-    updateSheetBlockBPs(sheetModelContent);
+    // Generate the BPs for each child
+    updateSheetTrackBPs(sheetModelContent);
 
     // Bind to the LoroMap to listen for changes
     bindToLoro(loroDoc);
-  }, [loroDoc, bp, languages]);
+  }, [loroDoc, languages]);
 
   /*
-   * Bind this statement block to the LoroMap to listen for changes
+   * Bind this sheet track to the LoroMap to listen for changes
    */
   const bindToLoro = (loroDoc: SheetLoroDoc) => {
     const blocksListLoro = loroDoc.getMovableList('content');
@@ -80,10 +79,10 @@ const SheetBlock = ({ bp, readOnly }: SheetBlockProps) => {
     const listener = loroDoc.subscribe((e: LoroEventBatch) => {
       // Iterate over the events
       e.events.forEach((event) => {
-        // Check if the event is for our statement model content
+        // Check if the event is for our sheet model content
         if (event.target === blocksListLoro.id) {
-          // This means that we need to regenerate our StatementElementBPs
-          updateSheetBlockBPs(blocksListLoro);
+          // This means that we need to regenerate our SheetTrackBPs
+          updateSheetTrackBPs(blocksListLoro);
         }
       });
     });
@@ -91,11 +90,11 @@ const SheetBlock = ({ bp, readOnly }: SheetBlockProps) => {
     return listener;
   };
 
-  // Update the StatementElementBPs based on the current content
-  const updateSheetBlockBPs = (
+  // Update the SheetTrackBPs based on the current content
+  const updateSheetTrackBPs = (
     sheetModelContent: LoroMovableList<SheetBlockLoro>,
   ) => {
-    const newSheetBlockBPs: SheetContentBlockBP[] = [];
+    const newSheetTrackBPs: SheetTrackBlockBP[] = [];
 
     // Iterate over the blocks
     for (let i = 0; i < sheetModelContent.length; i++) {
@@ -104,6 +103,20 @@ const SheetBlock = ({ bp, readOnly }: SheetBlockProps) => {
         sheetContentBlock as LoroMap<{ type: ColabSheetBlockType }>
       ).get('type');
       switch (blockType) {
+        case 'properties': {
+          // Properties Block
+          const propertiesBlockBP: SheetPropertiesBlockBP = {
+            id: sheetContentBlock.id,
+            type: 'properties' as ColabSheetBlockType,
+            containerId: sheetContentBlock.id,
+          };
+          newSheetTrackBPs.push(propertiesBlockBP);
+          break;
+        }
+        case 'attributes': {
+          // Attributes Block - Not implemented yet
+          break;
+        }
         case 'text': {
           // Text Block
           const textBlockBP: SheetTextBlockBP = {
@@ -113,7 +126,7 @@ const SheetBlock = ({ bp, readOnly }: SheetBlockProps) => {
             langCode: DEFAULT_LANGCODE,
             readOnly: readOnly,
           };
-          newSheetBlockBPs.push(textBlockBP);
+          newSheetTrackBPs.push(textBlockBP);
           break;
         }
         case 'statement-grid': {
@@ -124,24 +137,29 @@ const SheetBlock = ({ bp, readOnly }: SheetBlockProps) => {
             containerId: sheetContentBlock.id,
             readOnly: readOnly,
           };
-          newSheetBlockBPs.push(statementGridBlockBP);
+          newSheetTrackBPs.push(statementGridBlockBP);
           break;
         }
-        case 'properties': {
-          // Properties Block
-          const propertiesBlockBP: SheetPropertiesBlockBP = {
+        case 'barcode-grid': {
+          // Barcode Grid Block
+          const barcodeGridBlockBP: SheetBarcodeGridBlockBP = {
             id: sheetContentBlock.id,
-            type: 'properties' as ColabSheetBlockType,
+            type: 'barcode-grid' as ColabSheetBlockType,
             containerId: sheetContentBlock.id,
+            readOnly: readOnly,
           };
-          newSheetBlockBPs.push(propertiesBlockBP);
+          newSheetTrackBPs.push(barcodeGridBlockBP);
+          break;
+        }
+        case 'symbol-grid': {
+          // Symbol Grid Block - Not implemented yet
           break;
         }
       }
     }
 
     // Set the ref
-    setSheetContentBlockBPs(newSheetBlockBPs);
+    setSheetTrackBlockBPs(newSheetTrackBPs);
   };
 
   // Get the actual component
@@ -152,42 +170,56 @@ const SheetBlock = ({ bp, readOnly }: SheetBlockProps) => {
         sx={{ alignItems: 'center' }}
         className="EditorBackground"
       >
-        {sheetContentBlockBPs == null && (
+        {sheetTrackBlockBPs == null && (
           <Skeleton variant="rounded" width="100%" height={100} />
         )}
-        {sheetContentBlockBPs != null && sheetContentBlockBPs.length === 0 && (
+        {sheetTrackBlockBPs != null && sheetTrackBlockBPs.length === 0 && (
           <Box>
             <Alert severity="info">
-              {t('editor.sheetBlock.noBlocksAdded')}
+              {t('editor.sheetTrack.noBlocksAdded')}
             </Alert>
           </Box>
         )}
-        {sheetContentBlockBPs != null &&
-          sheetContentBlockBPs.map((sheetContentBlockBP) => {
-            switch (sheetContentBlockBP.type) {
+        {sheetTrackBlockBPs != null &&
+          sheetTrackBlockBPs.map((sheetTrackBlockBP) => {
+            switch (sheetTrackBlockBP.type) {
+              case ColabSheetBlockType.ColabSheetBlockTypeProperties: {
+                return (
+                  <SheetPropertiesBlock
+                    key={sheetTrackBlockBP.id}
+                    bp={sheetTrackBlockBP as SheetPropertiesBlockBP}
+                  />
+                );
+              }
+              case ColabSheetBlockType.ColabSheetBlockTypeAttributes: {
+                return <></>;
+              }
               case ColabSheetBlockType.ColabSheetBlockTypeText: {
                 return (
                   <SheetTextBlock
-                    key={sheetContentBlockBP.id}
-                    bp={sheetContentBlockBP as SheetTextBlockBP}
+                    key={sheetTrackBlockBP.id}
+                    bp={sheetTrackBlockBP as SheetTextBlockBP}
                   />
                 );
               }
               case ColabSheetBlockType.ColabSheetBlockTypeStatementGrid: {
                 return (
                   <SheetStatementGridBlock
-                    key={sheetContentBlockBP.id}
-                    bp={sheetContentBlockBP as SheetStatementGridBlockBP}
+                    key={sheetTrackBlockBP.id}
+                    bp={sheetTrackBlockBP as SheetStatementGridBlockBP}
                   />
                 );
               }
-              case ColabSheetBlockType.ColabSheetBlockTypeProperties: {
+              case ColabSheetBlockType.ColabSheetBlockTypeBarcodeGrid: {
                 return (
-                  <SheetPropertiesBlock
-                    key={sheetContentBlockBP.id}
-                    bp={sheetContentBlockBP as SheetPropertiesBlockBP}
+                  <SheetStatementGridBlock
+                    key={sheetTrackBlockBP.id}
+                    bp={sheetTrackBlockBP as SheetBarcodeGridBlockBP}
                   />
                 );
+              }
+              case ColabSheetBlockType.ColabSheetBlockTypeSymbolGrid: {
+                return <></>;
               }
               default: {
                 return <></>;
@@ -198,4 +230,4 @@ const SheetBlock = ({ bp, readOnly }: SheetBlockProps) => {
     </>
   );
 };
-export default SheetBlock;
+export default SheetTrack;

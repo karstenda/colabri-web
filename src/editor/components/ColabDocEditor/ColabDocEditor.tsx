@@ -26,7 +26,7 @@ import {
 } from '@mui/material';
 import ColabDocEditorProvider from '../../context/ColabDocEditorContext/ColabDocEditorProvider';
 import ToolbarMenu from '../ToolbarMenu/ToolbarMenu';
-import StatementBlock from '../blocks/StatementBlock/StatementBlock';
+import StatementTrack from '../blocks/StatementTrack/StatementTrack';
 import { useContentTypes } from '../../../ui/hooks/useTemplates/useTemplates';
 import { useOrganization } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
 import { ContentType, DocumentType } from '../../../api/ColabriAPI';
@@ -37,7 +37,7 @@ import {
 } from '../../data/ColabLoroDoc';
 import ManageDocButton from '../ManageDocButton/ManageDocButton';
 import { useTranslation } from 'react-i18next';
-import SheetBlock from '../blocks/SheetBlock/SheetBlock';
+import SheetTrack from '../blocks/SheetTrack/SheetTrack';
 import LibraryLabel from '../DocLabels/LibraryLabel';
 import DocumentTypeLabel from '../DocLabels/DocumentTypeLabel';
 import ContentTypeLabel from '../DocLabels/ContentTypeLabel';
@@ -241,11 +241,11 @@ export default function ColabDocEditor({
                 <EditorContentBlockTrack className="EditorBackground">
                   {colabDoc?.getDocType() ===
                     DocumentType.DocumentTypeColabStatement && (
-                    <StatementBlock bp={{}} readOnly={readOnly} />
+                    <StatementTrack readOnly={readOnly} />
                   )}
                   {colabDoc?.getDocType() ===
                     DocumentType.DocumentTypeColabSheet && (
-                    <SheetBlock bp={{}} readOnly={readOnly} />
+                    <SheetTrack readOnly={readOnly} />
                   )}
                 </EditorContentBlockTrack>
               </EditorContentMainColumn>

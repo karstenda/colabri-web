@@ -20,6 +20,7 @@ import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { keymap } from 'prosemirror-keymap';
 import { baseKeymap } from 'prosemirror-commands';
+import { splitListItem } from 'prosemirror-schema-list';
 import { statementTextSchema } from './schemas/StatementTextSchema';
 import { simpleTextSchema } from './schemas/SimpleTextSchema';
 import './editor.css';
@@ -184,6 +185,7 @@ const ColabTextEditor = forwardRef<ColabTextEditorHandle, ColabTextEditorProps>(
           'Mod-z': (state) => undo(state, () => {}),
           'Mod-y': (state) => redo(state, () => {}),
           'Mod-Shift-z': (state) => redo(state, () => {}),
+          Enter: splitListItem(mySchema.nodes.list_item),
         }),
         keymap(baseKeymap),
       ];

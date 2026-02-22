@@ -102,14 +102,14 @@ export default function SheetCreatePage() {
             approvals: {},
             title: {
               nodeName: 'doc',
-              children: [formValues.name || 'Untitled Sheet'],
+              children: [[{ insert: formValues.name || 'Untitled Sheet' }]],
             },
             textElement: {
               nodeName: 'doc',
               children: [
                 {
                   nodeName: 'paragraph',
-                  children: ['This is set during creation.'],
+                  children: [[{ insert: 'This is a new sheet.' }]],
                   attributes: {},
                 },
               ],
@@ -121,7 +121,7 @@ export default function SheetCreatePage() {
             acls: {},
             title: {
               nodeName: 'doc',
-              children: ['Artwork Content'],
+              children: [[{ insert: 'Artwork Content' }]],
             },
             rows: [],
           },

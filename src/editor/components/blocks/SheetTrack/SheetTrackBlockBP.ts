@@ -1,6 +1,6 @@
 import { ColabSheetBlockType } from '../../../../api/ColabriAPI';
 
-export type SheetContentBlockBP = {
+export type SheetTrackBlockBP = {
   id: string;
   type: ColabSheetBlockType;
 };

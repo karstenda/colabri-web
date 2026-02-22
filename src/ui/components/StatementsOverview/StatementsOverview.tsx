@@ -270,7 +270,7 @@ function StatementsOverview(props: StatementsOverviewProps) {
   // When a statement is clicked for editing
   const handleRowEdit = React.useCallback(
     (statement: StatementDocument) => async () => {
-      navigate(`/org/${organization?.id}/statements/${statement.id}/edit`);
+      navigate(`/org/${organization?.id}/statements/${statement.id}`);
     },
     [organization, navigate],
   );
