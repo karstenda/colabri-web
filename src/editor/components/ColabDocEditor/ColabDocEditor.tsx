@@ -36,6 +36,7 @@ import {
   StmtLoroDoc,
 } from '../../data/ColabLoroDoc';
 import ManageDocButton from '../ManageDocButton/ManageDocButton';
+import ExportDocButton from '../ExportDocButton/ExportDocButton';
 import { useTranslation } from 'react-i18next';
 import SheetTrack from '../blocks/SheetTrack/SheetTrack';
 import LibraryLabel from '../DocLabels/LibraryLabel';
@@ -217,6 +218,9 @@ export default function ColabDocEditor({
                   </Stack>
                 </EditorTopHeaderLeftStack>
                 <EditorTopHeaderRightStack>
+                  {!readOnly && (
+                    <ExportDocButton docType={colabDoc?.getDocType()} />
+                  )}
                   {canManage && (
                     <ManageDocButton
                       docType={colabDoc?.getDocType()}

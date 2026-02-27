@@ -28,6 +28,7 @@
     "lastName": "Last Name",
     "refresh": "Refresh",
     "actions": "Actions",
+    "export": "Export",
     "new": "New",
     "created": "Created",
     "updated": "Updated",
@@ -237,6 +238,11 @@
       "removeLocalizationConfirmGeneric": "Are you sure you want to remove the selected localization?",
       "removeBlockConfirm": "Are you sure you want to remove this block?"
     },
+    "exportDocButton": {
+      "export": "Export",
+      "exportGS1XML": "GS1 Artwork Response (XML)",
+      "exportWord": "Word (DOCX)"
+    },
     "manageModal": {
       "localizationTitle": "Manage {{language}} localization",
       "blockTitle": "Manage Block Permissions",
@@ -270,6 +276,10 @@
     },
     "addBlockModal": {
       "title": "Add Blocks to Document"
+    },
+    "exportDocGS1XMLModal": {
+      "title": "Export Document as GS1 XML",
+      "description": "You need to specify a locale mapping to export GS1 Artwork Response XML. All languages in the locale mapping will be exported and mapped to the provided locale sequence."
     },
     "moveLibraryModal": {
       "title": "Move to Library",
@@ -310,6 +320,9 @@
   },
   "languages": {
     "title": "Languages",
+    "language": "Language",
+    "locale": "Locale",
+    "addLocale": "Add Locale",
     "masterLanguage": "Master Language",
     "addLanguage": "Add Language",
     "noLanguage": "Not Added",

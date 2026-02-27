@@ -22,9 +22,7 @@ export const useDreamSheet = (orgId: string) => {
   const mutation = useMutation({
     mutationFn: (data: DreamSheetRequest) =>
       apiClient.orgId.postDreamSheet(orgId, data),
-    onSuccess: (newSheet) => {
-      const { data } = newSheet;
-
+    onSuccess: () => {
       // Invalidate and refetch sheets list
       queryClient.invalidateQueries({ queryKey: sheetKeys.lists() });
     },

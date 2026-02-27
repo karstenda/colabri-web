@@ -1,4 +1,5 @@
 import {
+  ContainerID,
   LoroDoc,
   LoroList,
   LoroMap,
@@ -21,15 +22,17 @@ export type ColabDocType =
 
 export type StmtDocSchema = {
   properties: DocPropertiesLoro;
-  content: LoroMap<Record<string, StmtElementLoro>>;
+  attributes: LoroMap<Record<string, string>>;
   acls: AclLoroMap;
+  content: LoroMap<Record<string, StmtElementLoro>>;
 };
 
 export type SheetDocSchema = {
   properties: DocPropertiesLoro;
-  content: LoroMovableList<SheetBlockLoro>;
-  acls: AclLoroMap;
+  attributes: LoroMap<Record<string, string>>;
   approvals: LoroMap<Record<string, ApprovalLoro>>;
+  acls: AclLoroMap;
+  content: LoroMovableList<SheetBlockLoro>;
 };
 
 export type ColabLoroDoc = LoroDoc<StmtDocSchema | SheetDocSchema>;
@@ -69,7 +72,7 @@ export type SheetAttributesBlockSchema = {
   type: ColabSheetBlockType;
   acls: AclLoroMap;
   title: TextElementLoro;
-  attributes: LoroMap<Record<string, string>>;
+  attributeRefs: LoroMap<Record<string, string>>;
   config: any;
 };
 
@@ -166,4 +169,4 @@ export type GroupApprovalLoro = LoroMap<{
   approvals: LoroMap<Record<string, UserApprovalLoro>>;
 }>;
 
-export type TextElementLoro = LoroNodeContainerType;
+export type TextElementLoro = LoroNodeContainerType & { id: ContainerID };
