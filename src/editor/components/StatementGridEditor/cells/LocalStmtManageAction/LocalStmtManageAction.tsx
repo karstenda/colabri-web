@@ -3,10 +3,7 @@ import { useTranslation } from 'react-i18next';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { StatementGridEditorTableRow } from '../../StatementGridEditorTable';
 import { useDialogs } from '../../../../../ui/hooks/useDialogs/useDialogs';
-import {
-  ManageSheetStatementModalPayload,
-  ManageStatementModalPayload,
-} from '../../../ManageModal/ManageModalPayloads';
+import { ManageSheetStatementModalPayload } from '../../../ManageModal/ManageModalPayloads';
 import ManageModal from '../../../ManageModal/ManageModal';
 import SheetDocController from '../../../../controllers/SheetDocController';
 import { ContainerID } from 'loro-crdt';

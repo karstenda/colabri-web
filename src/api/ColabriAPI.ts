@@ -62,6 +62,14 @@ export enum ColabSheetBlockType {
   ColabSheetBlockTypeSymbolGrid = "symbol-grid",
 }
 
+export enum ColabSheetBlockTitleType {
+  ColabSheetBlockTitleLevelNone = "none",
+  ColabSheetBlockTitleLevel1 = "h1",
+  ColabSheetBlockTitleLevel2 = "h2",
+  ColabSheetBlockTitleLevel3 = "h3",
+  ColabSheetBlockTitleLevel4 = "h4",
+}
+
 export enum ColabDocVersionFormat {
   ColabDocVersionFormatJSON = "json",
   ColabDocVersionFormatBinary = "binary",
@@ -182,13 +190,15 @@ export interface ColabModelProperties {
   countryCodes?: string[];
   langCodes?: string[];
   masterLangCode?: string;
+  scope?: Record<string, string[]>;
   type: DocumentType;
 }
 
 export interface ColabSheetAttributesBlock {
   acls: Record<string, string[]>;
-  attributes: Record<string, AttributeValueStruct>;
+  attributeRefs: Record<string, string>;
   title: TextElement;
+  titleType?: ColabSheetBlockTitleType;
   type: ColabSheetBlockType;
 }
 
@@ -196,11 +206,14 @@ export interface ColabSheetBarcodeGridBlock {
   acls: Record<string, string[]>;
   rows: ColabSheetBarcodeGridRow[];
   title: TextElement;
+  titleType?: ColabSheetBlockTitleType;
   type: ColabSheetBlockType;
 }
 
 export interface ColabSheetBarcodeGridRow {
   barcode: SchemasColabBarcodeModel;
+  instance?: number;
+  scope?: Record<string, string[]>;
 }
 
 export interface ColabSheetBlockDictionary {
@@ -214,7 +227,8 @@ export interface ColabSheetBlockDictionary {
 
 export interface ColabSheetModel {
   acls?: Record<string, string[]>;
-  approvals: Record<string, ColabApproval>;
+  approvals?: Record<string, ColabApproval>;
+  attributes?: Record<string, AttributeValueStruct>;
   content: any[];
   properties: ColabModelProperties;
 }
@@ -227,10 +241,13 @@ export interface ColabSheetStatementGridBlock {
   acls: Record<string, string[]>;
   rows: ColabSheetStatementGridRow[];
   title: TextElement;
+  titleType?: ColabSheetBlockTitleType;
   type: ColabSheetBlockType;
 }
 
 export interface ColabSheetStatementGridRow {
+  instance?: number;
+  scope?: Record<string, string[]>;
   statement?: ColabStatementModel;
   statementRef?: ColabSheetStatementRef;
   type: StatementGridRowType;
@@ -239,17 +256,20 @@ export interface ColabSheetStatementGridRow {
 export interface ColabSheetStatementRef {
   docId: string;
   version: number;
-  versionV: Record<string, number>;
+  versionV: string;
 }
 
 export interface ColabSheetSymbolGridBlock {
   acls: Record<string, string[]>;
   rows: ColabSheetSymbolGridRow[];
   title: TextElement;
+  titleType?: ColabSheetBlockTitleType;
   type: ColabSheetBlockType;
 }
 
 export interface ColabSheetSymbolGridRow {
+  instance?: number;
+  scope?: Record<string, string[]>;
   symbol: SchemasColabSymbolModel;
 }
 
@@ -258,6 +278,7 @@ export interface ColabSheetTextBlock {
   approvals: Record<string, ColabApproval>;
   textElement: TextElement;
   title: TextElement;
+  titleType?: ColabSheetBlockTitleType;
   type: ColabSheetBlockType;
 }
 
@@ -270,6 +291,7 @@ export interface ColabStatementElement {
 
 export interface ColabStatementModel {
   acls?: Record<string, string[]>;
+  attributes?: Record<string, AttributeValueStruct>;
   content: Record<string, ColabStatementElement>;
   properties: ColabModelProperties;
 }
@@ -404,6 +426,10 @@ export interface DreamSheetResponse {
 
 export interface ExportAcrGS1Request {
   localeMapping?: Record<string, string>;
+}
+
+export interface ExportDocxRequest {
+  languageCodes?: string[];
 }
 
 export interface GPCNode {
@@ -672,21 +698,26 @@ export interface SyncColabDocResponse {
   success: boolean;
 }
 
+export interface TextDelta {
+  attributes?: Record<string, any>;
+  insert: string;
+}
+
 export interface TextElement {
-  attributes: Record<string, string>;
-  children: TextElementChildrenOrString;
+  attributes: Record<string, any>;
+  children: TextElementChildrenOrDeltas;
   nodeName: string;
 }
 
 export interface TextElementChild {
-  attributes: Record<string, string>;
-  children: TextElementChildrenOrString;
+  attributes: Record<string, any>;
+  children: TextElementChildrenOrDeltas;
   nodeName: string;
 }
 
-export interface TextElementChildrenOrString {
+export interface TextElementChildrenOrDeltas {
   asChildren?: TextElementChild[];
-  asString?: string[];
+  asDeltas?: TextDelta[][];
 }
 
 export interface UpdateAttributeValueRequest {
@@ -1664,6 +1695,28 @@ export class Api<
         body: dreamsheet,
         type: ContentType.Json,
         format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Export a sheet to a Microsoft Word DOCX document
+     *
+     * @tags export
+     * @name PostExportDocx
+     * @summary Export a ColabSheet to MS Word DOCX
+     * @request POST:/{orgId}/export/{docId}/docx
+     */
+    postExportDocx: (
+      orgId: string,
+      docId: string,
+      doc: ExportDocxRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<string, HTTPError>({
+        path: `/${orgId}/export/${docId}/docx`,
+        method: "POST",
+        body: doc,
+        type: ContentType.Json,
         ...params,
       }),
 

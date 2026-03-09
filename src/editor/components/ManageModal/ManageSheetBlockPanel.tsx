@@ -1,4 +1,15 @@
-import { Box, Button, Stack } from '@mui/material';
+import {
+  Box,
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+  Stack,
+  Tab,
+  Tabs,
+} from '@mui/material';
 import PermissionChainEditor from '../PermissionChainEditor/PermissionChainEditor';
 import SheetDocController from '../../controllers/SheetDocController';
 import { PermissionChain } from '../PermissionChainEditor/PermissionChain';
@@ -8,6 +19,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useContentLanguage } from '../../../ui/hooks/useContentLanguages/useContentLanguage';
 import { useOrganization } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
 import { ContainerID } from 'loro-crdt';
+import { ColabSheetBlockTitleType } from '../../../api/ColabriAPI';
 
 export type ManageSheetBlockPanelProps = {
   docController: SheetDocController;
@@ -21,6 +33,12 @@ const ManageSheetBlockPanel = ({
   readOnly,
 }: ManageSheetBlockPanelProps) => {
   const { t } = useTranslation();
+
+  const [selectedTab, setSelectedTab] = useState(0);
+
+  const [titleType, setTitleType] = useState<ColabSheetBlockTitleType>(
+    docController.getBlockTitleType(blockId),
+  );
 
   const docAcls = docController.getDocAclMap();
   const blockAcls = docController.getBlockAclMap(blockId);
@@ -64,7 +82,7 @@ const ManageSheetBlockPanel = ({
         return newChain;
       });
     });
-
+    // Subscribe to ACL changes on the block level
     const unsubscribeBlockAcl = docController.subscribeToBlockAclChanges(
       blockId,
       () => {
@@ -79,10 +97,17 @@ const ManageSheetBlockPanel = ({
         });
       },
     );
+    // Subscribe to block property changes
+    const unsubscribeBlockPropertyChange =
+      docController.subscribeToFieldChanges(blockId, 'titleType', () => {
+        // Handle block property changes here
+        setTitleType(docController.getBlockTitleType(blockId));
+      });
 
     return () => {
       unsubscribeAcl();
       unsubscribeBlockAcl();
+      unsubscribeBlockPropertyChange();
     };
   }, [docController, blockId]);
 
@@ -98,16 +123,93 @@ const ManageSheetBlockPanel = ({
     [docController, blockId],
   );
 
+  const handleTitleTypeChange = useCallback(
+    (event: SelectChangeEvent) => {
+      const newTitleType = event.target.value as ColabSheetBlockTitleType;
+      setTitleType(newTitleType);
+      docController.setBlockTitleType(blockId, newTitleType);
+      docController.commit();
+    },
+    [docController, blockId],
+  );
+
   return (
-    <Stack spacing={2}>
-      <PermissionChainEditor
-        permissionChain={permissionChain}
-        setPermissionChain={handlePermissionChainChange}
-        availablePermissions={availablePermissions}
-        defaultPermission={Permission.Edit}
-        readOnly={readOnly}
-      />
-    </Stack>
+    <Box
+      sx={{ display: 'flex', width: '100%', flexDirection: 'column', gap: 2 }}
+    >
+      <Box
+        sx={{
+          borderBottom: 1,
+          borderColor: (theme) => (theme.vars || theme).palette.grey[600],
+          marginTop: '-20px',
+        }}
+      >
+        <Tabs
+          variant="scrollable"
+          value={selectedTab}
+          onChange={(event, newValue) => setSelectedTab(newValue)}
+          aria-label="Block Sheet Management"
+          sx={{ borderRight: 1, borderColor: 'divider' }}
+        >
+          <Tab label={t('common.permissions')} id="permissions" />
+          <Tab label={t('common.properties')} id="properties" />
+        </Tabs>
+      </Box>
+      <Box sx={{}}>
+        {selectedTab === 0 && (
+          <Stack spacing={2}>
+            <PermissionChainEditor
+              permissionChain={permissionChain}
+              setPermissionChain={handlePermissionChainChange}
+              availablePermissions={availablePermissions}
+              defaultPermission={Permission.Edit}
+              readOnly={readOnly}
+            />
+          </Stack>
+        )}
+        {selectedTab === 1 && (
+          <Box sx={{ p: 2 }}>
+            <FormControl fullWidth>
+              <InputLabel id="block-title-type-label">
+                {t('editor.sheetBlockManage.titleHeading')}
+              </InputLabel>
+              <Select
+                labelId="block-title-type-label"
+                fullWidth
+                value={titleType}
+                onChange={handleTitleTypeChange}
+              >
+                <MenuItem
+                  value={ColabSheetBlockTitleType.ColabSheetBlockTitleLevelNone}
+                >
+                  {t('editor.sheetBlockManage.noHeading')}
+                </MenuItem>
+                <MenuItem
+                  value={ColabSheetBlockTitleType.ColabSheetBlockTitleLevel1}
+                >
+                  {t('editor.sheetBlockManage.heading1')}
+                </MenuItem>
+                <MenuItem
+                  value={ColabSheetBlockTitleType.ColabSheetBlockTitleLevel2}
+                >
+                  {t('editor.sheetBlockManage.heading2')}
+                </MenuItem>
+                <MenuItem
+                  value={ColabSheetBlockTitleType.ColabSheetBlockTitleLevel3}
+                >
+                  {t('editor.sheetBlockManage.heading3')}
+                </MenuItem>
+                <MenuItem
+                  value={ColabSheetBlockTitleType.ColabSheetBlockTitleLevel4}
+                >
+                  {t('editor.sheetBlockManage.heading4')}
+                </MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        )}
+      </Box>
+    </Box>
   );
 };
 

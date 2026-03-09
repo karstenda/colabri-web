@@ -10,6 +10,7 @@ import {
   AclLoroMap,
   SheetAttributesBlockLoro,
   SheetBlockLoro,
+  SheetColabGridRowLoro,
   SheetLoroDoc,
   SheetPropertiesBlockLoro,
   SheetStatementGridBlockLoro,
@@ -33,6 +34,7 @@ import {
   ColabApprovalType,
   StatementGridRowType,
   StatementDocument,
+  ColabSheetBlockTitleType,
 } from '../../api/ColabriAPI';
 import StatementLocalController from './StatementLocalController';
 
@@ -356,7 +358,49 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
   }
 
   /**
-   *Get the block ACL map for a given id as a non Loro object
+   * Get the title type of the block
+   *
+   * @param containerId
+   * @returns
+   */
+  getBlockTitleType(containerId: ContainerID): ColabSheetBlockTitleType {
+    // Get the block map
+    const blockMap = this.loroDoc.getContainerById(
+      containerId,
+    ) as SheetBlockLoro;
+    if (!blockMap) {
+      throw new Error(`Could not find block for container ID ${containerId}`);
+    }
+    const titleType = blockMap.get('titleType') as ColabSheetBlockTitleType;
+    // Default to Heading 2 if not set
+    if (!titleType) {
+      return ColabSheetBlockTitleType.ColabSheetBlockTitleLevel2;
+    }
+    return titleType;
+  }
+
+  /**
+   * Set the block title type
+   *
+   * @param containerId
+   * @param titleType
+   */
+  setBlockTitleType(
+    containerId: ContainerID,
+    titleType: ColabSheetBlockTitleType,
+  ): void {
+    // Get the block map
+    const blockMap = this.loroDoc.getContainerById(
+      containerId,
+    ) as SheetBlockLoro;
+    if (!blockMap) {
+      throw new Error(`Could not find block for container ID ${containerId}`);
+    }
+    blockMap.set('titleType', titleType);
+  }
+
+  /**
+   * Get the block ACL map for a given id as a non Loro object
    * @param containerId
    * @returns
    */
@@ -745,7 +789,7 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
       // Initialize the block
       blockMap.set('type', 'attributes' as ColabSheetBlockType);
       blockMap.setContainer('acls', new LoroMap());
-      blockMap.setContainer('attributes', new LoroMap());
+      blockMap.setContainer('attributeRefs', new LoroMap());
       blockMap.set('config', {});
 
       // Set the title element
@@ -980,13 +1024,53 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
 
       langElementMap.getOrCreateContainer('approvals', new LoroMap());
 
-      const textElementMap: TextElementLoro =
-        langElementMap.getOrCreateContainer('textElement', new LoroMap());
+      const textElementMap = langElementMap.getOrCreateContainer(
+        'textElement',
+        new LoroMap(),
+      );
 
       textElementMap.set('nodeName', 'doc');
     }
 
     return statementMap;
+  }
+
+  /**
+   * Get the row instance for a given row container ID.
+   *
+   * @param rowId
+   */
+  getGridBlockRowInstance(rowId: ContainerID): number | null {
+    // Get the row map
+    const rowMap = this.loroDoc.getContainerById(
+      rowId,
+    ) as SheetColabGridRowLoro;
+
+    if (!rowMap) {
+      throw new Error(`Could not find row map for container ID ${rowId}`);
+    }
+
+    const instance = rowMap.get('instance');
+    if (instance === undefined) {
+      return null;
+    }
+    return instance;
+  }
+
+  /**
+   * Set the row instance for a given row container ID.
+   * @param rowId
+   * @param instance
+   */
+  setGridBlockRowInstance(rowId: ContainerID, instance: number | null): void {
+    // Get the row map
+    const rowMap = this.loroDoc.getContainerById(
+      rowId,
+    ) as SheetColabGridRowLoro;
+    if (!rowMap) {
+      throw new Error(`Could not find row map for container ID ${rowId}`);
+    }
+    rowMap.set('instance', instance === null ? undefined : instance);
   }
 
   /**

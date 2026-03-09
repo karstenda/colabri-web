@@ -4,14 +4,17 @@ import Button from '@mui/material/Button';
 import { GridSlotProps, Toolbar } from '@mui/x-data-grid';
 import { styled, useTheme } from '@mui/material/styles';
 import ColabTextEditorOutlined from '../ColabTextEditor/ColabTextEditorOutlined';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ContainerID, LoroDoc } from 'loro-crdt';
 import { LoroDocType } from 'loro-prosemirror';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { ConnectedSheetDoc, FrozenSheetDoc } from '../../data/ColabDoc';
+import { getTypographyVariantForTitleType } from '../../util/TitleUtil';
+import { ColabSheetBlockTitleType } from '../../../api/ColabriAPI';
 
 export type StatementGridEditorToolbarProps = {
+  blockContainerId?: ContainerID;
   titleContainerId?: ContainerID;
   showOutlines?: boolean;
   canAdd?: boolean;
@@ -52,6 +55,7 @@ export const ToolbarRight = styled(Box)(({ theme }) => ({
 }));
 
 const StatementGridEditorToolbar = ({
+  blockContainerId,
   titleContainerId,
   showOutlines,
   canManage,
@@ -64,6 +68,11 @@ const StatementGridEditorToolbar = ({
   const { t } = useTranslation();
   const theme = useTheme();
 
+  // State to track title type
+  const [titleType, setTitleType] = useState<ColabSheetBlockTitleType>(
+    ColabSheetBlockTitleType.ColabSheetBlockTitleLevelNone,
+  );
+
   if (
     !(colabDoc instanceof ConnectedSheetDoc) &&
     !(colabDoc instanceof FrozenSheetDoc)
@@ -75,15 +84,37 @@ const StatementGridEditorToolbar = ({
 
   const loroDoc = colabDoc?.getLoroDoc();
   const ephStoreMgr = colabDoc?.getEphStoreMgr();
+  const controller = colabDoc?.getDocController();
 
   const showTitleEditor =
     titleContainerId != null &&
     loroDoc != undefined &&
-    ephStoreMgr != undefined;
+    ephStoreMgr != undefined &&
+    titleType !== ColabSheetBlockTitleType.ColabSheetBlockTitleLevelNone;
 
   const showReadOnly = (!canManage && !canAdd) || readOnly;
 
-  useEffect(() => {}, [colabDoc]);
+  useEffect(() => {
+    if (colabDoc && controller && blockContainerId) {
+      // Initialize title type state
+      setTitleType(controller.getBlockTitleType(blockContainerId));
+
+      // Subscribe to block property changes
+      const unsubscribeBlockPropertyChange = controller.subscribeToFieldChanges(
+        blockContainerId,
+        'titleType',
+        () => {
+          // Handle block property changes here
+          setTitleType(controller.getBlockTitleType(blockContainerId));
+        },
+      );
+
+      return () => {
+        // Clean up subscription on unmount
+        unsubscribeBlockPropertyChange();
+      };
+    }
+  }, [colabDoc, controller, blockContainerId]);
 
   return (
     <StyledToolbar
@@ -97,7 +128,11 @@ const StatementGridEditorToolbar = ({
       <ToolbarWrapper>
         <ToolbarLeft>
           {showTitleEditor && (
-            <Typography variant="h6" component="div" sx={{ width: '100%' }}>
+            <Typography
+              variant={getTypographyVariantForTitleType(titleType)}
+              component="div"
+              sx={{ width: '100%' }}
+            >
               <ColabTextEditorOutlined
                 showOutlines={showOutlines && !readOnly}
                 loro={loroDoc as any as LoroDocType}

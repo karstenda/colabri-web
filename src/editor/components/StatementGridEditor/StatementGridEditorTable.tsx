@@ -34,6 +34,8 @@ import { useTheme } from '@mui/material/styles';
 import getStmtEditColumn from './columns/StmtEditColumn';
 import { useSetActiveCell } from './context/StatementGridEditorContextProvider';
 import StatementGridEditorRow from './rows/StatementGridEditorRow';
+import { ColabGridEditorTableRow } from '../ColabGridEditor/data/ColabGridEditorTableRow';
+import getInstanceColumn from '../ColabGridEditor/columns/InstanceColumn';
 
 export type StatementGridEditorTableProps = {
   containerId: ContainerID;
@@ -42,8 +44,7 @@ export type StatementGridEditorTableProps = {
   readOnly?: boolean;
 };
 
-export type StatementGridEditorTableRow = {
-  id: string;
+export type StatementGridEditorTableRow = ColabGridEditorTableRow & {
   type: StatementGridRowType;
   statementRef?: LoroMap<StmtRefSchema>;
   statement?: LoroMap<StmtDocSchema>;
@@ -207,6 +208,7 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
           canAdd,
           readOnly,
         ),
+        getInstanceColumn(t, controller, canManage, canAdd, readOnly),
       ];
 
       if (!propertiesMap) {
@@ -336,20 +338,23 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
         size: 'small' as const,
       },
       toolbar: {
+        blockContainerId: containerId,
+        titleContainerId: titleContainerId,
         canAdd: canAdd,
         canManage: canManage,
-        titleContainerId: titleContainerId,
         showOutlines: showTitleOutlines,
         handleStatementAdd: handleStatementAdd,
         readOnly: readOnly,
       },
     }),
     [
+      containerId,
       titleContainerId,
       showTitleOutlines,
       canAdd,
       canManage,
       handleStatementAdd,
+      readOnly,
     ],
   );
 

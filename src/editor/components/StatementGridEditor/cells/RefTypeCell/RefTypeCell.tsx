@@ -1,4 +1,4 @@
-import CellWrapper from '../CellWrapper';
+import CellWrapper from '../../../ColabGridEditor/cells/CellWrapper/CellWrapper';
 import ContentTag from '../../../ContentTag/ContentTag';
 import { Skeleton, Stack } from '@mui/material';
 import { useColabDoc } from '../../../../context/ColabDocContext/ColabDocProvider';

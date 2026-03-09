@@ -7,7 +7,7 @@ import {
 } from '../../../../data/ColabDoc';
 import { LoroDocType } from 'loro-prosemirror';
 import { useColabDoc } from '../../../../context/ColabDocContext/ColabDocProvider';
-import CellWrapper from '../CellWrapper';
+import CellWrapper from '../../../ColabGridEditor/cells/CellWrapper/CellWrapper';
 import { Box, Skeleton } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';

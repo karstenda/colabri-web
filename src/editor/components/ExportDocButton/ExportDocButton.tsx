@@ -14,6 +14,7 @@ import ExportDocGS1XMLModal, {
 import { useColabDoc } from '../../context/ColabDocContext/ColabDocProvider';
 import { useDialogs } from '../../../ui/hooks/useDialogs/useDialogs';
 import { ConnectedSheetDoc } from '../../data/ColabDoc';
+import ExportDocMSWordModal from '../ExportDocMSWordModal/ExportDocMSWordModal';
 
 const StyledMenu = styled((props: MenuProps) => (
   <Menu
@@ -83,7 +84,6 @@ export default function ExportDocButton({ docType }: ExportDocButtonProps) {
     if (!colabDoc || !(colabDoc instanceof ConnectedSheetDoc)) {
       return;
     }
-
     // Open the modal to manage the statement element
     await dialogs.open<ExportDocGS1XMLModalPayload, void>(
       ExportDocGS1XMLModal,
@@ -91,7 +91,21 @@ export default function ExportDocButton({ docType }: ExportDocButtonProps) {
         sheetDoc: colabDoc,
       },
     );
+    // Close the menu
+    handleClose();
+  };
 
+  const handleExportDocMSWord = async () => {
+    if (!colabDoc || !(colabDoc instanceof ConnectedSheetDoc)) {
+      return;
+    }
+    // Open the modal to manage the statement element
+    await dialogs.open<ExportDocGS1XMLModalPayload, void>(
+      ExportDocMSWordModal,
+      {
+        sheetDoc: colabDoc,
+      },
+    );
     // Close the menu
     handleClose();
   };
@@ -128,15 +142,23 @@ export default function ExportDocButton({ docType }: ExportDocButtonProps) {
         onClose={handleClose}
       >
         {docType == DocumentType.DocumentTypeColabSheet && (
-          <MenuItem onClick={handleExportGS1XML} disableRipple>
-            <CodeIcon />
-            {t('editor.exportDocButton.exportGS1XML')}
+          <>
+            <MenuItem onClick={handleExportGS1XML} disableRipple>
+              <CodeIcon />
+              {t('editor.exportDocButton.exportGS1XML')}
+            </MenuItem>
+            <MenuItem onClick={handleExportDocMSWord} disableRipple>
+              <MSWordIcon />
+              {t('editor.exportDocButton.exportWord')}
+            </MenuItem>
+          </>
+        )}
+        {docType == DocumentType.DocumentTypeColabStatement && (
+          <MenuItem onClick={handleClose} disableRipple disabled>
+            <MSWordIcon />
+            {t('editor.exportDocButton.exportWord')}
           </MenuItem>
         )}
-        <MenuItem onClick={handleClose} disableRipple disabled>
-          <MSWordIcon />
-          {t('editor.exportDocButton.exportWord')}
-        </MenuItem>
       </StyledMenu>
     </div>
   );

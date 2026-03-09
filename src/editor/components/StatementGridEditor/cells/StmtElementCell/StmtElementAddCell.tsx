@@ -1,6 +1,6 @@
 import { Box, Button } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import CellWrapper from '../CellWrapper';
+import CellWrapper from '../../../ColabGridEditor/cells/CellWrapper/CellWrapper';
 import { useEffect, useState } from 'react';
 import StatementDocController from '../../../../controllers/StatementDocController';
 import StatementLocalController from '../../../../controllers/StatementLocalController';

@@ -14,20 +14,20 @@ import { ConnectedSheetDoc } from '../../data/ColabDoc';
 import { useContentLanguages } from '../../../ui/hooks/useContentLanguages/useContentLanguage';
 import { useOrganization } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
 import { ContentLanguage } from '../../data/ContentLanguage';
-import LocaleMapping from '../LocaleMapping/LocaleMapping';
-import { useExportGS1XML } from '../../../ui/hooks/useExport/useExport';
+import { useExportDocx } from '../../../ui/hooks/useExport/useExport';
+import { LanguageSelector } from '../../../ui/components/LanguageSelector';
 import useNotifications from '../../../ui/hooks/useNotifications/useNotifications';
 
-export interface ExportDocGS1XMLModalPayload {
+export interface ExportDocMSWordModalPayload {
   sheetDoc: ConnectedSheetDoc;
 }
 
-export interface ExportDocGS1XMLModalProps extends DialogProps<
-  ExportDocGS1XMLModalPayload,
+export interface ExportDocMSWordModalProps extends DialogProps<
+  ExportDocMSWordModalPayload,
   void
 > {}
 
-export const ExportDocGS1XMLModal: React.FC<ExportDocGS1XMLModalProps> = ({
+export const ExportDocMSWordModal: React.FC<ExportDocMSWordModalProps> = ({
   open,
   onClose,
   payload,
@@ -47,7 +47,7 @@ export const ExportDocGS1XMLModal: React.FC<ExportDocGS1XMLModalProps> = ({
   const loroDoc = sheetDoc.getLoroDoc();
 
   // Get the hook to export
-  const { exportGS1XML, gs1XML, isPending, error } = useExportGS1XML(
+  const { exportDocx, docx, isPending, error } = useExportDocx(
     organization ? organization.id : '',
     docId,
   );
@@ -67,45 +67,29 @@ export const ExportDocGS1XMLModal: React.FC<ExportDocGS1XMLModalProps> = ({
     });
   }
 
-  // Create an initial locale mapping based on the sheet languages
-  const initialLocaleMapping: Record<number, ContentLanguage> = {};
-  sheetLanguages.forEach((language, index) => {
-    initialLocaleMapping[index + 1] = language;
-  });
-
   // The state
-  const [localeMapping, setLocaleMapping] = useState<
-    Record<number, ContentLanguage> | undefined
-  >(initialLocaleMapping);
+  const [selectedLanguages, setSelectedLanguages] = useState<
+    ContentLanguage[] | undefined
+  >(sheetLanguages);
 
   const handleExport = async () => {
     // Make sure thre is a locale mapping
-    if (
-      localeMapping === undefined ||
-      Object.keys(localeMapping).length === 0
-    ) {
+    if (selectedLanguages === undefined || selectedLanguages.length === 0) {
       return;
     }
 
-    // Make a map to conver the mapping from locale index to language code
-    const localeLangCodeMapping: Record<string, string> = {};
-    for (const [localeIndex, language] of Object.entries(localeMapping)) {
-      localeLangCodeMapping[localeIndex] = language.code;
-    }
-
     try {
-      // Export the GS1 XML with the mapping
-      const xmlContent = await exportGS1XML({
-        localeMapping: localeLangCodeMapping,
+      // Export the DOCX with the mapping
+      const docxContent = await exportDocx({
+        languageCodes: selectedLanguages.map((lang) => lang.code),
       });
 
       // Trigger file download
-      if (xmlContent) {
-        const blob = new Blob([xmlContent], { type: 'application/xml' });
-        const url = URL.createObjectURL(blob);
+      if (docxContent) {
+        const url = URL.createObjectURL(docxContent);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `${docName} - export.xml`;
+        link.download = `${docName} - export.docx`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -113,33 +97,55 @@ export const ExportDocGS1XMLModal: React.FC<ExportDocGS1XMLModalProps> = ({
         onClose(undefined);
       }
     } catch (error) {
-      console.error('Error exporting GS1 XML:', error);
-      notifications.show('Error exporting GS1 XML', { severity: 'error' });
+      console.error('Error exporting DOCX:', error);
+      notifications.show('Error exporting DOCX', { severity: 'error' });
     }
   };
 
   const handleCancel = () => {
     onClose(undefined);
-    setLocaleMapping(undefined);
+    setSelectedLanguages(undefined);
   };
 
-  const handleLocaleChange = (value: Record<string, ContentLanguage>) => {
-    // Handle the locale change
-    setLocaleMapping(value);
+  const handleLangChange = (
+    value: ContentLanguage | ContentLanguage[] | null,
+  ) => {
+    if (value === null) {
+      setSelectedLanguages([]);
+      return;
+    } else if (Array.isArray(value)) {
+      setSelectedLanguages(value);
+      return;
+    } else {
+      setSelectedLanguages([value]);
+      return;
+    }
   };
 
   return (
     <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
-      <DialogTitle>{t('editor.exportDocGS1XMLModal.title')}</DialogTitle>
+      <DialogTitle>{t('editor.exportDocMSWordModal.title')}</DialogTitle>
       <DialogContent>
         <Typography variant="body1" gutterBottom>
-          {t('editor.exportDocGS1XMLModal.description')}
+          {t('editor.exportDocMSWordModal.description')}
         </Typography>
         <Box sx={{ pt: 2 }}>
-          <LocaleMapping
-            languages={sheetLanguages}
-            initLocaleMap={initialLocaleMapping}
-            onChange={handleLocaleChange}
+          <LanguageSelector
+            scope={'organization'}
+            orgId={organization?.id}
+            multiple={true}
+            value={selectedLanguages}
+            onChange={handleLangChange}
+            filterOptions={(options) => {
+              if (!sheetLanguages || sheetLanguages.length === 0) {
+                return options;
+              } else {
+                const sheetLangCodes = sheetLanguages.map((lang) => lang.code);
+                return options.filter((option) =>
+                  sheetLangCodes.includes(option.code),
+                );
+              }
+            }}
           />
         </Box>
       </DialogContent>
@@ -148,7 +154,7 @@ export const ExportDocGS1XMLModal: React.FC<ExportDocGS1XMLModalProps> = ({
         <Button
           onClick={handleExport}
           variant="contained"
-          disabled={!localeMapping || Object.keys(localeMapping).length === 0}
+          disabled={!selectedLanguages || selectedLanguages.length === 0}
         >
           {t('common.export')}
         </Button>
@@ -157,4 +163,4 @@ export const ExportDocGS1XMLModal: React.FC<ExportDocGS1XMLModalProps> = ({
   );
 };
 
-export default ExportDocGS1XMLModal;
+export default ExportDocMSWordModal;

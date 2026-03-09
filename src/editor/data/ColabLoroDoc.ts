@@ -4,7 +4,6 @@ import {
   LoroList,
   LoroMap,
   LoroMovableList,
-  LoroText,
 } from 'loro-crdt';
 import {
   ColabApprovalState,
@@ -12,6 +11,7 @@ import {
   DocumentType,
   ColabSheetBlockType,
   StatementGridRowType,
+  ColabSheetBlockTitleType,
 } from '../../api/ColabriAPI';
 import { Permission } from '../../ui/data/Permission';
 import { LoroNodeContainerType } from 'loro-prosemirror';
@@ -72,6 +72,7 @@ export type SheetAttributesBlockSchema = {
   type: ColabSheetBlockType;
   acls: AclLoroMap;
   title: TextElementLoro;
+  titleType: ColabSheetBlockTitleType;
   attributeRefs: LoroMap<Record<string, string>>;
   config: any;
 };
@@ -82,6 +83,7 @@ export type SheetTextBlockSchema = {
   type: ColabSheetBlockType;
   acls: AclLoroMap;
   title: TextElementLoro;
+  titleType: ColabSheetBlockTitleType;
   textElement: TextElementLoro;
   approvals: LoroMap<Record<string, UserApprovalLoro>>;
 };
@@ -92,16 +94,23 @@ export type SheetBarcodeGridBlockSchema = {
   type: ColabSheetBlockType;
   acls: AclLoroMap;
   title: TextElementLoro;
+  titleType: ColabSheetBlockTitleType;
   rows: LoroMovableList<SheetBarcodeGridRowLoro>;
 };
 
+export type SheetColabGridRowSchema = {
+  instance?: number;
+  scope?: Record<string, string[]>;
+};
+export type SheetColabGridRowLoro = LoroMap<SheetColabGridRowSchema>;
+
 export type SheetBarcodeGridBlockLoro = LoroMap<SheetBarcodeGridBlockSchema>;
 
-export type SheetBarcodeGridRowLoro = LoroMap<{
-  barcode: BarcodeDataLoro;
-  instance: number;
-  scope?: LoroMap<Record<string, LoroList<string>>>;
-}>;
+export type SheetBarcodeGridRowLoro = LoroMap<
+  SheetColabGridRowSchema & {
+    barcode: BarcodeDataLoro;
+  }
+>;
 
 export type BarcodeDataLoro = LoroMap<{
   type: string;
@@ -113,16 +122,17 @@ export type SheetSymbolGridBlockSchema = {
   type: ColabSheetBlockType;
   acls: AclLoroMap;
   title: TextElementLoro;
+  titleType: ColabSheetBlockTitleType;
   rows: LoroMovableList<SheetSymbolGridRowLoro>;
 };
 
 export type SheetSymbolGridBlockLoro = LoroMap<SheetSymbolGridBlockSchema>;
 
-export type SheetSymbolGridRowLoro = LoroMap<{
-  symbol: SymbolDataLoro;
-  instance: number;
-  scope?: LoroMap<Record<string, LoroList<string>>>;
-}>;
+export type SheetSymbolGridRowLoro = LoroMap<
+  SheetColabGridRowSchema & {
+    symbol: SymbolDataLoro;
+  }
+>;
 
 export type SymbolDataLoro = LoroMap<{
   type: string;
@@ -132,19 +142,20 @@ export type SheetStatementGridBlockSchema = {
   type: ColabSheetBlockType;
   acls: AclLoroMap;
   title: TextElementLoro;
+  titleType: ColabSheetBlockTitleType;
   rows: LoroMovableList<SheetStatementGridRowLoro>;
 };
 
 export type SheetStatementGridBlockLoro =
   LoroMap<SheetStatementGridBlockSchema>;
 
-export type SheetStatementGridRowLoro = LoroMap<{
-  type: StatementGridRowType;
-  statement?: LoroMap<StmtDocSchema>;
-  statementRef?: LoroMap<StmtRefSchema>;
-  instance: number;
-  scope?: LoroMap<Record<string, LoroList<string>>>;
-}>;
+export type SheetStatementGridRowLoro = LoroMap<
+  SheetColabGridRowSchema & {
+    type: StatementGridRowType;
+    statement?: LoroMap<StmtDocSchema>;
+    statementRef?: LoroMap<StmtRefSchema>;
+  }
+>;
 
 export type StmtRefSchema = {
   docId: string;

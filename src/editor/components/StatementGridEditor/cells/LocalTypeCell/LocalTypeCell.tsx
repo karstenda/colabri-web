@@ -1,6 +1,6 @@
 import { LoroMap } from 'loro-crdt';
 import { StmtDocSchema } from '../../../../data/ColabLoroDoc';
-import CellWrapper from '../CellWrapper';
+import CellWrapper from '../../../ColabGridEditor/cells/CellWrapper/CellWrapper';
 import ContentTag from '../../../ContentTag/ContentTag';
 import { Skeleton } from '@mui/material';
 

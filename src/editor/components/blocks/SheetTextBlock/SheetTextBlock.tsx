@@ -25,9 +25,13 @@ import ErrorIcon from '@mui/icons-material/Error';
 import { useGoogleFonts } from '../../../../ui/hooks/useFonts/useFonts';
 import { ContentLanguage } from '../../../data/ContentLanguage';
 import { t } from 'i18next';
-import { ColabApprovalState } from '../../../../api/ColabriAPI';
+import {
+  ColabApprovalState,
+  ColabSheetBlockTitleType,
+} from '../../../../api/ColabriAPI';
 import DocEditorSheetBlock from '../DocEditorBlock/DocEditorSheetBlock';
 import ColabTextEditorOutlined from '../../ColabTextEditor/ColabTextEditorOutlined';
+import { getTypographyVariantForTitleType } from '../../../util/TitleUtil';
 
 export type SheetTextBlockProps = {
   bp: SheetTextBlockBP;
@@ -146,15 +150,24 @@ const SheetTextBlock: React.FC<SheetTextBlockProps> = ({ bp }) => {
       ? controller.hasRejectedBlockApproval(bp.containerId, approvalKey)
       : false,
   );
+  // State to track level of heading for the title
+  const [titleType, setTitleType] = useState<ColabSheetBlockTitleType>(
+    controller
+      ? controller.getBlockTitleType(bp.containerId)
+      : ColabSheetBlockTitleType.ColabSheetBlockTitleLevelNone,
+  );
 
   // State to track focus and hover
   const [focus, setFocus] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const showOutlines = (focus || isHovered) && (canEdit || canManage);
+  const showTitle =
+    titleContainerId != null &&
+    titleType !== ColabSheetBlockTitleType.ColabSheetBlockTitleLevelNone;
 
   useEffect(() => {
     if (controller && bp.containerId && loroDoc) {
-      // Update the canEdit state
+      // Update state
       setCanEdit(controller.canEditBlock(bp.containerId));
       setApprovalState(controller.getBlockState(bp.containerId));
       setCanApprove(controller.hasApprovePermission(bp.containerId));
@@ -162,6 +175,7 @@ const SheetTextBlock: React.FC<SheetTextBlockProps> = ({ bp }) => {
       setHasRejected(
         controller.hasRejectedBlockApproval(bp.containerId, approvalKey),
       );
+      setTitleType(controller.getBlockTitleType(bp.containerId));
 
       // Subscribe to ACL changes in the loroDoc
       const aclUnsubscribe = controller.subscribeToBlockAclChanges(
@@ -185,11 +199,21 @@ const SheetTextBlock: React.FC<SheetTextBlockProps> = ({ bp }) => {
           );
         },
       );
+      // Subscribe to block property changes
+      const unsubscribeBlockPropertyChange = controller.subscribeToFieldChanges(
+        bp.containerId,
+        'titleType',
+        () => {
+          // Handle block property changes here
+          setTitleType(controller.getBlockTitleType(bp.containerId));
+        },
+      );
 
       // Cleanup subscriptions on unmount
       return () => {
         aclUnsubscribe();
         approvalUnsubscribe();
+        unsubscribeBlockPropertyChange();
       };
     }
   }, [loroDoc, controller, bp.containerId]);
@@ -255,9 +279,9 @@ const SheetTextBlock: React.FC<SheetTextBlockProps> = ({ bp }) => {
             <Stack direction="row" spacing={1} flex={1}>
               <SheetTextBlockHeaderWrapper>
                 <SheetTextBlockHeaderLeft>
-                  {titleContainerId != null && (
+                  {showTitle && (
                     <Typography
-                      variant="h6"
+                      variant={getTypographyVariantForTitleType(titleType)}
                       component="div"
                       sx={{ width: '100%' }}
                     >
@@ -265,7 +289,7 @@ const SheetTextBlock: React.FC<SheetTextBlockProps> = ({ bp }) => {
                         showOutlines={showOutlines && !bp.readOnly}
                         loro={loroDoc as any as LoroDocType}
                         ephStoreMgr={ephStoreMgr}
-                        containerId={titleContainerId}
+                        containerId={titleContainerId!}
                         spellCheck={{
                           enabled: true,
                           supported: language?.spellCheck || false,

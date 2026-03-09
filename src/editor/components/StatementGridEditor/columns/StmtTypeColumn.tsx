@@ -2,7 +2,7 @@ import { TFunction } from 'i18next';
 import LocalTypeCell from '../cells/LocalTypeCell/LocalTypeCell';
 import { StatementGridEditorTableRow } from '../StatementGridEditorTable';
 import { StatementGridRowType } from '../../../../api/ColabriAPI';
-import CellWrapper from '../cells/CellWrapper';
+import CellWrapper from '../../ColabGridEditor/cells/CellWrapper/CellWrapper';
 import RefTypeCell from '../cells/RefTypeCell/RefTypeCell';
 
 const getStmtTypeColumn = (t: TFunction) => ({
