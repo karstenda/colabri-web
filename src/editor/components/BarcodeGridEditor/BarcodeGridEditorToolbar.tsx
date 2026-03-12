@@ -3,29 +3,29 @@ import { GridSlotProps } from '@mui/x-data-grid';
 import { ContainerID } from 'loro-crdt';
 import ColabGridEditorToolbar from '../ColabGridEditor/ColabGridEditorToolbar';
 
-export type StatementGridEditorToolbarProps = {
+export type BarcodeGridEditorToolbarProps = {
   blockContainerId?: ContainerID;
   titleContainerId?: ContainerID;
   showOutlines?: boolean;
   canAdd?: boolean;
   canManage?: boolean;
   readOnly?: boolean;
-  handleStatementAdd?: () => Promise<void>;
+  handleBarcodeAdd?: () => Promise<void>;
 } & GridSlotProps['toolbar'];
 
-const StatementGridEditorToolbar = ({
-  handleStatementAdd,
+const BarcodeGridEditorToolbar = ({
+  handleBarcodeAdd,
   ...props
-}: StatementGridEditorToolbarProps) => {
+}: BarcodeGridEditorToolbarProps) => {
   const { t } = useTranslation();
 
   return (
     <ColabGridEditorToolbar
       {...props}
-      handleAdd={handleStatementAdd}
-      addButtonLabel={t('editor.sheetStatementGridBlock.addButton')}
+      handleAdd={handleBarcodeAdd}
+      addButtonLabel={t('editor.sheetBarcodeGridBlock.addButton')}
     />
   );
 };
 
-export default StatementGridEditorToolbar;
+export default BarcodeGridEditorToolbar;

@@ -16,6 +16,7 @@ import SheetStatementGridBlock from '../SheetStatementGridBlock/SheetStatementGr
 import { SheetPropertiesBlockBP } from '../SheetPropertiesBlock/SheetPropertiesBlockBP';
 import SheetPropertiesBlock from '../SheetPropertiesBlock/SheetPropertiesBlock';
 import { SheetBarcodeGridBlockBP } from '../SheetBarcodeGridBlock/SheetBarcodeGridBlockBP';
+import SheetBarcodeGridBlock from '../SheetBarcodeGridBlock/SheetBarcodeGridBlock';
 
 export type SheetTrackProps = {
   readOnly?: boolean;
@@ -212,7 +213,7 @@ const SheetTrack = ({ readOnly }: SheetTrackProps) => {
               }
               case ColabSheetBlockType.ColabSheetBlockTypeBarcodeGrid: {
                 return (
-                  <SheetStatementGridBlock
+                  <SheetBarcodeGridBlock
                     key={sheetTrackBlockBP.id}
                     bp={sheetTrackBlockBP as SheetBarcodeGridBlockBP}
                   />

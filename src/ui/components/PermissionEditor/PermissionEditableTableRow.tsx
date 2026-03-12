@@ -133,7 +133,7 @@ const PermissionEditableTableRow = (props: PermissionEditableTableRowProps) => {
                     sx={{ py: 0, px: 0, mb: 0.5 }}
                   >
                     <Checkbox
-                      checked={permissions.has(permission)}
+                      checked={allDisplayedPermissions.has(permission)}
                       disabled={isFixed}
                     />
                     <ListItemText

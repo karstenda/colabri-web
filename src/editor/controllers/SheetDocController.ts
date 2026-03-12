@@ -9,12 +9,15 @@ import {
 import {
   AclLoroMap,
   SheetAttributesBlockLoro,
+  SheetBarcodeGridBlockLoro,
+  SheetBarcodeGridRowLoro,
   SheetBlockLoro,
   SheetColabGridRowLoro,
   SheetLoroDoc,
   SheetPropertiesBlockLoro,
   SheetStatementGridBlockLoro,
   SheetStatementGridRowLoro,
+  SheetSymbolGridBlockLoro,
   SheetTextBlockLoro,
   StmtDocSchema,
   StmtElementLoro,
@@ -37,6 +40,7 @@ import {
   ColabSheetBlockTitleType,
 } from '../../api/ColabriAPI';
 import StatementLocalController from './StatementLocalController';
+import { SheetSymbolGridBlockBP } from '../components/blocks/SheetSymbolGridBlock/SheetSymbolGridBlockBP';
 
 export type ColabSheetBlock =
   | ColabSheetTextBlock
@@ -292,9 +296,9 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
     }
 
     // Check if the user has edit permission on the element
-    const elementAclMap = this.getBlockAclMap(containerId);
+    const blockAclMap = this.getBlockAclMap(containerId);
     for (const prpl of this.authPrpls) {
-      const editPrpls = elementAclMap[Permission.Edit] || [];
+      const editPrpls = blockAclMap[Permission.Edit] || [];
       if (editPrpls.includes(prpl)) {
         return true;
       }
@@ -314,9 +318,9 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
     }
 
     // Check if the user has manage permission on the element
-    const elementAclMap = this.getBlockAclMap(containerId);
+    const blockAclMap = this.getBlockAclMap(containerId);
     for (const prpl of this.authPrpls) {
-      const managePrpls = elementAclMap[Permission.Manage] || [];
+      const managePrpls = blockAclMap[Permission.Manage] || [];
       if (managePrpls.includes(prpl)) {
         return true;
       }
@@ -339,18 +343,66 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
       return true;
     }
 
-    // Check if the user has manage permission on the element
-    const elementAclMap = this.getBlockAclMap(containerId);
+    // Check if the user has manage permission on the block
+    const blockAclMap = this.getBlockAclMap(containerId);
     for (const prpl of this.authPrpls) {
-      const managePrpls = elementAclMap[Permission.Manage] || [];
+      const managePrpls = blockAclMap[Permission.Manage] || [];
       if (managePrpls.includes(prpl)) {
         return true;
       }
     }
-    // Check if the user has add/remove permission on the element
+    // Check if the user has add/remove permission on the block
     for (const prpl of this.authPrpls) {
-      const addRemovePrpls = elementAclMap[Permission.AddRemove] || [];
+      const addRemovePrpls = blockAclMap[Permission.AddRemove] || [];
       if (addRemovePrpls.includes(prpl)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Whether the user has edit permission for the block
+   * @param containerId
+   */
+  hasBlockEditPermission(containerId: ContainerID): boolean {
+    // Check if the user has the permission globally
+    const aclMap = this.getDocAclMap();
+    for (const prpl of this.authPrpls) {
+      const editPrpls = aclMap[Permission.Edit] || [];
+      if (editPrpls.includes(prpl)) {
+        return true;
+      }
+    }
+    // Check if the user has permission on the element
+    const elementAclMap = this.getBlockAclMap(containerId);
+    for (const prpl of this.authPrpls) {
+      const editPrpls = elementAclMap[Permission.Edit] || [];
+      if (editPrpls.includes(prpl)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Wether the user has approve permission for the block
+   * @param containerId
+   */
+  hasBlockApprovePermission(containerId: ContainerID): boolean {
+    // Check if the user has the permission globally
+    const aclMap = this.getDocAclMap();
+    for (const prpl of this.authPrpls) {
+      const approvePrpls = aclMap[Permission.Approve] || [];
+      if (approvePrpls.includes(prpl)) {
+        return true;
+      }
+    }
+    // Check if the user has permission on the element
+    const blockAclMap = this.getBlockAclMap(containerId);
+    for (const prpl of this.authPrpls) {
+      const approvePrpls = blockAclMap[Permission.Approve] || [];
+      if (approvePrpls.includes(prpl)) {
         return true;
       }
     }
@@ -751,6 +803,27 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
 
       return blockMap.id;
     }
+    // Barcode grid block
+    else if (ColabSheetBlockType === 'barcode-grid') {
+      const blockMap = contentList.insertContainer(
+        position,
+        new LoroMap(),
+      ) as SheetBarcodeGridBlockLoro;
+
+      // Initialize the block
+      blockMap.set('type', 'barcode-grid' as ColabSheetBlockType);
+      blockMap.setContainer('acls', new LoroMap());
+      blockMap.setContainer('rows', new LoroMovableList());
+
+      // Set the title element
+      const titleElementMap = blockMap.getOrCreateContainer(
+        'title',
+        new LoroMap(),
+      );
+      titleElementMap.set('nodeName', 'doc');
+
+      return blockMap.id;
+    }
     // Properties block
     else if (ColabSheetBlockType === 'properties') {
       // First ensure that there isn't already a properties block in the document, since we only allow one
@@ -1074,19 +1147,55 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
   }
 
   /**
-   * Remove a statement from the statement grid block
+   * Add a new barcode row to a barcode grid block.
+   *
+   * @param containerId The container ID of the barcode grid block
+   * @param position Optional position to insert at
+   */
+  addBarcodeToGridBlock(containerId: ContainerID, position?: number): boolean {
+    const blockMap = this.loroDoc.getContainerById(
+      containerId,
+    ) as SheetBarcodeGridBlockLoro;
+    if (!blockMap) {
+      throw new Error(`Could not find block for container ID ${containerId}`);
+    }
+
+    const rowList = blockMap.get('rows');
+    if (!rowList) {
+      throw new Error(
+        `Could not find rows list for barcode grid block ${containerId}`,
+      );
+    }
+
+    if (position === undefined || position < 0 || position > rowList.length) {
+      position = rowList.length;
+    }
+
+    const rowMap: SheetBarcodeGridRowLoro = new LoroMap();
+    const barcodeMap = rowMap.getOrCreateContainer('barcode', new LoroMap());
+    barcodeMap.set('type', '');
+    barcodeMap.set('data', '');
+    barcodeMap.set('symbolComponentCode', '');
+
+    rowList.insertContainer(position, rowMap);
+    return true;
+  }
+
+  /**
+   * Remove a row from a sheet block
    *
    * @param blockContainerId
    * @param stmtRowContainerId
    */
-  removeStatementFromStatementGridBlock(
+  removeRowFromBlock(
     blockContainerId: ContainerID,
-    stmtRowContainerId: ContainerID,
+    rowContainerId: ContainerID,
   ): boolean {
     // Get the statement grid block
-    const blockMap = this.loroDoc.getContainerById(
-      blockContainerId,
-    ) as SheetStatementGridBlockLoro;
+    const blockMap = this.loroDoc.getContainerById(blockContainerId) as
+      | SheetStatementGridBlockLoro
+      | SheetBarcodeGridBlockLoro
+      | SheetSymbolGridBlockLoro;
     if (!blockMap) {
       throw new Error(
         `Could not find block for container ID ${blockContainerId}`,
@@ -1101,24 +1210,22 @@ class SheetDocController extends ColabDocController<SheetLoroDoc> {
       );
     }
 
-    // Find the position of the statement row
+    // Find the position of the row
     let position = -1;
     for (let i = 0; i < rowList.length; i++) {
       const row = rowList.get(i);
-      if (row instanceof LoroMap && row.id === stmtRowContainerId) {
+      if (row instanceof LoroMap && row.id === rowContainerId) {
         position = i;
         break;
       }
     }
 
     if (position === -1) {
-      console.warn(
-        `Could not find statement row with container ID: ${stmtRowContainerId}`,
-      );
+      console.warn(`Could not find row with container ID: ${rowContainerId}`);
       return false;
     }
 
-    // Delete the statement row
+    // Delete the row
     rowList.delete(position, 1);
     return true;
   }

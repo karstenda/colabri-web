@@ -1,10 +1,10 @@
 import { TFunction } from 'i18next';
-import LocalStmtDeleteAction from '../cells/LocalStmtDeleteAction/LocalStmtDeleteAction';
 import { StatementGridEditorTableRow } from '../StatementGridEditorTable';
 import { GridActionsColDef } from '@mui/x-data-grid';
 import { ContainerID } from 'loro-crdt';
 import LocalStmtManageAction from '../cells/LocalStmtManageAction/LocalStmtManageAction';
 import SheetDocController from '../../../controllers/SheetDocController';
+import RowDeleteAction from '../../ColabGridEditor/cells/DeleteAction/DeleteAction';
 
 const getStmtActionsColumn = (
   t: TFunction,
@@ -17,7 +17,8 @@ const getStmtActionsColumn = (
   field: 'actions',
   headerName: '',
   type: 'actions',
-  align: 'left',
+  align: 'center',
+  width: 74,
   getActions: (data: { row: StatementGridEditorTableRow }) => {
     const actions = [];
 
@@ -35,10 +36,13 @@ const getStmtActionsColumn = (
     // Show delete action only if canManage or canAdd
     if ((canManage || canAdd) && !readOnly) {
       actions.push(
-        <LocalStmtDeleteAction
+        <RowDeleteAction
           row={data.row}
           controller={controller}
           blockId={blockId}
+          confirmationMessage={t(
+            'editor.sheetStatementGridBlock.removeStatementConfirm',
+          )}
         />,
       );
     }

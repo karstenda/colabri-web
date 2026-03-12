@@ -22,8 +22,10 @@ export interface AddBlockModalPayload {
   controller: SheetDocController;
 }
 
-export interface AddBlockModalProps
-  extends DialogProps<AddBlockModalPayload, ColabSheetBlockType | undefined> {}
+export interface AddBlockModalProps extends DialogProps<
+  AddBlockModalPayload,
+  ColabSheetBlockType | undefined
+> {}
 
 export const AddBlockModal: React.FC<AddBlockModalProps> = ({
   open,
@@ -125,6 +127,13 @@ export const AddBlockModal: React.FC<AddBlockModalProps> = ({
                 'attributes' as ColabSheetBlockType,
                 t('editor.sheetAttributesBlock.name'),
                 t('editor.sheetAttributesBlock.description'),
+              )}
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }} sx={{ display: 'flex' }}>
+              {getBlockCard(
+                'barcode-grid' as ColabSheetBlockType,
+                t('editor.sheetBarcodeGridBlock.name'),
+                t('editor.sheetBarcodeGridBlock.description'),
               )}
             </Grid>
           </Grid>

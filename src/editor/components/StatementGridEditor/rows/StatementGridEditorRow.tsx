@@ -1,3 +1,4 @@
+import React from 'react';
 import { GridRow, GridRowProps } from '@mui/x-data-grid/components';
 import { StatementGridRowType } from '../../../../api/ColabriAPI';
 import { useColabDoc } from '../../../context/ColabDocContext/ColabDocProvider';
@@ -5,7 +6,7 @@ import { ConnectedSheetDoc, FrozenSheetDoc } from '../../../data/ColabDoc';
 import { ConnectedColabDocProvider } from '../../../context/ColabDocContext/ConnectedColabDocProvider';
 import { FrozenColabDocProvider } from '../../../context/ColabDocContext/FrozenColabDocProvider';
 
-const StatementGridEditorRow = (props: GridRowProps) => {
+const StatementGridEditorRow = React.memo((props: GridRowProps) => {
   const { colabDoc } = useColabDoc();
 
   if (
@@ -54,6 +55,6 @@ const StatementGridEditorRow = (props: GridRowProps) => {
   } else {
     return <></>;
   }
-};
+});
 
 export default StatementGridEditorRow;

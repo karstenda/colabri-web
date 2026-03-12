@@ -1,18 +1,7 @@
-import { createContext } from 'react';
+// Re-export shared context types and context from ColabGridEditor
+export type {
+  ActiveCellRef,
+  ColabGridEditorContextType as StatementGridEditorContextType,
+} from '../../ColabGridEditor/context/ColabGridEditorContext';
 
-export type ActiveCellRef = {
-  rowId: string;
-  field: string;
-};
-
-export type StatementGridEditorContextType = {
-  readOnly: boolean;
-  setReadOnly: (readOnly: boolean) => void;
-  activeCell: ActiveCellRef | null;
-  setActiveCell: (cellRef: ActiveCellRef | null) => void;
-};
-
-const StatementGridEditorContext =
-  createContext<StatementGridEditorContextType | null>(null);
-
-export default StatementGridEditorContext;
+export { default } from '../../ColabGridEditor/context/ColabGridEditorContext';

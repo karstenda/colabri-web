@@ -53,14 +53,13 @@ const ManageStatementDocPanel = ({
   const [permissionChain, setPermissionChain] =
     useState<PermissionChain>(initPermissionChain);
 
-  const availablePermissions = {
-    [t('common.document')]: new Set([
-      Permission.Manage,
-      Permission.AddRemove,
-      Permission.View,
-    ]),
-    [t('common.localization')]: new Set([Permission.Edit, Permission.Approve]),
-  };
+  const availablePermissions = new Set([
+    Permission.View,
+    Permission.Manage,
+    Permission.AddRemove,
+    Permission.Edit,
+    Permission.Approve,
+  ]);
 
   const handlePermissionChainChange = useCallback(
     (newChain: PermissionChain) => {

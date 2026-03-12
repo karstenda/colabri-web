@@ -1,0 +1,166 @@
+import { useTranslation } from 'react-i18next';
+import { useColabDoc } from '../../context/ColabDocContext/ColabDocProvider';
+import Button from '@mui/material/Button';
+import { GridSlotProps, Toolbar } from '@mui/x-data-grid';
+import { styled, useTheme } from '@mui/material/styles';
+import ColabTextEditorOutlined from '../ColabTextEditor/ColabTextEditorOutlined';
+import { useEffect, useState } from 'react';
+import { ContainerID } from 'loro-crdt';
+import { LoroDocType } from 'loro-prosemirror';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import { ConnectedSheetDoc, FrozenSheetDoc } from '../../data/ColabDoc';
+import { getTypographyVariantForTitleType } from '../../util/TitleUtil';
+import { ColabSheetBlockTitleType } from '../../../api/ColabriAPI';
+
+export type ColabGridEditorToolbarProps = {
+  blockContainerId?: ContainerID;
+  titleContainerId?: ContainerID;
+  showOutlines?: boolean;
+  canAdd?: boolean;
+  canManage?: boolean;
+  readOnly?: boolean;
+  addButtonLabel?: string;
+  handleAdd?: () => Promise<void>;
+} & GridSlotProps['toolbar'];
+
+const StyledToolbar = styled(Toolbar)(({ theme }) => ({
+  backgroundColor: 'transparent',
+  minHeight: '73px',
+}));
+
+export const ToolbarWrapper = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: theme.spacing(1),
+  flexGrow: 1,
+  width: '100%',
+  padding: '10px',
+}));
+
+export const ToolbarLeft = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  minWidth: 0,
+}));
+
+export const ToolbarRight = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+}));
+
+const ColabGridEditorToolbar = ({
+  blockContainerId,
+  titleContainerId,
+  showOutlines,
+  canManage,
+  canAdd,
+  readOnly,
+  addButtonLabel,
+  handleAdd,
+  ...props
+}: ColabGridEditorToolbarProps) => {
+  const { colabDoc } = useColabDoc();
+  const { t } = useTranslation();
+  const theme = useTheme();
+
+  // State to track title type
+  const [titleType, setTitleType] = useState<ColabSheetBlockTitleType>(
+    ColabSheetBlockTitleType.ColabSheetBlockTitleLevelNone,
+  );
+
+  if (
+    !(colabDoc instanceof ConnectedSheetDoc) &&
+    !(colabDoc instanceof FrozenSheetDoc)
+  ) {
+    throw new Error('ColabGridEditorToolbar can only be used with sheet docs.');
+  }
+
+  const loroDoc = colabDoc?.getLoroDoc();
+  const ephStoreMgr = colabDoc?.getEphStoreMgr();
+  const controller = colabDoc?.getDocController();
+
+  const showTitleEditor =
+    titleContainerId != null &&
+    loroDoc != undefined &&
+    ephStoreMgr != undefined &&
+    titleType !== ColabSheetBlockTitleType.ColabSheetBlockTitleLevelNone;
+
+  const showReadOnly = (!canManage && !canAdd) || readOnly;
+
+  useEffect(() => {
+    if (colabDoc && controller && blockContainerId) {
+      // Initialize title type state
+      setTitleType(controller.getBlockTitleType(blockContainerId));
+
+      // Subscribe to block property changes
+      const unsubscribeBlockPropertyChange = controller.subscribeToFieldChanges(
+        blockContainerId,
+        'titleType',
+        () => {
+          // Handle block property changes here
+          setTitleType(controller.getBlockTitleType(blockContainerId));
+        },
+      );
+
+      return () => {
+        // Clean up subscription on unmount
+        unsubscribeBlockPropertyChange();
+      };
+    }
+  }, [colabDoc, controller, blockContainerId]);
+
+  return (
+    <StyledToolbar
+      {...props}
+      sx={{
+        backgroundColor: !showReadOnly
+          ? (theme.vars || theme).palette.background.default
+          : (theme.vars || theme).palette.background.paper,
+      }}
+    >
+      <ToolbarWrapper>
+        <ToolbarLeft>
+          {showTitleEditor && (
+            <Typography
+              variant={getTypographyVariantForTitleType(titleType)}
+              component="div"
+              sx={{ width: '100%' }}
+            >
+              <ColabTextEditorOutlined
+                showOutlines={showOutlines && !readOnly}
+                loro={loroDoc as any as LoroDocType}
+                ephStoreMgr={ephStoreMgr}
+                containerId={titleContainerId}
+                spellCheck={{
+                  enabled: false,
+                  supported: false,
+                  orgId: '',
+                  langCode: undefined,
+                }}
+                schema="simple"
+                canEdit={canManage && !readOnly}
+              />
+            </Typography>
+          )}
+        </ToolbarLeft>
+
+        <ToolbarRight>
+          {(canAdd || canManage) && !readOnly && handleAdd && (
+            <Button onClick={handleAdd}>
+              {addButtonLabel || t('common.add')}
+            </Button>
+          )}
+        </ToolbarRight>
+      </ToolbarWrapper>
+    </StyledToolbar>
+  );
+};
+
+export default ColabGridEditorToolbar;

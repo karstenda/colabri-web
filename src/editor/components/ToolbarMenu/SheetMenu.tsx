@@ -55,6 +55,7 @@ export default function SheetMenu({ readOnly }: SheetMenuProps) {
   const isSheetBlockFocused =
     activeBlock?.blockType === 'SheetTextBlock' ||
     activeBlock?.blockType === 'SheetStatementGridBlock' ||
+    activeBlock?.blockType === 'SheetBarcodeGridBlock' ||
     activeBlock?.blockType === 'SheetPropertiesBlock' ||
     activeBlock?.blockType === 'SheetAttributesBlock';
 

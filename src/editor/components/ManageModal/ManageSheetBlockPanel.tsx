@@ -65,10 +65,12 @@ const ManageSheetBlockPanel = ({
   const [permissionChain, setPermissionChain] =
     useState<PermissionChain>(initPermissionChain);
 
-  const availablePermissions = {
-    [t('common.block')]: new Set([Permission.Manage, Permission.AddRemove]),
-    [t('common.localization')]: new Set([Permission.Edit, Permission.Approve]),
-  };
+  const availablePermissions = new Set([
+    Permission.Manage,
+    Permission.AddRemove,
+    Permission.Edit,
+    Permission.Approve,
+  ]);
 
   // Subscribe to ACL changes
   useEffect(() => {

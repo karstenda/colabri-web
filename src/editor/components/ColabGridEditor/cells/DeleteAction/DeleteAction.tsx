@@ -1,39 +1,36 @@
 import { GridActionsCellItem } from '@mui/x-data-grid/components';
 import { useTranslation } from 'react-i18next';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { StatementGridEditorTableRow } from '../../StatementGridEditorTable';
+import { ColabGridEditorTableRow } from '../../data/ColabGridEditorTableRow';
 import { useCallback } from 'react';
 import { ContainerID } from 'loro-crdt';
 import { useDialogs } from '../../../../../ui/hooks/useDialogs/useDialogs';
 import SheetDocController from '../../../../controllers/SheetDocController';
 
-export type LocalStmtDeleteActionProps = {
-  row: StatementGridEditorTableRow;
+export type RowDeleteActionProps = {
+  row: ColabGridEditorTableRow;
   controller: SheetDocController;
   blockId: ContainerID;
+  confirmationMessage: string;
 };
 
-const LocalStmtDeleteAction = ({
+const RowDeleteAction = ({
   row,
   controller,
   blockId,
-}: LocalStmtDeleteActionProps) => {
+  confirmationMessage,
+}: RowDeleteActionProps) => {
   const { t } = useTranslation();
   const dialogs = useDialogs();
 
-  const handleStatementRemove = useCallback(
-    async (stmtRowContainerId: ContainerID) => {
-      // Confirm the deletion of the statement
-      const confirm = await dialogs.confirm(
-        t('editor.sheetStatementGridBlock.removeStatementConfirm'),
-      );
+  const handleRowRemove = useCallback(
+    async (rowContainerId: ContainerID) => {
+      // Confirm the deletion of the row
+      const confirm = await dialogs.confirm(confirmationMessage);
 
       if (confirm && controller) {
         // Add the new statement via the controller
-        const ok = controller.removeStatementFromStatementGridBlock(
-          blockId,
-          stmtRowContainerId,
-        );
+        const ok = controller.removeRowFromBlock(blockId, rowContainerId);
         if (ok) {
           controller.commit();
         }
@@ -47,9 +44,9 @@ const LocalStmtDeleteAction = ({
       key="delete-item"
       icon={<DeleteIcon />}
       label={t('common.delete')}
-      onClick={() => handleStatementRemove(row.id as ContainerID)}
+      onClick={() => handleRowRemove(row.id as ContainerID)}
     />
   );
 };
 
-export default LocalStmtDeleteAction;
+export default RowDeleteAction;

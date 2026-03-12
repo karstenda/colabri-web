@@ -10,11 +10,53 @@ import {
   PermissionChainAccordion,
   PermissionChainAccordionSummary,
 } from './PermissionChainEditorStyles';
+import { useTranslation } from 'react-i18next';
+
+type LevelType = PermissionChain['chain'][number]['type'];
+
+const sectionsByLevelType = {
+  doc: [
+    {
+      labelKey: 'common.document' as const,
+      permissions: [Permission.View, Permission.Manage, Permission.AddRemove],
+    },
+    {
+      labelKey: 'common.blockContent' as const,
+      permissions: [Permission.Edit, Permission.Approve],
+    },
+  ],
+  block: [
+    {
+      labelKey: 'common.block' as const,
+      permissions: [Permission.Manage, Permission.AddRemove],
+    },
+    {
+      labelKey: 'common.blockContent' as const,
+      permissions: [Permission.Edit, Permission.Approve],
+    },
+  ],
+  statement: [
+    {
+      labelKey: 'common.statement' as const,
+      permissions: [Permission.Manage, Permission.AddRemove],
+    },
+    {
+      labelKey: 'common.localizations' as const,
+      permissions: [Permission.Edit, Permission.Approve],
+    },
+  ],
+  element: [
+    {
+      labelKey: 'common.localization' as const,
+      permissions: [Permission.Edit, Permission.Approve],
+    },
+  ],
+};
 
 export type PermissionChainEditorProps = {
   permissionChain: PermissionChain;
   setPermissionChain: (chain: PermissionChain) => void;
-  availablePermissions: Record<string, Set<Permission>>;
+  availablePermissions: Set<Permission>;
   defaultPermission: Permission;
   readOnly?: boolean;
 };
@@ -47,6 +89,22 @@ const PermissionChainEditor = ({
   defaultPermission,
   readOnly,
 }: PermissionChainEditorProps) => {
+  const { t } = useTranslation();
+
+  const getSectionedPermissions = (
+    levelType: LevelType,
+  ): Record<string, Set<Permission>> => {
+    const definitions = sectionsByLevelType[levelType];
+    const result: Record<string, Set<Permission>> = {};
+    for (const { labelKey, permissions } of definitions) {
+      const filtered = permissions.filter((p) => availablePermissions.has(p));
+      if (filtered.length > 0) {
+        result[t(labelKey)] = new Set(filtered);
+      }
+    }
+    return result;
+  };
+
   return (
     <Box>
       {permissionChain.chain.map((level, index) => (
@@ -74,7 +132,7 @@ const PermissionChainEditor = ({
               <PermissionEditor
                 aclMap={level.acls}
                 aclFixedMap={calcInheritedAcls(index, permissionChain)}
-                availablePermissions={availablePermissions}
+                availablePermissions={getSectionedPermissions(level.type)}
                 defaultPermission={defaultPermission}
                 onAclChange={(newAclMap) => {
                   // Update the permission chain state

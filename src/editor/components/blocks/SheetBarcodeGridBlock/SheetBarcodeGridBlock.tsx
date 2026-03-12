@@ -6,6 +6,7 @@ import { useColabDoc } from '../../../context/ColabDocContext/ColabDocProvider';
 import { SheetBarcodeGridBlockLoro } from '../../../data/ColabLoroDoc';
 import DocEditorSheetBlock from '../DocEditorBlock/DocEditorSheetBlock';
 import { SheetBarcodeGridBlockBP } from './SheetBarcodeGridBlockBP';
+import BarcodeGridEditor from '../../BarcodeGridEditor/BarcodeGridEditor';
 
 export type SheetBarcodeGridBlockProps = {
   bp: SheetBarcodeGridBlockBP;
@@ -49,7 +50,6 @@ const SheetBarcodeGridBlock: React.FC<SheetBarcodeGridBlockProps> = ({
   // State to track focus and hover
   const [isFocused, setIsFocused] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [showWide, setShowWide] = useState<boolean>(false);
 
   useEffect(() => {
     if (controller && bp.containerId && loroDoc) {
@@ -77,11 +77,6 @@ const SheetBarcodeGridBlock: React.FC<SheetBarcodeGridBlockProps> = ({
   // Handle focus change from DocEditorBlock
   const handleFocusChange = (hasFocus: boolean) => {
     setIsFocused(hasFocus);
-    if (hasFocus) {
-      setShowWide(true);
-    } else {
-      setShowWide(false);
-    }
   };
   const handleHoverChange = (isHovered: boolean) => {
     setIsHovered(isHovered);
@@ -98,9 +93,9 @@ const SheetBarcodeGridBlock: React.FC<SheetBarcodeGridBlockProps> = ({
       editable={canManage || canAdd}
       readOnly={bp.readOnly}
       sx={{ padding: '0px' }}
-      displayMode={showWide ? 'wide' : 'default'}
+      displayMode={'default'}
     >
-      <StatementGridEditor
+      <BarcodeGridEditor
         containerId={bp.containerId}
         isHovered={isHovered}
         isFocused={isFocused}

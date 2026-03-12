@@ -1,16 +1,13 @@
-import { ContainerID, LoroList, LoroMap, LoroMovableList } from 'loro-crdt';
+import { ContainerID, LoroMap, LoroMovableList } from 'loro-crdt';
 import { useTranslation } from 'react-i18next';
-import { useOrganization } from '../../../ui/context/UserOrganizationContext/UserOrganizationProvider';
 import {
-  SheetStatementGridBlockLoro,
-  SheetStatementGridRowLoro,
-  StmtDocSchema,
-  StmtRefSchema,
+  SheetBarcodeGridBlockLoro,
+  SheetBarcodeGridRowLoro,
+  BarcodeDataLoro,
   TextElementLoro,
 } from '../../data/ColabLoroDoc';
-import { DataGrid, GridRow } from '@mui/x-data-grid';
-import { StatementGridRowType } from '../../../api/ColabriAPI';
-import { useState, useMemo, useCallback, useEffect, use } from 'react';
+import { DataGrid } from '@mui/x-data-grid';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   GridColDef,
   GridFilterModel,
@@ -19,38 +16,29 @@ import {
 } from '@mui/x-data-grid/models';
 import { GridColumnVisibilityModel } from '@mui/x-data-grid';
 import { gridClasses } from '@mui/x-data-grid';
-import getStmtTypeColumn from './columns/StmtTypeColumn';
 import { useColabDoc } from '../../context/ColabDocContext/ColabDocProvider';
-import { useContentLanguages } from '../../../ui/hooks/useContentLanguages/useContentLanguage';
-import getStmtActionsColumn from './columns/StmtActionsColumn';
-import StatementGridEditorToolbar from './StatementGridEditorToolbar';
-import { useDialogs } from '../../../ui/hooks/useDialogs/useDialogs';
-import AddStatementModal, {
-  AddStatementModalPayload,
-  NewStatementData,
-} from './AddStatementModal';
 import { ConnectedSheetDoc, FrozenSheetDoc } from '../../data/ColabDoc';
 import { useTheme } from '@mui/material/styles';
-import getStmtEditColumn from './columns/StmtEditColumn';
 import { useSetActiveCell } from '../ColabGridEditor/context/ColabGridEditorContextProvider';
-import StatementGridEditorRow from './rows/StatementGridEditorRow';
 import { ColabGridEditorTableRow } from '../ColabGridEditor/data/ColabGridEditorTableRow';
 import getInstanceColumn from '../ColabGridEditor/columns/InstanceColumn';
+import getBarcodePreviewColumn from './columns/BarcodePreviewColumn';
+import getBarcodeDataColumn from './columns/BarcodeDataColumn';
+import BarcodeGridEditorToolbar from './BarcodeGridEditorToolbar';
+import getRowActionsColumn from '../ColabGridEditor/columns/RowActionsColumn';
 
-export type StatementGridEditorTableProps = {
+export type BarcodeGridEditorTableProps = {
   containerId: ContainerID;
   isHovered?: boolean;
   isFocused?: boolean;
   readOnly?: boolean;
 };
 
-export type StatementGridEditorTableRow = ColabGridEditorTableRow & {
-  type: StatementGridRowType;
-  statementRef?: LoroMap<StmtRefSchema>;
-  statement?: LoroMap<StmtDocSchema>;
+export type BarcodeGridEditorTableRow = ColabGridEditorTableRow & {
+  barcode?: BarcodeDataLoro;
 };
 
-const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
+const BarcodeGridEditorTable: React.FC<BarcodeGridEditorTableProps> = ({
   containerId,
   isHovered,
   isFocused,
@@ -59,16 +47,13 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
   const { colabDoc } = useColabDoc();
   const { t } = useTranslation();
   const theme = useTheme();
-  const organization = useOrganization();
-  const { languages } = useContentLanguages(organization?.id);
   const setActiveCell = useSetActiveCell();
-  const dialogs = useDialogs();
 
   if (
     !(colabDoc instanceof ConnectedSheetDoc) &&
     !(colabDoc instanceof FrozenSheetDoc)
   ) {
-    throw new Error('StatementGridEditor can only be used with sheet docs.');
+    throw new Error('BarcodeGridEditor can only be used with sheet docs.');
   }
 
   // Get the LoroDoc and Controller
@@ -78,11 +63,13 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
   // Create state for canEdit and canManage
   const [canAdd, setCanAdd] = useState<boolean>(false);
   const [canManage, setCanManage] = useState<boolean>(false);
+  const [canEdit, setCanEdit] = useState<boolean>(false);
+  const [canApprove, setCanApprove] = useState<boolean>(false);
 
   // Create state for the rows
-  const [statementRows, setStatementRows] = useState<
-    StatementGridEditorTableRow[]
-  >([]);
+  const [barcodeRows, setBarcodeRows] = useState<BarcodeGridEditorTableRow[]>(
+    [],
+  );
 
   // Create state for the columns
   const [columns, setColumns] = useState<any[]>([]);
@@ -112,11 +99,13 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
       // Update the state
       setCanManage(controller.hasManageBlockPermission(containerId));
       setCanAdd(controller.hasAddRemoveToBlockPermission(containerId));
+      setCanEdit(controller.hasBlockEditPermission(containerId));
+      setCanApprove(controller.hasBlockApprovePermission(containerId));
 
       // Target the container
       const container = loroDoc.getContainerById(
         containerId,
-      ) as SheetStatementGridBlockLoro;
+      ) as SheetBarcodeGridBlockLoro;
       if (!container) {
         throw new Error(
           `Container with id ${containerId} not found in LoroDoc.`,
@@ -127,25 +116,21 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
       const titleLoro = container.get('title') as TextElementLoro;
 
       // Target the rows
-      const stmtGridRowLoroList = container.get(
+      const barcodeGridRowLoroList = container.get(
         'rows',
-      ) as LoroMovableList<SheetStatementGridRowLoro>;
-
-      // Target the global properties map
-      const propertiesMap = loroDoc?.getMap('properties');
+      ) as LoroMovableList<SheetBarcodeGridRowLoro>;
 
       // Update state for the title container
       setTitleContainerId(titleLoro.id);
 
       // Update state for the rows
-      updateRows(stmtGridRowLoroList);
+      updateRows(barcodeGridRowLoroList);
 
       // Subscribe to changes in the rows list
       const unsubscribeRows = controller.subscribeToRowListChanges(
         containerId,
         () => {
-          // On any row change, update the rows
-          updateRows(stmtGridRowLoroList);
+          updateRows(barcodeGridRowLoroList);
         },
       );
 
@@ -153,26 +138,10 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
       const unsubscribeAcls = controller.subscribeToBlockAclChanges(
         containerId,
         () => {
-          // On any ACL change, update the canEdit state
           setCanManage(controller.hasManageBlockPermission(containerId));
           setCanAdd(controller.hasAddRemoveToBlockPermission(containerId));
-        },
-      );
-
-      // Subscribe to language changes in the sheet
-      const propertiesContainer = loroDoc.getMap('properties').id;
-      controller.subscribeToFieldChanges(
-        propertiesContainer,
-        'langCodes',
-        () => {
-          updateColumns(propertiesMap);
-        },
-      );
-      controller.subscribeToFieldChanges(
-        propertiesContainer,
-        'masterLangCode',
-        () => {
-          updateColumns(propertiesMap);
+          setCanEdit(controller.hasBlockEditPermission(containerId));
+          setCanApprove(controller.hasBlockApprovePermission(containerId));
         },
       );
 
@@ -182,7 +151,7 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
         unsubscribeRows();
       };
     }
-  }, [loroDoc, controller, containerId, languages]);
+  }, [loroDoc, controller, containerId]);
 
   useEffect(() => {
     // If the entire grid editor is not focused, clear the active cell
@@ -192,117 +161,54 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
   }, [isFocused]);
 
   // Handle updating columns
-  const updateColumns = useCallback(
-    (propertiesMap: LoroMap<any> | undefined) => {
-      // Always display the name column and actions column
-      const newColumns: GridColDef<StatementGridEditorTableRow>[] = [
-        getStmtTypeColumn(t),
-        getStmtActionsColumn(
-          t,
-          controller,
-          containerId,
-          canManage,
-          canAdd,
-          readOnly,
-        ),
-        getInstanceColumn(t, controller, canManage, canAdd, readOnly),
-      ];
+  const updateColumns = useCallback(() => {
+    const newColumns: GridColDef<BarcodeGridEditorTableRow>[] = [
+      getBarcodePreviewColumn(t, controller),
+      getBarcodeDataColumn(t, controller, canEdit, canApprove, readOnly),
+      getInstanceColumn(t, controller, canManage, canAdd, readOnly),
+      getRowActionsColumn(
+        t,
+        controller,
+        containerId,
+        t('editor.sheetBarcodeGridBlock.removeBarcodeConfirm'),
+        canManage,
+        canAdd,
+        readOnly,
+      ),
+    ];
 
-      if (!propertiesMap) {
-        setColumns(newColumns);
-        return;
-      }
+    setColumns(newColumns);
+  }, [loroDoc, canManage, canAdd, canEdit, canApprove, t, containerId]);
 
-      const langCodesLoro = propertiesMap.get('langCodes');
-      if (langCodesLoro) {
-        for (let i = 0; i < langCodesLoro.length; i++) {
-          const langCode = langCodesLoro.get(i);
-          const language = languages?.find((lang) => lang.code === langCode);
-          if (language) {
-            newColumns.push(getStmtEditColumn(language, t));
-          }
-        }
-      }
-
-      setColumns(newColumns);
-    },
-    [loroDoc, languages, canManage, canAdd, t, containerId],
-  );
-
-  // Re-run updateColumns when permissions or languages change
+  // Re-run updateColumns when permissions change
   useEffect(() => {
-    if (loroDoc) {
-      const propertiesMap = loroDoc.getMap('properties');
-      updateColumns(propertiesMap);
-    }
-  }, [updateColumns, loroDoc]);
+    updateColumns();
+  }, [updateColumns]);
 
   const updateRows = useCallback(
-    (stmtGridRowLoroList: LoroMovableList<SheetStatementGridRowLoro>) => {
-      // Create state for the rows
-      const stmtRows: StatementGridEditorTableRow[] = [];
-      for (let i = 0; i < stmtGridRowLoroList.length; i++) {
-        const row = stmtGridRowLoroList.get(i);
-        stmtRows.push({
+    (barcodeGridRowLoroList: LoroMovableList<SheetBarcodeGridRowLoro>) => {
+      const rows: BarcodeGridEditorTableRow[] = [];
+      for (let i = 0; i < barcodeGridRowLoroList.length; i++) {
+        const row = barcodeGridRowLoroList.get(i);
+        rows.push({
           id: row.id,
-          type: row.get('type'),
-          statementRef: row.get('statementRef'),
-          statement: row.get('statement'),
+          barcode: row.get('barcode'),
         });
       }
-      setStatementRows(stmtRows);
+      setBarcodeRows(rows);
     },
     [],
   );
 
-  const handleStatementAdd = useCallback(async () => {
-    const propertiesMap = loroDoc?.getMap('properties');
-    const docLangCodes: string[] =
-      propertiesMap?.get('langCodes')?.toArray() || [];
-    const docLanguages = languages.filter((lang) =>
-      docLangCodes.includes(lang.code),
-    );
-
-    // Get new statement data from the modal
-    const newStatementData = await dialogs.open<
-      AddStatementModalPayload,
-      NewStatementData | undefined
-    >(AddStatementModal, {
-      docLanguages: docLanguages,
-    });
-
-    if (newStatementData && controller) {
-      // Figure out the type
-      let type: 'new' | 'live-reference' | 'frozen-reference' = 'new';
-      if (newStatementData.statementSource === 'library') {
-        type = 'frozen-reference';
-      } else if (newStatementData.statementSource === 'my-statements') {
-        type = 'live-reference';
-      } else {
-        type = 'new';
-      }
-
-      // Add the new statement via the controller
-      const ok = controller.addStatementToStatementGridBlock(
-        containerId,
-        type,
-        newStatementData,
-      );
-      if (ok) {
-        controller.commit();
-      }
+  const handleBarcodeAdd = useCallback(async () => {
+    if (controller) {
+      controller.addBarcodeToGridBlock(containerId);
+      controller.commit();
     }
-  }, [loroDoc, controller, languages, containerId, dialogs]);
-
-  const handleRowClick = useCallback(
-    (params: { row: StatementGridEditorTableRow }) => {
-      console.log('Row clicked:', params.row);
-    },
-    [],
-  );
+  }, [controller, containerId]);
 
   const handleCellClick = useCallback(
-    (params: { row: StatementGridEditorTableRow; field: string }) => {
+    (params: { row: BarcodeGridEditorTableRow; field: string }) => {
       setActiveCell({ rowId: params.row.id, field: params.field });
     },
     [],
@@ -348,7 +254,7 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
         canAdd: canAdd,
         canManage: canManage,
         showOutlines: showTitleOutlines,
-        handleStatementAdd: handleStatementAdd,
+        handleBarcodeAdd: handleBarcodeAdd,
         readOnly: readOnly,
       },
     }),
@@ -358,15 +264,14 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
       showTitleOutlines,
       canAdd,
       canManage,
-      handleStatementAdd,
+      handleBarcodeAdd,
       readOnly,
     ],
   );
 
   const gridSlots = useMemo(
     () => ({
-      toolbar: StatementGridEditorToolbar,
-      row: StatementGridEditorRow,
+      toolbar: BarcodeGridEditorToolbar,
     }),
     [],
   );
@@ -374,7 +279,7 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
   return (
     <>
       <DataGrid
-        rows={statementRows}
+        rows={barcodeRows}
         columns={columns}
         showToolbar
         hideFooter
@@ -388,7 +293,6 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
         onSortModelChange={setSortModel}
         filterModel={filterModel}
         onFilterModelChange={setFilterModel}
-        onRowClick={handleRowClick}
         onCellClick={handleCellClick}
         sx={gridSx}
         slotProps={gridSlotProps}
@@ -398,4 +302,4 @@ const StatementGridEditorTable: React.FC<StatementGridEditorTableProps> = ({
   );
 };
 
-export default StatementGridEditorTable;
+export default BarcodeGridEditorTable;

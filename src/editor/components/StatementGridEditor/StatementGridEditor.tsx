@@ -1,4 +1,4 @@
-import StatementGridEditorContextProvider from './context/StatementGridEditorContextProvider';
+import ColabGridEditorContextProvider from '../ColabGridEditor/context/ColabGridEditorContextProvider';
 import StatementGridEditorTable, {
   StatementGridEditorTableProps,
 } from './StatementGridEditorTable';
@@ -7,9 +7,9 @@ export type StatementGridEditorProps = {} & StatementGridEditorTableProps;
 
 const StatementGridEditor: React.FC<StatementGridEditorProps> = (props) => {
   return (
-    <StatementGridEditorContextProvider readOnly={props.readOnly}>
+    <ColabGridEditorContextProvider readOnly={props.readOnly}>
       <StatementGridEditorTable {...props} />
-    </StatementGridEditorContextProvider>
+    </ColabGridEditorContextProvider>
   );
 };
 
